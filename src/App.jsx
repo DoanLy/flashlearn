@@ -185,9 +185,6 @@ export default function App() {
   };
 
   const handleCardClick = () => {
-    if (!isFlipped) {
-      speakWord(currentCard.word);
-    }
     setIsFlipped(!isFlipped);
   };
 
@@ -264,7 +261,6 @@ export default function App() {
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6">
               <h2 className="text-lg font-bold mb-4">Thêm Flashcard</h2>
 
-              {/* Form chọn chủ đề dùng chung cho cả Single và Bulk */}
               <div className="mb-5">
                 <label className="block text-sm font-medium text-slate-500 mb-1">
                   Chủ đề / Nhóm từ đang chọn
@@ -326,7 +322,6 @@ export default function App() {
                 )}
               </div>
 
-              {/* Nút chuyển đổi chế độ nhập */}
               <div className="flex bg-slate-100 p-1 rounded-xl mb-5">
                 <button
                   type="button"
@@ -344,7 +339,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Form nhập liệu */}
               {inputMode === "single" ? (
                 <form onSubmit={handleAddCard} className="space-y-4">
                   <div>
@@ -478,15 +472,19 @@ export default function App() {
                         </div>
                       ) : (
                         <>
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0 pr-4">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-500 uppercase tracking-wider mb-1">
                               <Tag className="w-3 h-3" />
                               {card.deck || "Chung"}
                             </span>
-                            <p className="font-bold text-lg">{card.word}</p>
-                            <p className="text-slate-500">{card.meaning}</p>
+                            <p className="font-bold text-lg truncate">
+                              {card.word}
+                            </p>
+                            <p className="text-slate-500 truncate">
+                              {card.meaning}
+                            </p>
                           </div>
-                          <div className="flex gap-1">
+                          <div className="flex gap-1 shrink-0">
                             <button
                               onClick={() => handleStartEdit(card)}
                               className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -566,21 +564,40 @@ export default function App() {
                   <div
                     className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
                   >
-                    {/* Mặt trước */}
-                    <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center justify-center p-6 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      <p className="text-4xl font-bold text-slate-800 text-center select-none">
-                        {currentCard.word}
-                      </p>
-                      <Volume2 className="mt-4 text-blue-400 w-8 h-8 animate-pulse" />
-                      <p className="absolute bottom-6 text-sm text-slate-400">
-                        Chạm để xem nghĩa
+                    {/* Mặt trước có tính năng scroll */}
+                    <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center p-6 pb-5 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+                      {/* Khu vực cuộn chứa từ vựng */}
+                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 mb-4 px-2 py-4">
+                        <p className="my-auto text-3xl font-bold text-slate-800 text-center select-none w-full break-words whitespace-pre-wrap">
+                          {currentCard.word}
+                        </p>
+                      </div>
+
+                      {/* Nút phát âm to chỉ hiển thị icon */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Ngăn sự kiện click lan truyền lên thẻ cha
+                          speakWord(currentCard.word);
+                        }}
+                        className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm"
+                        title="Phát âm"
+                      >
+                        <Volume2 className="w-8 h-8 animate-pulse" />
+                      </button>
+
+                      <p className="text-sm text-slate-400 shrink-0">
+                        Chạm vùng trống để xem nghĩa
                       </p>
                     </div>
-                    {/* Mặt sau */}
-                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center justify-center p-6 [transform:rotateY(180deg)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      <p className="text-3xl font-medium text-white text-center select-none">
-                        {currentCard.meaning}
-                      </p>
+
+                    {/* Mặt sau có tính năng scroll */}
+                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 [transform:rotateY(180deg)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+                      {/* Khu vực cuộn chứa nghĩa */}
+                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4">
+                        <p className="my-auto text-2xl font-medium text-white text-center select-none w-full break-words whitespace-pre-wrap">
+                          {currentCard.meaning}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -669,23 +686,25 @@ export default function App() {
                       key={card.id}
                       className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-red-400 flex justify-between items-center group"
                     >
-                      <div>
+                      <div className="flex-1 min-w-0 pr-4">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-500 uppercase tracking-wider mb-1">
                           <Tag className="w-3 h-3" />
                           {card.deck || "Chung"}
                         </span>
-                        <p className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                          {card.word}
+                        <p className="font-bold text-lg text-slate-800 flex items-center gap-2 truncate">
+                          <span className="truncate">{card.word}</span>
                           <button
                             onClick={() => speakWord(card.word)}
-                            className="text-slate-300 hover:text-blue-500"
+                            className="text-slate-300 hover:text-blue-500 shrink-0"
                           >
                             <Volume2 className="w-4 h-4" />
                           </button>
                         </p>
-                        <p className="text-slate-500">{card.meaning}</p>
+                        <p className="text-slate-500 truncate">
+                          {card.meaning}
+                        </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 shrink-0">
                         <button
                           onClick={() => {
                             setCards(
@@ -773,23 +792,25 @@ export default function App() {
                       key={card.id}
                       className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-green-400 flex justify-between items-center group"
                     >
-                      <div>
+                      <div className="flex-1 min-w-0 pr-4">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-500 uppercase tracking-wider mb-1">
                           <Tag className="w-3 h-3" />
                           {card.deck || "Chung"}
                         </span>
-                        <p className="font-bold text-lg text-slate-800 flex items-center gap-2">
-                          {card.word}
+                        <p className="font-bold text-lg text-slate-800 flex items-center gap-2 truncate">
+                          <span className="truncate">{card.word}</span>
                           <button
                             onClick={() => speakWord(card.word)}
-                            className="text-slate-300 hover:text-blue-500"
+                            className="text-slate-300 hover:text-blue-500 shrink-0"
                           >
                             <Volume2 className="w-4 h-4" />
                           </button>
                         </p>
-                        <p className="text-slate-500">{card.meaning}</p>
+                        <p className="text-slate-500 truncate">
+                          {card.meaning}
+                        </p>
                       </div>
-                      <div>
+                      <div className="shrink-0">
                         <button
                           onClick={() => {
                             setCards(
