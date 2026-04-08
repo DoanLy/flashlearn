@@ -12,6 +12,7 @@ import {
   Edit2,
   Save,
   Tag,
+  CheckCircle,
 } from "lucide-react";
 
 export default function App() {
@@ -20,7 +21,8 @@ export default function App() {
     const saved = localStorage.getItem("mini-quizlet-cards");
     return saved ? JSON.parse(saved) : [];
   });
-  const [activeTab, setActiveTab] = useState("input"); // 'input', 'study', 'unknown'
+  // Tab hiện tại: 'input', 'study', 'unknown', 'known'
+  const [activeTab, setActiveTab] = useState("input");
   const [deckInput, setDeckInput] = useState("Tất cả"); // State cho Nhóm/Chủ đề
   const [deckMode, setDeckMode] = useState("select"); // 'select', 'new'
   const [wordInput, setWordInput] = useState("");
@@ -34,13 +36,13 @@ export default function App() {
   const [editWord, setEditWord] = useState("");
   const [editMeaning, setEditMeaning] = useState("");
 
-  // Danh sách các chủ đề do người dùng tự tạo (để lưu lại dropdown dù chưa có từ nào)
+  // Danh sách các chủ đề do người dùng tự tạo
   const [customDecks, setCustomDecks] = useState(() => {
     const saved = localStorage.getItem("mini-quizlet-decks");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Lấy danh sách các chủ đề hiện có để gợi ý (luôn có nhóm 'Tất cả', 'Chung', nhóm tự tạo, và nhóm có sẵn từ thẻ)
+  // Lấy danh sách các chủ đề hiện có
   const existingDecks = Array.from(
     new Set([
       "Tất cả",
@@ -68,7 +70,6 @@ export default function App() {
     e.preventDefault();
     if (!wordInput.trim() || !meaningInput.trim()) return;
 
-    // Nếu đang chọn "Tất cả" thì từ mới tạo sẽ vào nhóm "Chung"
     const targetDeck =
       deckInput === "Tất cả" ? "Chung" : deckInput.trim() || "Chung";
 
@@ -76,14 +77,13 @@ export default function App() {
       id: Date.now().toString(),
       word: wordInput.trim(),
       meaning: meaningInput.trim(),
-      status: "new", // Trạng thái: 'new', 'known', 'unknown'
+      status: "new",
       deck: targetDeck,
     };
 
     setCards([...cards, newCard]);
     setWordInput("");
     setMeaningInput("");
-    // Lưu ý: Không reset deckInput để tiện nhập tiếp từ khác cho cùng chủ đề
   };
 
   const handleBulkAddCard = (e) => {
@@ -96,15 +96,14 @@ export default function App() {
       deckInput === "Tất cả" ? "Chung" : deckInput.trim() || "Chung";
 
     lines.forEach((line, index) => {
-      // Cắt dòng theo dấu hai chấm đầu tiên
       const parts = line.split(":");
       if (parts.length >= 2) {
         const word = parts[0].trim();
-        const meaning = parts.slice(1).join(":").trim(); // Ghép lại đề phòng nghĩa có chứa dấu ':'
+        const meaning = parts.slice(1).join(":").trim();
 
         if (word && meaning) {
           newCards.push({
-            id: Date.now().toString() + "-" + index, // Thêm index để đảm bảo id không bị trùng
+            id: Date.now().toString() + "-" + index,
             word: word,
             meaning: meaning,
             status: "new",
@@ -134,7 +133,7 @@ export default function App() {
   const handleSaveEdit = (id) => {
     if (!editWord.trim() || !editMeaning.trim()) return;
     let newDeck = editDeck.trim();
-    if (!newDeck || newDeck === "Tất cả") newDeck = "Chung"; // Tránh việc đặt tên deck là 'Tất cả' làm lỗi filter
+    if (!newDeck || newDeck === "Tất cả") newDeck = "Chung";
     setCards(
       cards.map((c) =>
         c.id === id
@@ -161,7 +160,6 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
 
-  // Khởi tạo danh sách học khi chuyển sang tab 'study'
   useEffect(() => {
     if (activeTab === "study") {
       const cardsToStudy = cards.filter(
@@ -169,26 +167,24 @@ export default function App() {
           (c.status === "new" || c.status === "unknown") &&
           isCardInCurrentDeck(c),
       );
-      // Đảo vị trí ngẫu nhiên cho thú vị
       setStudyQueue(cardsToStudy.sort(() => Math.random() - 0.5));
       setIsFlipped(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, deckInput]); // SỬA LỖI: Bỏ 'cards' ra khỏi mảng dependency để danh sách không bị tự động reset sau mỗi lần lướt thẻ
+  }, [activeTab, deckInput]);
 
   const currentCard = studyQueue[0];
 
   const speakWord = (text) => {
     if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel(); // Dừng âm thanh cũ nếu đang đọc
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US"; // Mặc định tiếng Anh, bạn có thể đổi nếu học ngôn ngữ khác
+      utterance.lang = "en-US";
       window.speechSynthesis.speak(utterance);
     }
   };
 
   const handleCardClick = () => {
-    // Chỉ đọc từ khi mặt đang hiển thị là từ vựng (chưa lật)
     if (!isFlipped) {
       speakWord(currentCard.word);
     }
@@ -200,20 +196,17 @@ export default function App() {
 
     const newStatus = action === "known" ? "known" : "unknown";
 
-    // Cập nhật trạng thái trong mảng tổng
     setCards((prevCards) =>
       prevCards.map((c) =>
         c.id === currentCard.id ? { ...c, status: newStatus } : c,
       ),
     );
 
-    // Xóa thẻ hiện tại khỏi hàng đợi học
     setStudyQueue((prevQueue) => prevQueue.slice(1));
     setIsFlipped(false);
     setSwipeOffset(0);
   };
 
-  // Logic kéo thả / vuốt
   const handleDragStart = (clientX) => {
     setStartX(clientX);
     setIsDragging(true);
@@ -229,17 +222,34 @@ export default function App() {
     if (!isDragging) return;
     setIsDragging(false);
     if (swipeOffset > 100) {
-      handleSwipeAction("known"); // Vuốt phải
+      handleSwipeAction("known");
     } else if (swipeOffset < -100) {
-      handleSwipeAction("unknown"); // Vuốt trái
+      handleSwipeAction("unknown");
     } else {
-      setSwipeOffset(0); // Trở về vị trí cũ nếu vuốt chưa đủ lực
+      setSwipeOffset(0);
     }
   };
 
+  // --- COMPONENT SELECT CHỦ ĐỀ CHUNG CHO CÁC TAB ---
+  const DeckFilter = () => (
+    <div className="mb-4">
+      <select
+        value={deckInput}
+        onChange={(e) => setDeckInput(e.target.value)}
+        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm text-slate-700 font-medium"
+      >
+        {existingDecks.map((deck) => (
+          <option key={deck} value={deck}>
+            {deck}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
   // --- RENDER GIAO DIỆN ---
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24">
       {/* Header */}
       <header className="bg-white shadow-sm px-4 py-4 mb-6 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-center text-blue-600 flex items-center justify-center gap-2">
@@ -271,13 +281,6 @@ export default function App() {
                       }
                     }}
                     className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none appearance-none cursor-pointer"
-                    style={{
-                      backgroundImage:
-                        "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e\")",
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 1rem center",
-                      backgroundSize: "1em",
-                    }}
                   >
                     {existingDecks.map((deck) => (
                       <option key={deck} value={deck}>
@@ -311,7 +314,6 @@ export default function App() {
                           !customDecks.includes(newDeck) &&
                           newDeck !== "Chung"
                         ) {
-                          // Lưu chủ đề mới vào danh sách
                           setCustomDecks([...customDecks, newDeck]);
                         }
                         setDeckMode("select");
@@ -342,7 +344,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Form nhập liệu tuỳ theo chế độ */}
+              {/* Form nhập liệu */}
               {inputMode === "single" ? (
                 <form onSubmit={handleAddCard} className="space-y-4">
                   <div>
@@ -512,28 +514,36 @@ export default function App() {
         {/* --- TAB: HỌC TẬP (STUDY) --- */}
         {activeTab === "study" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col items-center">
+            <DeckFilter />
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 text-center">
-              Chủ đề: <span className="text-blue-600">{deckInput}</span> <br />
               <span className="text-xs font-normal">
                 Đang học: {studyQueue.length} từ
               </span>
             </h2>
 
             {!currentCard ? (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center w-full mt-10">
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center w-full mt-4">
                 <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="w-10 h-10" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">Tuyệt vời!</h3>
                 <p className="text-slate-500 mb-6">
-                  Bạn đã ôn tập xong tất cả các từ.
+                  Bạn đã ôn tập xong các từ trong chủ đề này.
                 </p>
-                <button
-                  onClick={() => setActiveTab("unknown")}
-                  className="px-6 py-2 bg-blue-50 text-blue-600 font-medium rounded-full hover:bg-blue-100 transition-colors"
-                >
-                  Xem các từ chưa thuộc
-                </button>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => setActiveTab("unknown")}
+                    className="px-6 py-2 bg-red-50 text-red-600 font-medium rounded-full hover:bg-red-100 transition-colors"
+                  >
+                    Xem các từ chưa thuộc
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("known")}
+                    className="px-6 py-2 bg-blue-50 text-blue-600 font-medium rounded-full hover:bg-blue-100 transition-colors"
+                  >
+                    Xem các từ đã thuộc
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="w-full flex flex-col items-center">
@@ -556,7 +566,7 @@ export default function App() {
                   <div
                     className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
                   >
-                    {/* Mặt trước (Từ vựng) */}
+                    {/* Mặt trước */}
                     <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center justify-center p-6 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
                       <p className="text-4xl font-bold text-slate-800 text-center select-none">
                         {currentCard.word}
@@ -566,7 +576,7 @@ export default function App() {
                         Chạm để xem nghĩa
                       </p>
                     </div>
-                    {/* Mặt sau (Nghĩa) */}
+                    {/* Mặt sau */}
                     <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center justify-center p-6 [transform:rotateY(180deg)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
                       <p className="text-3xl font-medium text-white text-center select-none">
                         {currentCard.meaning}
@@ -611,22 +621,18 @@ export default function App() {
         {/* --- TAB: TỪ CHƯA BIẾT (UNKNOWN LIST) --- */}
         {activeTab === "unknown" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="flex justify-between items-end mb-6">
+            <DeckFilter />
+            <div className="flex justify-between items-end mb-4">
               <div>
-                <h2 className="text-lg font-bold">Cần học lại</h2>
-                <p className="text-sm text-slate-500">
-                  Chủ đề:{" "}
-                  <span className="font-semibold text-blue-600">
-                    {deckInput}
-                  </span>
-                </p>
+                <h2 className="text-lg font-bold text-red-500 flex items-center gap-2">
+                  <X className="w-5 h-5" /> Cần học lại
+                </h2>
               </div>
               {cards.filter(
                 (c) => c.status === "unknown" && isCardInCurrentDeck(c),
               ).length > 0 && (
                 <button
                   onClick={() => {
-                    // Chuyển toàn bộ thẻ unknown của CHỦ ĐỀ NÀY thành new để học lại
                     setCards(
                       cards.map((c) =>
                         c.status === "unknown" && isCardInCurrentDeck(c)
@@ -636,9 +642,9 @@ export default function App() {
                     );
                     setActiveTab("study");
                   }}
-                  className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors"
+                  className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
                 >
-                  <RotateCcw className="w-4 h-4" /> Học lại
+                  <RotateCcw className="w-4 h-4" /> Học lại tất cả
                 </button>
               )}
             </div>
@@ -679,20 +685,125 @@ export default function App() {
                         </p>
                         <p className="text-slate-500">{card.meaning}</p>
                       </div>
-                      <button
-                        onClick={() => {
-                          // Đánh dấu từ này là đã thuộc trực tiếp từ danh sách
-                          setCards(
-                            cards.map((c) =>
-                              c.id === card.id ? { ...c, status: "known" } : c,
-                            ),
-                          );
-                        }}
-                        className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
-                        title="Đánh dấu đã thuộc"
-                      >
-                        <Check className="w-5 h-5" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setCards(
+                              cards.map((c) =>
+                                c.id === card.id ? { ...c, status: "new" } : c,
+                              ),
+                            );
+                          }}
+                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Học lại từ này"
+                        >
+                          <RotateCcw className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setCards(
+                              cards.map((c) =>
+                                c.id === card.id
+                                  ? { ...c, status: "known" }
+                                  : c,
+                              ),
+                            );
+                          }}
+                          className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                          title="Đánh dấu đã thuộc"
+                        >
+                          <Check className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- TAB: TỪ ĐÃ THUỘC (KNOWN LIST) --- */}
+        {activeTab === "known" && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            <DeckFilter />
+            <div className="flex justify-between items-end mb-4">
+              <div>
+                <h2 className="text-lg font-bold text-green-600 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5" /> Đã thuộc
+                </h2>
+              </div>
+              {cards.filter(
+                (c) => c.status === "known" && isCardInCurrentDeck(c),
+              ).length > 0 && (
+                <button
+                  onClick={() => {
+                    setCards(
+                      cards.map((c) =>
+                        c.status === "known" && isCardInCurrentDeck(c)
+                          ? { ...c, status: "new" }
+                          : c,
+                      ),
+                    );
+                    setActiveTab("study");
+                  }}
+                  className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
+                >
+                  <RotateCcw className="w-4 h-4" /> Học lại tất cả
+                </button>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              {cards.filter(
+                (c) => c.status === "known" && isCardInCurrentDeck(c),
+              ).length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
+                  <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle className="w-8 h-8" />
+                  </div>
+                  <p className="text-slate-500">
+                    Chưa có từ nào được đánh dấu là đã thuộc.
+                  </p>
+                </div>
+              ) : (
+                cards
+                  .filter((c) => c.status === "known" && isCardInCurrentDeck(c))
+                  .map((card) => (
+                    <div
+                      key={card.id}
+                      className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-green-400 flex justify-between items-center group"
+                    >
+                      <div>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-500 uppercase tracking-wider mb-1">
+                          <Tag className="w-3 h-3" />
+                          {card.deck || "Chung"}
+                        </span>
+                        <p className="font-bold text-lg text-slate-800 flex items-center gap-2">
+                          {card.word}
+                          <button
+                            onClick={() => speakWord(card.word)}
+                            className="text-slate-300 hover:text-blue-500"
+                          >
+                            <Volume2 className="w-4 h-4" />
+                          </button>
+                        </p>
+                        <p className="text-slate-500">{card.meaning}</p>
+                      </div>
+                      <div>
+                        <button
+                          onClick={() => {
+                            setCards(
+                              cards.map((c) =>
+                                c.id === card.id ? { ...c, status: "new" } : c,
+                              ),
+                            );
+                          }}
+                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Học lại từ này"
+                        >
+                          <RotateCcw className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                   ))
               )}
@@ -702,7 +813,7 @@ export default function App() {
       </main>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
-      <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pb-safe">
+      <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center pb-safe z-20">
         <button
           onClick={() => setActiveTab("input")}
           className={`flex-1 flex flex-col items-center py-3 ${activeTab === "input" ? "text-blue-600 font-medium" : "text-slate-400 hover:text-slate-600"}`}
@@ -719,16 +830,24 @@ export default function App() {
         </button>
         <button
           onClick={() => setActiveTab("unknown")}
-          className={`flex-1 flex flex-col items-center py-3 relative ${activeTab === "unknown" ? "text-blue-600 font-medium" : "text-slate-400 hover:text-slate-600"}`}
+          className={`flex-1 flex flex-col items-center py-3 relative ${activeTab === "unknown" ? "text-red-500 font-medium" : "text-slate-400 hover:text-slate-600"}`}
         >
           <div className="relative">
             <List className="w-6 h-6 mb-1" />
-            {/* Hiển thị số chấm đỏ nếu có từ chưa thuộc */}
             {cards.filter((c) => c.status === "unknown").length > 0 && (
               <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
             )}
           </div>
-          <span className="text-[10px] uppercase tracking-wider">Từ khó</span>
+          <span className="text-[10px] uppercase tracking-wider">
+            Chưa thuộc
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab("known")}
+          className={`flex-1 flex flex-col items-center py-3 relative ${activeTab === "known" ? "text-green-500 font-medium" : "text-slate-400 hover:text-slate-600"}`}
+        >
+          <CheckCircle className="w-6 h-6 mb-1" />
+          <span className="text-[10px] uppercase tracking-wider">Đã thuộc</span>
         </button>
       </nav>
     </div>
