@@ -302,10 +302,23 @@ export default function App() {
 
   const speakWord = (text) => {
     if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "en-US";
-      window.speechSynthesis.speak(utterance);
+      // Đánh thức API nếu đang bị tạm dừng (sleep mode trên Mobile)
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+
+      // Chỉ hủy đọc nếu thực sự đang có giọng đọc khác để tránh lỗi kẹt trên Safari
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+      }
+
+      // Thêm một độ trễ siêu nhỏ giúp trình duyệt di động xử lý ổn định hơn
+      setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }, 50);
     }
   };
 
@@ -655,14 +668,20 @@ export default function App() {
                           </div>
                           <div className="flex gap-1 shrink-0">
                             <button
-                              onClick={() => handleStartEdit(card)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStartEdit(card);
+                              }}
                               className="p-2 text-blue-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Sửa"
                             >
                               <Edit2 className="w-5 h-5" />
                             </button>
                             <button
-                              onClick={() => handleDeleteCard(card.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCard(card.id);
+                              }}
                               className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                               title="Xóa"
                             >
@@ -741,10 +760,15 @@ export default function App() {
                       </div>
                       <button
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           speakWord(currentCard.word);
                         }}
-                        className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm"
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onTouchEnd={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onMouseUp={(e) => e.stopPropagation()}
+                        className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm z-10"
                         title="Phát âm"
                       >
                         <Volume2 className="w-8 h-8 animate-pulse" />
@@ -856,8 +880,12 @@ export default function App() {
                         <p className="font-bold text-lg text-slate-800 flex items-center gap-2 truncate">
                           <span className="truncate">{card.word}</span>
                           <button
-                            onClick={() => speakWord(card.word)}
-                            className="text-slate-300 hover:text-blue-500 shrink-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              speakWord(card.word);
+                            }}
+                            className="text-slate-300 hover:text-blue-500 shrink-0 p-2"
                           >
                             <Volume2 className="w-4 h-4" />
                           </button>
@@ -960,8 +988,12 @@ export default function App() {
                         <p className="font-bold text-lg text-slate-800 flex items-center gap-2 truncate">
                           <span className="truncate">{card.word}</span>
                           <button
-                            onClick={() => speakWord(card.word)}
-                            className="text-slate-300 hover:text-blue-500 shrink-0"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              speakWord(card.word);
+                            }}
+                            className="text-slate-300 hover:text-blue-500 shrink-0 p-2"
                           >
                             <Volume2 className="w-4 h-4" />
                           </button>
