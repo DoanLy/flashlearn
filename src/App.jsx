@@ -79,7 +79,16 @@ export default function App() {
 
         const result = await response.json();
         if (result.status === "success" && result.cards) {
-          setCards(result.cards);
+          // Ép kiểu tất cả về chuỗi (String) để đảm bảo không bị lỗi hiển thị định dạng từ file
+          const safeCards = result.cards.map((c) => ({
+            ...c,
+            id: String(c.id || ""),
+            word: String(c.word || ""),
+            meaning: String(c.meaning || ""),
+            deck: String(c.deck || "Chung"),
+            status: String(c.status || "new"),
+          }));
+          setCards(safeCards);
         }
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
@@ -142,12 +151,21 @@ export default function App() {
     setSyncStatus("syncing");
 
     try {
+      // Tiền xử lý: Ép Google Sheets hiểu dữ liệu là chuỗi (Text) thuần túy bằng cách thêm dấu nháy đơn (')
+      // Việc này ngăn lỗi Google Sheets tự động đổi các chữ như "9/4" thành ngày tháng năm dài ngoằng.
+      const safeDataToSync = dataToSync.map((card) => ({
+        ...card,
+        word: card.word ? `'${card.word}` : "",
+        meaning: card.meaning ? `'${card.meaning}` : "",
+        deck: card.deck ? `'${card.deck}` : "'Chung",
+      }));
+
       const response = await fetch(SHEET_URL, {
         method: "POST",
         headers: {
           "Content-Type": "text/plain",
         },
-        body: JSON.stringify({ action: "sync", cards: dataToSync }),
+        body: JSON.stringify({ action: "sync", cards: safeDataToSync }),
         redirect: "follow",
       });
 
