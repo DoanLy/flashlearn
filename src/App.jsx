@@ -13,6 +13,8 @@ import {
   Save,
   Tag,
   CheckCircle,
+  Download,
+  CloudUpload,
 } from "lucide-react";
 
 export default function App() {
@@ -23,11 +25,11 @@ export default function App() {
   });
   // Tab hiện tại: 'input', 'study', 'unknown', 'known'
   const [activeTab, setActiveTab] = useState("input");
-  const [deckInput, setDeckInput] = useState("Tất cả"); // State cho Nhóm/Chủ đề
-  const [deckMode, setDeckMode] = useState("select"); // 'select', 'new'
+  const [deckInput, setDeckInput] = useState("Tất cả");
+  const [deckMode, setDeckMode] = useState("select");
   const [wordInput, setWordInput] = useState("");
   const [meaningInput, setMeaningInput] = useState("");
-  const [inputMode, setInputMode] = useState("single"); // 'single', 'bulk'
+  const [inputMode, setInputMode] = useState("single");
   const [bulkInput, setBulkInput] = useState("");
 
   // States cho tính năng chỉnh sửa
@@ -35,6 +37,11 @@ export default function App() {
   const [editDeck, setEditDeck] = useState("");
   const [editWord, setEditWord] = useState("");
   const [editMeaning, setEditMeaning] = useState("");
+
+  // Link Web App Google Sheets cứng (Auto-sync)
+  const SHEET_URL =
+    "https://script.google.com/macros/s/AKfycbyvGWYwA4BNKzEa44zne7kf4ESDOBz-MXx60pvxEiHISeceZIdBOX9J6qW_5gV2F55v/exec";
+  const [syncStatus, setSyncStatus] = useState("idle"); // 'idle', 'syncing', 'success', 'error'
 
   // Danh sách các chủ đề do người dùng tự tạo
   const [customDecks, setCustomDecks] = useState(() => {
@@ -64,6 +71,81 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("mini-quizlet-decks", JSON.stringify(customDecks));
   }, [customDecks]);
+
+  // --- CHỨC NĂNG EXPORT VÀ SYNC ---
+  const exportToCSV = () => {
+    if (cards.length === 0) {
+      alert("Không có từ vựng nào để xuất!");
+      return;
+    }
+
+    // Tiêu đề cột
+    const headers = ["ID", "Từ vựng", "Nghĩa", "Chủ đề", "Trạng thái"];
+
+    // Định dạng dữ liệu (Escape dấu nháy kép cho đúng chuẩn CSV)
+    const csvData = cards.map((card) => {
+      const escapeCSV = (str) => `"${String(str || "").replace(/"/g, '""')}"`;
+      return [
+        escapeCSV(card.id),
+        escapeCSV(card.word),
+        escapeCSV(card.meaning),
+        escapeCSV(card.deck || "Chung"),
+        escapeCSV(card.status),
+      ].join(",");
+    });
+
+    const csvContent = [headers.join(","), ...csvData].join("\n");
+
+    // Thêm BOM (Byte Order Mark) để Excel/Google Sheets đọc tiếng Việt không bị lỗi font
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
+    const blob = new Blob([bom, csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute(
+      "download",
+      `FlashLearn_TuVung_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSyncToSheets = async () => {
+    if (cards.length === 0) return;
+    setSyncStatus("syncing");
+
+    try {
+      await fetch(SHEET_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify({ action: "sync", cards: cards }),
+      });
+
+      setSyncStatus("success");
+      setTimeout(() => setSyncStatus("idle"), 3000); // Ẩn thông báo sau 3s
+    } catch (error) {
+      console.error(error);
+      setSyncStatus("error");
+    }
+  };
+
+  // Tự động đồng bộ mỗi khi danh sách thẻ thay đổi (Debounce 2 giây để tránh gửi liên tục)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (cards.length > 0) {
+        handleSyncToSheets();
+      }
+    }, 2000);
+    return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cards]);
 
   // --- CHỨC NĂNG THÊM TỪ VỰNG (INPUT) ---
   const handleAddCard = (e) => {
@@ -233,7 +315,7 @@ export default function App() {
       <select
         value={deckInput}
         onChange={(e) => setDeckInput(e.target.value)}
-        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm text-slate-700 font-medium"
+        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm text-slate-700 font-medium shadow-sm"
       >
         {existingDecks.map((deck) => (
           <option key={deck} value={deck}>
@@ -248,10 +330,39 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24">
       {/* Header */}
-      <header className="bg-white shadow-sm px-4 py-4 mb-6 sticky top-0 z-10">
-        <h1 className="text-2xl font-bold text-center text-blue-600 flex items-center justify-center gap-2">
+      <header className="bg-white shadow-sm px-4 py-4 mb-6 sticky top-0 z-10 flex justify-between items-center">
+        <h1 className="text-xl sm:text-2xl font-bold text-blue-600 flex items-center gap-2">
           <BookOpen className="w-6 h-6" /> FlashLearn
         </h1>
+        {/* Nhóm Nút Export & Trạng thái Sync */}
+        <div className="flex items-center gap-3">
+          {/* Trạng thái đồng bộ tự động */}
+          <div className="flex items-center text-xs font-medium">
+            {syncStatus === "syncing" && (
+              <span className="text-blue-500 flex items-center gap-1 animate-pulse">
+                <CloudUpload className="w-4 h-4" /> Đang lưu...
+              </span>
+            )}
+            {syncStatus === "success" && (
+              <span className="text-green-500 flex items-center gap-1">
+                <CheckCircle className="w-4 h-4" /> Đã lưu
+              </span>
+            )}
+            {syncStatus === "error" && (
+              <span className="text-red-500 flex items-center gap-1">
+                <AlertCircle className="w-4 h-4" /> Lỗi lưu
+              </span>
+            )}
+          </div>
+
+          <button
+            onClick={exportToCSV}
+            className="p-2 text-slate-500 hover:bg-slate-100 hover:text-green-600 rounded-full transition-colors bg-slate-50"
+            title="Xuất file CSV"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       <main className="max-w-md mx-auto px-4">
@@ -564,19 +675,15 @@ export default function App() {
                   <div
                     className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
                   >
-                    {/* Mặt trước có tính năng scroll */}
                     <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center p-6 pb-5 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      {/* Khu vực cuộn chứa từ vựng */}
                       <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 mb-4 px-2 py-4">
                         <p className="my-auto text-3xl font-bold text-slate-800 text-center select-none w-full break-words whitespace-pre-wrap">
                           {currentCard.word}
                         </p>
                       </div>
-
-                      {/* Nút phát âm to chỉ hiển thị icon */}
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // Ngăn sự kiện click lan truyền lên thẻ cha
+                          e.stopPropagation();
                           speakWord(currentCard.word);
                         }}
                         className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm"
@@ -584,15 +691,12 @@ export default function App() {
                       >
                         <Volume2 className="w-8 h-8 animate-pulse" />
                       </button>
-
                       <p className="text-sm text-slate-400 shrink-0">
                         Chạm vùng trống để xem nghĩa
                       </p>
                     </div>
 
-                    {/* Mặt sau có tính năng scroll */}
                     <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 [transform:rotateY(180deg)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      {/* Khu vực cuộn chứa nghĩa */}
                       <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4">
                         <p className="my-auto text-2xl font-medium text-white text-center select-none w-full break-words whitespace-pre-wrap">
                           {currentCard.meaning}
