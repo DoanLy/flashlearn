@@ -15,14 +15,13 @@ import {
   CheckCircle,
   Download,
   CloudUpload,
+  Loader2,
 } from "lucide-react";
 
 export default function App() {
   // --- STATE QUẢN LÝ DỮ LIỆU ---
-  const [cards, setCards] = useState(() => {
-    const saved = localStorage.getItem("mini-quizlet-cards");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cards, setCards] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   // Tab hiện tại: 'input', 'study', 'unknown', 'known'
   const [activeTab, setActiveTab] = useState("input");
   const [deckInput, setDeckInput] = useState("Tất cả");
@@ -38,16 +37,13 @@ export default function App() {
   const [editWord, setEditWord] = useState("");
   const [editMeaning, setEditMeaning] = useState("");
 
-  // Link Web App Google Sheets cứng (Auto-sync)
+  // Link Web App Google Sheets cứng
   const SHEET_URL =
-    "https://script.google.com/macros/s/AKfycbyvGWYwA4BNKzEa44zne7kf4ESDOBz-MXx60pvxEiHISeceZIdBOX9J6qW_5gV2F55v/exec";
+    "https://script.google.com/macros/s/AKfycbzSdEuvkL9I_zSN8SeCm71gm4LXEd9uzKXkrNz_9vBscVvvfyZwXNsCdxe4jpLDEdAo/exec";
   const [syncStatus, setSyncStatus] = useState("idle"); // 'idle', 'syncing', 'success', 'error'
 
   // Danh sách các chủ đề do người dùng tự tạo
-  const [customDecks, setCustomDecks] = useState(() => {
-    const saved = localStorage.getItem("mini-quizlet-decks");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [customDecks, setCustomDecks] = useState([]);
 
   // Lấy danh sách các chủ đề hiện có
   const existingDecks = Array.from(
@@ -63,14 +59,40 @@ export default function App() {
   const isCardInCurrentDeck = (card) =>
     deckInput === "Tất cả" || (card.deck || "Chung") === deckInput;
 
-  // --- LƯU TRỮ LOCALSTORAGE ---
+  // --- TẢI DỮ LIỆU TỪ GOOGLE SHEETS LÚC KHỞI ĐỘNG ---
   useEffect(() => {
-    localStorage.setItem("mini-quizlet-cards", JSON.stringify(cards));
-  }, [cards]);
+    const loadDataFromSheets = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(SHEET_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+          body: JSON.stringify({ action: "load" }),
+          redirect: "follow",
+        });
 
-  useEffect(() => {
-    localStorage.setItem("mini-quizlet-decks", JSON.stringify(customDecks));
-  }, [customDecks]);
+        if (!response.ok) {
+          throw new Error("Lỗi HTTP: " + response.status);
+        }
+
+        const result = await response.json();
+        if (result.status === "success" && result.cards) {
+          setCards(result.cards);
+        }
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+        alert(
+          "Lỗi kết nối Google Sheets (Failed to fetch).\n\n1. Hãy đảm bảo bạn đã tạo 'Trình triển khai mới' (New deployment) trên Apps Script sau khi đổi code.\n2. Quyền truy cập (Who has access) phải là 'Anyone' (Bất kỳ ai).",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDataFromSheets();
+  }, []);
 
   // --- CHỨC NĂNG EXPORT VÀ SYNC ---
   const exportToCSV = () => {
@@ -115,18 +137,23 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  const handleSyncToSheets = async () => {
-    if (cards.length === 0) return;
+  // Hàm đồng bộ dữ liệu TỰ KÍCH HOẠT (Manual Sync triggered by specific actions)
+  const syncDataToSheets = async (dataToSync) => {
     setSyncStatus("syncing");
 
     try {
-      await fetch(SHEET_URL, {
+      const response = await fetch(SHEET_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "text/plain;charset=utf-8",
+          "Content-Type": "text/plain",
         },
-        body: JSON.stringify({ action: "sync", cards: cards }),
+        body: JSON.stringify({ action: "sync", cards: dataToSync }),
+        redirect: "follow",
       });
+
+      if (!response.ok) {
+        throw new Error("Lỗi HTTP: " + response.status);
+      }
 
       setSyncStatus("success");
       setTimeout(() => setSyncStatus("idle"), 3000); // Ẩn thông báo sau 3s
@@ -135,17 +162,6 @@ export default function App() {
       setSyncStatus("error");
     }
   };
-
-  // Tự động đồng bộ mỗi khi danh sách thẻ thay đổi (Debounce 2 giây để tránh gửi liên tục)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (cards.length > 0) {
-        handleSyncToSheets();
-      }
-    }, 2000);
-    return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cards]);
 
   // --- CHỨC NĂNG THÊM TỪ VỰNG (INPUT) ---
   const handleAddCard = (e) => {
@@ -163,7 +179,10 @@ export default function App() {
       deck: targetDeck,
     };
 
-    setCards([...cards, newCard]);
+    const updatedCards = [...cards, newCard];
+    setCards(updatedCards);
+    syncDataToSheets(updatedCards); // Lưu lên sheet ngay lập tức
+
     setWordInput("");
     setMeaningInput("");
   };
@@ -196,13 +215,17 @@ export default function App() {
     });
 
     if (newCards.length > 0) {
-      setCards([...cards, ...newCards]);
+      const updatedCards = [...cards, ...newCards];
+      setCards(updatedCards);
+      syncDataToSheets(updatedCards); // Lưu lên sheet ngay lập tức
       setBulkInput("");
     }
   };
 
   const handleDeleteCard = (id) => {
-    setCards(cards.filter((c) => c.id !== id));
+    const updatedCards = cards.filter((c) => c.id !== id);
+    setCards(updatedCards);
+    syncDataToSheets(updatedCards); // Đồng bộ sự thay đổi (xóa) lên Sheet
   };
 
   const handleStartEdit = (card) => {
@@ -216,18 +239,20 @@ export default function App() {
     if (!editWord.trim() || !editMeaning.trim()) return;
     let newDeck = editDeck.trim();
     if (!newDeck || newDeck === "Tất cả") newDeck = "Chung";
-    setCards(
-      cards.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              deck: newDeck,
-              word: editWord.trim(),
-              meaning: editMeaning.trim(),
-            }
-          : c,
-      ),
+
+    const updatedCards = cards.map((c) =>
+      c.id === id
+        ? {
+            ...c,
+            deck: newDeck,
+            word: editWord.trim(),
+            meaning: editMeaning.trim(),
+          }
+        : c,
     );
+
+    setCards(updatedCards);
+    syncDataToSheets(updatedCards); // Đồng bộ sự thay đổi (sửa) lên Sheet
     setEditingId(null);
   };
 
@@ -275,11 +300,12 @@ export default function App() {
 
     const newStatus = action === "known" ? "known" : "unknown";
 
-    setCards((prevCards) =>
-      prevCards.map((c) =>
-        c.id === currentCard.id ? { ...c, status: newStatus } : c,
-      ),
+    const updatedCards = cards.map((c) =>
+      c.id === currentCard.id ? { ...c, status: newStatus } : c,
     );
+
+    setCards(updatedCards);
+    syncDataToSheets(updatedCards); // Cập nhật trạng thái học lên Sheet
 
     setStudyQueue((prevQueue) => prevQueue.slice(1));
     setIsFlipped(false);
@@ -327,6 +353,20 @@ export default function App() {
   );
 
   // --- RENDER GIAO DIỆN ---
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-blue-600">
+        <Loader2 className="w-12 h-12 animate-spin mb-4" />
+        <h2 className="text-xl font-bold text-slate-800">
+          Đang tải dữ liệu...
+        </h2>
+        <p className="text-slate-500 mt-2 text-sm">
+          Đang kết nối với Google Sheets
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24">
       {/* Header */}
@@ -336,7 +376,7 @@ export default function App() {
         </h1>
         {/* Nhóm Nút Export & Trạng thái Sync */}
         <div className="flex items-center gap-3">
-          {/* Trạng thái đồng bộ tự động */}
+          {/* Trạng thái đồng bộ */}
           <div className="flex items-center text-xs font-medium">
             {syncStatus === "syncing" && (
               <span className="text-blue-500 flex items-center gap-1 animate-pulse">
@@ -754,13 +794,13 @@ export default function App() {
               ).length > 0 && (
                 <button
                   onClick={() => {
-                    setCards(
-                      cards.map((c) =>
-                        c.status === "unknown" && isCardInCurrentDeck(c)
-                          ? { ...c, status: "new" }
-                          : c,
-                      ),
+                    const updatedCards = cards.map((c) =>
+                      c.status === "unknown" && isCardInCurrentDeck(c)
+                        ? { ...c, status: "new" }
+                        : c,
                     );
+                    setCards(updatedCards);
+                    syncDataToSheets(updatedCards);
                     setActiveTab("study");
                   }}
                   className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
@@ -811,11 +851,11 @@ export default function App() {
                       <div className="flex gap-2 shrink-0">
                         <button
                           onClick={() => {
-                            setCards(
-                              cards.map((c) =>
-                                c.id === card.id ? { ...c, status: "new" } : c,
-                              ),
+                            const updatedCards = cards.map((c) =>
+                              c.id === card.id ? { ...c, status: "new" } : c,
                             );
+                            setCards(updatedCards);
+                            syncDataToSheets(updatedCards);
                           }}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Học lại từ này"
@@ -824,13 +864,11 @@ export default function App() {
                         </button>
                         <button
                           onClick={() => {
-                            setCards(
-                              cards.map((c) =>
-                                c.id === card.id
-                                  ? { ...c, status: "known" }
-                                  : c,
-                              ),
+                            const updatedCards = cards.map((c) =>
+                              c.id === card.id ? { ...c, status: "known" } : c,
                             );
+                            setCards(updatedCards);
+                            syncDataToSheets(updatedCards);
                           }}
                           className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
                           title="Đánh dấu đã thuộc"
@@ -860,13 +898,13 @@ export default function App() {
               ).length > 0 && (
                 <button
                   onClick={() => {
-                    setCards(
-                      cards.map((c) =>
-                        c.status === "known" && isCardInCurrentDeck(c)
-                          ? { ...c, status: "new" }
-                          : c,
-                      ),
+                    const updatedCards = cards.map((c) =>
+                      c.status === "known" && isCardInCurrentDeck(c)
+                        ? { ...c, status: "new" }
+                        : c,
                     );
+                    setCards(updatedCards);
+                    syncDataToSheets(updatedCards);
                     setActiveTab("study");
                   }}
                   className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
@@ -917,11 +955,11 @@ export default function App() {
                       <div className="shrink-0">
                         <button
                           onClick={() => {
-                            setCards(
-                              cards.map((c) =>
-                                c.id === card.id ? { ...c, status: "new" } : c,
-                              ),
+                            const updatedCards = cards.map((c) =>
+                              c.id === card.id ? { ...c, status: "new" } : c,
                             );
+                            setCards(updatedCards);
+                            syncDataToSheets(updatedCards);
                           }}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Học lại từ này"
