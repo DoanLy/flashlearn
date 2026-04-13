@@ -346,6 +346,7 @@ export default function App() {
   const handleDragStart = (clientX) => {
     setStartX(clientX);
     setIsDragging(true);
+    setSwipeOffset(0);
   };
 
   const handleDragMove = (clientX) => {
@@ -357,11 +358,16 @@ export default function App() {
   const handleDragEnd = () => {
     if (!isDragging) return;
     setIsDragging(false);
+
     if (swipeOffset > 100) {
       handleSwipeAction("known");
     } else if (swipeOffset < -100) {
       handleSwipeAction("unknown");
     } else {
+      // Sửa lỗi Mobile: Nếu khoảng cách vuốt cực nhỏ (< 10px), coi như là một chạm (Click) lật thẻ.
+      if (Math.abs(swipeOffset) < 10) {
+        handleCardClick();
+      }
       setSwipeOffset(0);
     }
   };
@@ -540,12 +546,13 @@ export default function App() {
                     <label className="block text-sm font-medium text-slate-500 mb-1">
                       Nghĩa của từ
                     </label>
-                    <input
-                      type="text"
+                    {/* Đã sửa input thành textarea */}
+                    <textarea
                       value={meaningInput}
                       onChange={(e) => setMeaningInput(e.target.value)}
                       placeholder="VD: Quả táo"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none"
+                      rows={2}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-none"
                       required
                     />
                   </div>
@@ -627,11 +634,12 @@ export default function App() {
                               className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                               placeholder="Từ vựng"
                             />
-                            <input
-                              type="text"
+                            {/* Đã sửa input edit thành textarea */}
+                            <textarea
                               value={editMeaning}
                               onChange={(e) => setEditMeaning(e.target.value)}
-                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                              rows={2}
+                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
                               placeholder="Nghĩa"
                             />
                           </div>
@@ -662,7 +670,7 @@ export default function App() {
                             <p className="font-bold text-lg truncate">
                               {card.word}
                             </p>
-                            <p className="text-slate-500 truncate">
+                            <p className="text-slate-500 line-clamp-2">
                               {card.meaning}
                             </p>
                           </div>
@@ -735,7 +743,7 @@ export default function App() {
               <div className="w-full flex flex-col items-center">
                 {/* Flashcard Component */}
                 <div
-                  className="relative w-full aspect-[4/3] max-w-sm cursor-pointer select-none [perspective:1000px] mb-8"
+                  className="relative w-full aspect-[4/3] max-w-sm cursor-pointer select-none [perspective:1000px] mb-8 touch-pan-y"
                   onMouseDown={(e) => handleDragStart(e.clientX)}
                   onMouseMove={(e) => handleDragMove(e.clientX)}
                   onMouseUp={handleDragEnd}
@@ -743,7 +751,7 @@ export default function App() {
                   onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
                   onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
                   onTouchEnd={handleDragEnd}
-                  onClick={handleCardClick}
+                  // Đã bỏ onClick={handleCardClick} để tránh lặp event, handleDragEnd sẽ tự động lo việc Click lật thẻ
                   style={{
                     transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.05}deg)`,
                     transition: isDragging ? "none" : "transform 0.3s ease-out",
@@ -752,8 +760,9 @@ export default function App() {
                   <div
                     className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
                   >
-                    <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center p-6 pb-5 [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 mb-4 px-2 py-4">
+                    {/* --- SỬA LỖI BUG HIỂN THỊ IOS: Bổ sung translateZ và -webkit-backface-visibility --- */}
+                    <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center p-6 pb-5 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(1px)] [-webkit-transform:translateZ(1px)]">
+                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 mb-4 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
                         <p className="my-auto text-3xl font-bold text-slate-800 text-center select-none w-full break-words whitespace-pre-wrap">
                           {currentCard.word}
                         </p>
@@ -768,18 +777,18 @@ export default function App() {
                         onTouchEnd={(e) => e.stopPropagation()}
                         onMouseDown={(e) => e.stopPropagation()}
                         onMouseUp={(e) => e.stopPropagation()}
-                        className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm z-10"
+                        className="shrink-0 mb-4 p-5 bg-blue-50 hover:bg-blue-100 active:bg-blue-200 text-blue-500 rounded-full transition-all cursor-pointer flex items-center justify-center border border-blue-100 shadow-sm [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]"
                         title="Phát âm"
                       >
                         <Volume2 className="w-8 h-8 animate-pulse" />
                       </button>
-                      <p className="text-sm text-slate-400 shrink-0">
+                      <p className="text-sm text-slate-400 shrink-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
                         Chạm vùng trống để xem nghĩa
                       </p>
                     </div>
 
-                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 [transform:rotateY(180deg)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4">
+                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 [transform:rotateY(180deg)_translateZ(1px)] [-webkit-transform:rotateY(180deg)_translateZ(1px)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
                         <p className="my-auto text-2xl font-medium text-white text-center select-none w-full break-words whitespace-pre-wrap">
                           {currentCard.meaning}
                         </p>
