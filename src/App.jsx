@@ -49,9 +49,15 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   const recognitionRef = useRef(null);
   const spokenTextRef = useRef("");
-  const finalTranscriptRef = useRef("");
   const isRecordingRef = useRef(false);
   const isManualStopRef = useRef(false);
+
+  // Ref để lưu câu hiện tại, giúp SpeechRecognition (chỉ khởi tạo 1 lần) luôn truy cập được câu mới nhất
+  const targetSentenceRef = useRef("");
+
+  useEffect(() => {
+    targetSentenceRef.current = sentences[currentIndex];
+  }, [sentences, currentIndex]);
 
   const handleStartPractice = () => {
     if (!fullText || !fullText.trim()) return;
@@ -85,10 +91,10 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setSpokenText("");
     setSelectedWord(null);
     setErrorMsg("");
-    finalTranscriptRef.current = "";
     spokenTextRef.current = "";
   };
 
+  // Khởi tạo SpeechRecognition CHỈ 1 LẦN để tránh treo micro trên Mobile
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -99,18 +105,17 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
-    recognition.continuous = true;
+    // FIX: Đổi continuous thành false. Mobile browser sẽ tự ngắt ghi âm khi người dùng ngừng nói.
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
-      if (!finalTranscriptRef.current) {
-        setSpokenText("");
-        spokenTextRef.current = "";
-        setAnalysisResult(null);
-        setSelectedWord(null);
-        setErrorMsg("");
-      }
+      setSpokenText("");
+      spokenTextRef.current = "";
+      setAnalysisResult(null);
+      setSelectedWord(null);
+      setErrorMsg("");
       setIsRecording(true);
       isRecordingRef.current = true;
     };
@@ -120,48 +125,47 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       for (let i = 0; i < event.results.length; i++) {
         currentTranscript += event.results[i][0].transcript;
       }
-      const fullTextSpoken = finalTranscriptRef.current
-        ? finalTranscriptRef.current + " " + currentTranscript
-        : currentTranscript;
-      setSpokenText(fullTextSpoken);
-      spokenTextRef.current = fullTextSpoken;
+      setSpokenText(currentTranscript);
+      spokenTextRef.current = currentTranscript;
     };
 
     recognition.onend = () => {
-      if (!isManualStopRef.current && isRecordingRef.current) {
-        finalTranscriptRef.current = spokenTextRef.current;
-        try {
-          recognition.start();
-          return;
-        } catch (e) {
-          console.error("Recognition restart failed", e);
-        }
-      }
       setIsRecording(false);
       isRecordingRef.current = false;
-      finalTranscriptRef.current = "";
       isManualStopRef.current = false;
 
-      const targetSentence = sentences[currentIndex];
+      const targetSentence = targetSentenceRef.current;
       if (spokenTextRef.current?.trim() && targetSentence) {
         analyzePronunciation(targetSentence, spokenTextRef.current);
       }
     };
 
     recognition.onerror = (event) => {
+      setIsRecording(false);
+      isRecordingRef.current = false;
+
+      console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed") {
-        setErrorMsg("Vui lòng cho phép truy cập micro để luyện tập.");
+        setErrorMsg(
+          "Chưa cấp quyền micro hoặc trình duyệt không hỗ trợ. Hãy mở bằng Chrome/Safari gốc (đừng mở trực tiếp từ Zalo/Messenger).",
+        );
+      } else if (event.error === "no-speech") {
+        setErrorMsg("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
+      } else if (event.error === "network") {
+        setErrorMsg("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
+      } else if (event.error !== "aborted") {
+        setErrorMsg(`Lỗi micro: ${event.error}`);
       }
     };
 
     recognitionRef.current = recognition;
+
     return () => {
       if (recognitionRef.current) {
-        isManualStopRef.current = true;
-        recognitionRef.current.stop();
+        recognitionRef.current.abort();
       }
     };
-  }, [currentIndex, sentences]);
+  }, []); // Array rỗng -> Chỉ chạy 1 lần khi mount
 
   const toggleRecording = () => {
     if (!browserSupported) {
@@ -172,12 +176,11 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
     if (isRecording) {
       isManualStopRef.current = true;
-      recognitionRef.current.stop();
+      recognitionRef.current.stop(); // Tự động kích hoạt onend
     } else {
       isManualStopRef.current = false;
-      finalTranscriptRef.current = "";
-      spokenTextRef.current = "";
       setSpokenText("");
+      spokenTextRef.current = "";
       setAnalysisResult(null);
       setErrorMsg("");
       try {
@@ -194,6 +197,8 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     const originalWords = target.trim().split(/\s+/);
     const spokenCleanWords = spoken.trim().split(/\s+/).map(cleanWord);
     let score = 0;
+
+    // Đảm bảo setAnalysisResult chạy ổn định
     const result = originalWords.map((origWord) => {
       const cleanOrig = cleanWord(origWord);
       const isCorrect = spokenCleanWords.includes(cleanOrig);
@@ -377,8 +382,8 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
         {(isRecording || errorMsg) && (
           <div className="absolute bottom-0 left-0 w-full bg-slate-50 p-4 border-t border-slate-100 flex flex-col items-center">
             {errorMsg ? (
-              <p className="text-red-500 text-sm font-medium flex items-center gap-2">
-                <AlertCircle size={14} /> {errorMsg}
+              <p className="text-red-500 text-xs font-medium flex items-center gap-2 text-center">
+                <AlertCircle size={16} className="shrink-0" /> {errorMsg}
               </p>
             ) : (
               <p className="text-center text-slate-500 italic text-sm animate-pulse">
@@ -539,6 +544,7 @@ export default function App() {
   // --- STATE QUẢN LÝ DỮ LIỆU ---
   const [cards, setCards] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [globalMessage, setGlobalMessage] = useState(null); // Thay thế alert
   // Tab hiện tại: 'input', 'study', 'unknown', 'known', 'pronunciation'
   const [activeTab, setActiveTab] = useState("input");
   const [deckInput, setDeckInput] = useState("Tất cả");
@@ -609,9 +615,11 @@ export default function App() {
         }
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
-        alert(
-          "Lỗi kết nối Google Sheets (Failed to fetch).\n\n1. Hãy đảm bảo bạn đã tạo 'Trình triển khai mới' (New deployment) trên Apps Script sau khi đổi code.\n2. Quyền truy cập (Who has access) phải là 'Anyone' (Bất kỳ ai).",
-        );
+        setGlobalMessage({
+          type: "error",
+          title: "Lỗi kết nối máy chủ",
+          text: "Không thể kết nối đến Google Sheets (Lỗi 404). Ứng dụng sẽ chạy tạm thời bằng dữ liệu trống. Hãy kiểm tra lại SHEET_URL hoặc deploy lại Apps Script để đồng bộ!",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -623,7 +631,11 @@ export default function App() {
   // --- CHỨC NĂNG EXPORT VÀ SYNC ---
   const exportToCSV = () => {
     if (cards.length === 0) {
-      alert("Không có từ vựng nào để xuất!");
+      setGlobalMessage({
+        type: "warning",
+        title: "Dữ liệu trống",
+        text: "Không có từ vựng nào để xuất!",
+      });
       return;
     }
 
@@ -1649,6 +1661,31 @@ export default function App() {
           </span>
         </button>
       </nav>
+
+      {/* --- GLOBAL MESSAGE MODAL --- */}
+      {globalMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
+            <div
+              className={`p-4 flex items-center gap-3 ${globalMessage.type === "error" ? "bg-red-50 text-red-600" : "bg-amber-50 text-amber-600"}`}
+            >
+              <AlertCircle className="w-6 h-6" />
+              <h3 className="font-bold text-lg">{globalMessage.title}</h3>
+            </div>
+            <div className="p-5 text-slate-600 text-sm leading-relaxed">
+              {globalMessage.text}
+            </div>
+            <div className="p-4 border-t border-slate-100 flex justify-end">
+              <button
+                onClick={() => setGlobalMessage(null)}
+                className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
