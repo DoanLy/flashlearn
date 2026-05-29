@@ -823,6 +823,7 @@ export default function App() {
   // --- CHỨC NĂNG HỌC TẬP (STUDY) ---
   const [studyQueue, setStudyQueue] = useState([]);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [isReverseStudy, setIsReverseStudy] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -841,6 +842,10 @@ export default function App() {
   }, [activeTab, deckInput]);
 
   const currentCard = studyQueue[0];
+  const frontText = isReverseStudy ? currentCard?.meaning : currentCard?.word;
+  const backText = isReverseStudy ? currentCard?.word : currentCard?.meaning;
+  const frontIsMeaning = isReverseStudy;
+  const backIsWord = isReverseStudy;
 
   const speakWord = (text) => {
     if ("speechSynthesis" in window) {
@@ -861,6 +866,12 @@ export default function App() {
 
   const handleCardClick = () => {
     setIsFlipped(!isFlipped);
+  };
+
+  const handleToggleStudyDirection = () => {
+    setIsReverseStudy((prev) => !prev);
+    setIsFlipped(false);
+    setSwipeOffset(0);
   };
 
   const handleSwipeAction = (action) => {
@@ -1251,6 +1262,19 @@ export default function App() {
         {activeTab === "study" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col items-center">
             <DeckFilter />
+            <button
+              type="button"
+              onClick={handleToggleStudyDirection}
+              className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold shadow-sm transition-colors ${
+                isReverseStudy
+                  ? "border-blue-200 bg-blue-600 text-white hover:bg-blue-700"
+                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              }`}
+              title="Đổi chiều học"
+            >
+              <RotateCcw className="w-4 h-4" />
+              {isReverseStudy ? "Nghĩa -> Từ" : "Từ -> Nghĩa"}
+            </button>
             <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 text-center">
               <span className="text-xs font-normal">
                 Đang học: {studyQueue.length} từ
@@ -1307,10 +1331,17 @@ export default function App() {
                   >
                     <div className="absolute inset-0 w-full h-full bg-white rounded-3xl shadow-lg border border-slate-100 flex flex-col items-center p-6 pb-5 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(1px)] [-webkit-transform:translateZ(1px)]">
                       <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 mb-4 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
-                        <p className="my-auto text-3xl font-bold text-slate-800 text-center select-none w-full break-words whitespace-pre-wrap">
-                          {currentCard.word}
+                        <p
+                          className={`my-auto text-center select-none w-full break-words whitespace-pre-wrap ${
+                            frontIsMeaning
+                              ? "text-2xl font-medium text-slate-700"
+                              : "text-3xl font-bold text-slate-800"
+                          }`}
+                        >
+                          {frontText}
                         </p>
                       </div>
+                      {!frontIsMeaning && (
                       <button
                         onClick={(e) => {
                           e.preventDefault();
@@ -1326,17 +1357,43 @@ export default function App() {
                       >
                         <Volume2 className="w-8 h-8 animate-pulse" />
                       </button>
+                      )}
                       <p className="text-sm text-slate-400 shrink-0 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
-                        Chạm vùng trống để xem nghĩa
+                        {isReverseStudy
+                          ? "Chạm vùng trống để xem từ"
+                          : "Chạm vùng trống để xem nghĩa"}
                       </p>
                     </div>
 
-                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 [transform:rotateY(180deg)_translateZ(1px)] [-webkit-transform:rotateY(180deg)_translateZ(1px)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+                    <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 pb-5 [transform:rotateY(180deg)_translateZ(1px)] [-webkit-transform:rotateY(180deg)_translateZ(1px)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
                       <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
-                        <p className="my-auto text-2xl font-medium text-white text-center select-none w-full break-words whitespace-pre-wrap">
-                          {currentCard.meaning}
+                        <p
+                          className={`my-auto text-white text-center select-none w-full break-words whitespace-pre-wrap ${
+                            backIsWord
+                              ? "text-3xl font-bold"
+                              : "text-2xl font-medium"
+                          }`}
+                        >
+                          {backText}
                         </p>
                       </div>
+                      {backIsWord && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            speakWord(currentCard.word);
+                          }}
+                          onTouchStart={(e) => e.stopPropagation()}
+                          onTouchEnd={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onMouseUp={(e) => e.stopPropagation()}
+                          className="shrink-0 p-4 bg-white/15 hover:bg-white/25 active:bg-white/30 text-white rounded-full transition-all cursor-pointer flex items-center justify-center border border-white/20 shadow-sm [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]"
+                          title="PhÃ¡t Ã¢m"
+                        >
+                          <Volume2 className="w-7 h-7 animate-pulse" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
