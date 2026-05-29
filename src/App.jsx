@@ -416,6 +416,16 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   {analysisResult.accuracy}% Chính xác
                 </div>
               </div>
+              {spokenText?.trim() && (
+                <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Hệ thống nghe được
+                  </p>
+                  <p className="text-sm font-medium leading-relaxed text-slate-700">
+                    “{spokenText}”
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
