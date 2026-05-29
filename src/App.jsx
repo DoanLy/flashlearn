@@ -49,8 +49,12 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   const recognitionRef = useRef(null);
   const spokenTextRef = useRef("");
+  const accumulatedTranscriptRef = useRef("");
+  const sessionTranscriptRef = useRef("");
   const isRecordingRef = useRef(false);
   const isManualStopRef = useRef(false);
+  const shouldKeepListeningRef = useRef(false);
+  const restartTimerRef = useRef(null);
 
   // Ref để lưu câu hiện tại, giúp SpeechRecognition (chỉ khởi tạo 1 lần) luôn truy cập được câu mới nhất
   const targetSentenceRef = useRef("");
@@ -92,6 +96,8 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setSelectedWord(null);
     setErrorMsg("");
     spokenTextRef.current = "";
+    accumulatedTranscriptRef.current = "";
+    sessionTranscriptRef.current = "";
   };
 
   // Khởi tạo SpeechRecognition CHỈ 1 LẦN để tránh treo micro trên Mobile
@@ -111,8 +117,7 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
-      setSpokenText("");
-      spokenTextRef.current = "";
+      sessionTranscriptRef.current = "";
       setAnalysisResult(null);
       setSelectedWord(null);
       setErrorMsg("");
@@ -121,21 +126,42 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     };
 
     recognition.onresult = (event) => {
-      let currentTranscript = "";
+      let sessionTranscript = "";
       for (let i = 0; i < event.results.length; i++) {
-        currentTranscript += event.results[i][0].transcript;
+        sessionTranscript += event.results[i][0].transcript;
       }
-      setSpokenText(currentTranscript);
-      spokenTextRef.current = currentTranscript;
+      sessionTranscriptRef.current = sessionTranscript;
+      const fullTranscript =
+        `${accumulatedTranscriptRef.current} ${sessionTranscript}`.trim();
+      setSpokenText(fullTranscript);
+      spokenTextRef.current = fullTranscript;
     };
 
     recognition.onend = () => {
+      const targetSentence = targetSentenceRef.current;
+      const shouldAnalyze = isManualStopRef.current;
+      const shouldRestart = shouldKeepListeningRef.current && !shouldAnalyze;
+
+      if (shouldRestart) {
+        accumulatedTranscriptRef.current = spokenTextRef.current || "";
+        restartTimerRef.current = window.setTimeout(() => {
+          try {
+            recognition.start();
+          } catch (error) {
+            console.error("Mic restart error", error);
+            setIsRecording(false);
+            isRecordingRef.current = false;
+          }
+        }, 120);
+        return;
+      }
+
       setIsRecording(false);
       isRecordingRef.current = false;
+      shouldKeepListeningRef.current = false;
       isManualStopRef.current = false;
 
-      const targetSentence = targetSentenceRef.current;
-      if (spokenTextRef.current?.trim() && targetSentence) {
+      if (shouldAnalyze && spokenTextRef.current?.trim() && targetSentence) {
         analyzePronunciation(targetSentence, spokenTextRef.current);
       }
     };
@@ -146,14 +172,19 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
       console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed") {
+        shouldKeepListeningRef.current = false;
         setErrorMsg(
           "Chưa cấp quyền micro hoặc trình duyệt không hỗ trợ. Hãy mở bằng Chrome/Safari gốc (đừng mở trực tiếp từ Zalo/Messenger).",
         );
       } else if (event.error === "no-speech") {
-        setErrorMsg("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
+        if (!shouldKeepListeningRef.current) {
+          setErrorMsg("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
+        }
       } else if (event.error === "network") {
+        shouldKeepListeningRef.current = false;
         setErrorMsg("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
       } else if (event.error !== "aborted") {
+        shouldKeepListeningRef.current = false;
         setErrorMsg(`Lỗi micro: ${event.error}`);
       }
     };
@@ -161,6 +192,9 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     recognitionRef.current = recognition;
 
     return () => {
+      if (restartTimerRef.current) {
+        window.clearTimeout(restartTimerRef.current);
+      }
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
@@ -176,11 +210,18 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
     if (isRecording) {
       isManualStopRef.current = true;
+      shouldKeepListeningRef.current = false;
+      if (restartTimerRef.current) {
+        window.clearTimeout(restartTimerRef.current);
+      }
       recognitionRef.current.stop(); // Tự động kích hoạt onend
     } else {
       isManualStopRef.current = false;
+      shouldKeepListeningRef.current = true;
       setSpokenText("");
       spokenTextRef.current = "";
+      accumulatedTranscriptRef.current = "";
+      sessionTranscriptRef.current = "";
       setAnalysisResult(null);
       setErrorMsg("");
       try {
