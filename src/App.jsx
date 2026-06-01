@@ -24,6 +24,7 @@ import {
   ChevronRight,
   Languages,
   BookmarkPlus,
+  Search,
 } from "lucide-react";
 
 // ============================================================================
@@ -604,6 +605,7 @@ export default function App() {
   const [meaningInput, setMeaningInput] = useState("");
   const [inputMode, setInputMode] = useState("single");
   const [bulkInput, setBulkInput] = useState("");
+  const [searchInput, setSearchInput] = useState("");
 
   // States cho tính năng chỉnh sửa
   const [editingId, setEditingId] = useState(null);
@@ -632,6 +634,17 @@ export default function App() {
   // Hàm kiểm tra thẻ có thuộc chủ đề đang chọn không
   const isCardInCurrentDeck = (card) =>
     deckInput === "Tất cả" || (card.deck || "Chung") === deckInput;
+
+  const normalizedSearchInput = searchInput.trim().toLocaleLowerCase("vi");
+  const visibleCards = cards.filter((card) => {
+    if (!normalizedSearchInput) return isCardInCurrentDeck(card);
+
+    return [card.word, card.meaning, card.deck].some((value) =>
+      String(value || "")
+        .toLocaleLowerCase("vi")
+        .includes(normalizedSearchInput),
+    );
+  });
 
   // --- TẢI DỮ LIỆU TỪ GOOGLE SHEETS LÚC KHỞI ĐỘNG ---
   useEffect(() => {
@@ -1205,19 +1218,44 @@ export default function App() {
                   Danh sách: {deckInput}
                 </h3>
                 <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
-                  {cards.filter((c) => isCardInCurrentDeck(c)).length} từ
+                  {normalizedSearchInput
+                    ? `${visibleCards.length} kết quả`
+                    : `${visibleCards.length} từ`}
                 </span>
               </div>
 
-              {cards.filter((c) => isCardInCurrentDeck(c)).length === 0 ? (
+              <div className="relative mb-4">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="search"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Tìm từ đã nhập..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                />
+                {searchInput && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchInput("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                    title="Xóa tìm kiếm"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {visibleCards.length === 0 ? (
                 <div className="text-center py-10 text-slate-400 bg-white rounded-xl shadow-sm border border-slate-100">
                   <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                  <p>Chưa có từ vựng nào trong chủ đề này.</p>
+                  <p>
+                    {normalizedSearchInput
+                      ? "Chưa tìm thấy từ này trong hệ thống."
+                      : "Chưa có từ vựng nào trong chủ đề này."}
+                  </p>
                 </div>
               ) : (
-                cards
-                  .filter((c) => isCardInCurrentDeck(c))
-                  .map((card) => (
+                visibleCards.map((card) => (
                     <div
                       key={card.id}
                       className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center group"
