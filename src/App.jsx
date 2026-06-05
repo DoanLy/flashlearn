@@ -891,8 +891,25 @@ export default function App() {
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
+  const [isAdvancingCard, setIsAdvancingCard] = useState(false);
+  const advanceTimerRef = useRef(null);
+  const STUDY_CARD_ADVANCE_DELAY = 2000;
 
   useEffect(() => {
+    return () => {
+      if (advanceTimerRef.current) {
+        clearTimeout(advanceTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (advanceTimerRef.current) {
+      clearTimeout(advanceTimerRef.current);
+      advanceTimerRef.current = null;
+    }
+    setIsAdvancingCard(false);
+
     if (activeTab === "study") {
       const cardsToStudy = cards.filter(
         (c) =>
@@ -929,17 +946,19 @@ export default function App() {
   };
 
   const handleCardClick = () => {
+    if (isAdvancingCard) return;
     setIsFlipped(!isFlipped);
   };
 
   const handleToggleStudyDirection = () => {
+    if (isAdvancingCard) return;
     setIsReverseStudy((prev) => !prev);
     setIsFlipped(false);
     setSwipeOffset(0);
   };
 
   const handleSwipeAction = (action) => {
-    if (!currentCard) return;
+    if (!currentCard || advanceTimerRef.current) return;
 
     const newStatus = action === "known" ? "known" : "unknown";
 
@@ -950,25 +969,38 @@ export default function App() {
     setCards(updatedCards);
     syncDataToSheets(updatedCards); // Cập nhật trạng thái học lên Sheet
 
-    setStudyQueue((prevQueue) => prevQueue.slice(1));
-    setIsFlipped(false);
+    setIsAdvancingCard(true);
     setSwipeOffset(0);
+
+    advanceTimerRef.current = setTimeout(() => {
+      setStudyQueue((prevQueue) => prevQueue.slice(1));
+      setIsFlipped(false);
+      setSwipeOffset(0);
+      setIsAdvancingCard(false);
+      advanceTimerRef.current = null;
+    }, STUDY_CARD_ADVANCE_DELAY);
   };
 
   const handleDragStart = (clientX) => {
+    if (isAdvancingCard) return;
     setStartX(clientX);
     setIsDragging(true);
     setSwipeOffset(0);
   };
 
   const handleDragMove = (clientX) => {
-    if (!isDragging) return;
+    if (!isDragging || isAdvancingCard) return;
     const deltaX = clientX - startX;
     setSwipeOffset(deltaX);
   };
 
   const handleDragEnd = () => {
     if (!isDragging) return;
+    if (isAdvancingCard) {
+      setIsDragging(false);
+      setSwipeOffset(0);
+      return;
+    }
     setIsDragging(false);
 
     if (swipeOffset > 100) {
@@ -1491,7 +1523,8 @@ export default function App() {
                 <div className="flex justify-center gap-6 w-full max-w-sm px-4">
                   <button
                     onClick={() => handleSwipeAction("unknown")}
-                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-red-100 rounded-2xl hover:bg-red-50 text-red-500 transition-colors shadow-sm"
+                    disabled={isAdvancingCard}
+                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-red-100 rounded-2xl hover:bg-red-50 text-red-500 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <X className="w-8 h-8 mb-1" />
                     <span className="text-xs font-bold uppercase tracking-wider">
@@ -1504,7 +1537,8 @@ export default function App() {
 
                   <button
                     onClick={() => handleSwipeAction("known")}
-                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-green-100 rounded-2xl hover:bg-green-50 text-green-500 transition-colors shadow-sm"
+                    disabled={isAdvancingCard}
+                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-green-100 rounded-2xl hover:bg-green-50 text-green-500 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Check className="w-8 h-8 mb-1" />
                     <span className="text-xs font-bold uppercase tracking-wider">
