@@ -25,6 +25,7 @@ import {
   Languages,
   BookmarkPlus,
   Search,
+  Trophy,
 } from "lucide-react";
 
 // ============================================================================
@@ -583,6 +584,491 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           className="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-600 disabled:opacity-30 shadow-md border border-slate-100"
         >
           <ChevronRight size={24} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// HELPER
+// ============================================================================
+const shuffleArr = (arr) => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+// ============================================================================
+// COMPONENT: QuizGame
+// ============================================================================
+const QuizGame = ({ cards, onClose }) => {
+  const maxWords = Math.min(cards.length, 50);
+  const minWords = Math.min(5, cards.length);
+
+  const [phase, setPhase] = useState("setup");
+  const [wordCount, setWordCount] = useState(Math.min(10, cards.length));
+  const [questions, setQuestions] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+
+  const startGame = () => {
+    const priority = shuffleArr(cards.filter((c) => c.status === "unknown" || c.status === "new"));
+    const rest = shuffleArr(cards.filter((c) => c.status === "known"));
+    const pool = [...priority, ...rest].slice(0, wordCount);
+
+    const qs = pool.map((card) => {
+      const distractors = shuffleArr(cards.filter((c) => c.id !== card.id))
+        .slice(0, 3)
+        .map((c) => c.word);
+      return {
+        meaning: card.meaning,
+        correct: card.word,
+        options: shuffleArr([card.word, ...distractors]),
+      };
+    });
+
+    setQuestions(qs);
+    setCurrentIdx(0);
+    setScore(0);
+    setSelected(null);
+    setShowFeedback(false);
+    setPhase("playing");
+  };
+
+  const handleSelect = (option) => {
+    if (showFeedback) return;
+    setSelected(option);
+    setShowFeedback(true);
+    if (option === questions[currentIdx].correct) setScore((s) => s + 1);
+    setTimeout(() => {
+      if (currentIdx + 1 >= questions.length) {
+        setPhase("result");
+      } else {
+        setCurrentIdx((i) => i + 1);
+        setSelected(null);
+        setShowFeedback(false);
+      }
+    }, 1200);
+  };
+
+  if (phase === "setup") {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-6 px-6">
+        <div className="text-5xl">❓</div>
+        <h2 className="text-2xl font-bold text-slate-800">Kiểm tra</h2>
+        <p className="text-slate-500 text-sm text-center">
+          Xem nghĩa tiếng Việt, chọn từ tiếng Anh đúng
+        </p>
+
+        <div className="w-full max-w-xs">
+          <label className="text-sm font-medium text-slate-600 mb-2 block">
+            Số từ mỗi lượt:{" "}
+            <span className="text-blue-600 font-bold">{wordCount}</span>
+          </label>
+          <input
+            type="range"
+            min={minWords}
+            max={maxWords}
+            value={wordCount}
+            onChange={(e) => setWordCount(+e.target.value)}
+            className="w-full accent-blue-600"
+          />
+          <div className="flex justify-between text-xs text-slate-400 mt-1">
+            <span>{minWords}</span>
+            <span>{maxWords}</span>
+          </div>
+        </div>
+
+        {cards.length < 4 ? (
+          <p className="text-sm text-red-500">Cần ít nhất 4 từ để chơi.</p>
+        ) : (
+          <button
+            onClick={startGame}
+            className="w-full max-w-xs py-3 bg-blue-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+          >
+            Bắt đầu
+          </button>
+        )}
+        <button onClick={onClose} className="text-slate-400 text-sm underline">
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "result") {
+    const pct = Math.round((score / questions.length) * 100);
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
+        <div className="text-6xl">{pct >= 80 ? "🎉" : pct >= 50 ? "👍" : "💪"}</div>
+        <h2 className="text-2xl font-bold text-slate-800">Kết quả</h2>
+        <div className="bg-blue-50 rounded-3xl px-10 py-6 text-center">
+          <p className="text-5xl font-bold text-blue-600">
+            {score}/{questions.length}
+          </p>
+          <p className="text-slate-500 mt-1">{pct}% chính xác</p>
+        </div>
+        <button
+          onClick={startGame}
+          className="w-full max-w-xs py-3 bg-blue-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+        >
+          Chơi lại
+        </button>
+        <button onClick={onClose} className="text-slate-400 text-sm underline">
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
+  const q = questions[currentIdx];
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-4 pt-4 pb-2">
+        <div className="flex justify-between items-center text-sm mb-2">
+          <button
+            onClick={onClose}
+            className="p-1 text-slate-400 hover:text-slate-600"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+          <span className="text-slate-500">
+            Câu {currentIdx + 1}/{questions.length}
+          </span>
+          <span className="text-blue-600 font-bold">{score} đúng</span>
+        </div>
+        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-blue-500 rounded-full transition-all duration-300"
+            style={{ width: `${(currentIdx / questions.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6">
+        <div className="bg-slate-50 rounded-3xl p-7 text-center shadow-sm min-h-[120px] flex items-center justify-center">
+          <p className="text-xl font-bold text-slate-800 leading-relaxed">
+            {q.meaning}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs uppercase tracking-widest text-slate-400 mb-3 text-center">
+            Chọn đáp án đúng
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {q.options.map((opt, i) => {
+              let cls =
+                "p-4 rounded-2xl border-2 text-sm font-medium text-center transition-all active:scale-95 min-h-[72px] flex items-center justify-center ";
+              if (!showFeedback) {
+                cls +=
+                  "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50";
+              } else if (opt === q.correct) {
+                cls += "border-green-500 bg-green-50 text-green-700";
+              } else if (opt === selected) {
+                cls += "border-red-400 bg-red-50 text-red-600";
+              } else {
+                cls += "border-slate-100 bg-slate-50 text-slate-400";
+              }
+              return (
+                <button key={i} onClick={() => handleSelect(opt)} className={cls}>
+                  <span className="line-clamp-2 leading-snug">{opt}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {!showFeedback && (
+          <button
+            onClick={() => handleSelect("__skip__")}
+            className="text-slate-400 text-sm underline self-center"
+          >
+            Bạn không biết?
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// COMPONENT: MatchGame
+// ============================================================================
+const MatchGame = ({ cards, onClose }) => {
+  const PAIRS = Math.min(5, cards.length);
+  const sessionQueueRef = useRef(null);
+  const timerRef = useRef(null);
+
+  const [tiles, setTiles] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [wrongPair, setWrongPair] = useState(null);
+  const [matchedIds, setMatchedIds] = useState(new Set());
+  const [time, setTime] = useState(0);
+  const [roundsPlayed, setRoundsPlayed] = useState(0);
+  const [phase, setPhase] = useState("playing");
+  const [lastRoundTime, setLastRoundTime] = useState(0);
+
+  const buildQueue = () => {
+    const priority = shuffleArr(
+      cards.filter((c) => c.status === "unknown" || c.status === "new"),
+    );
+    const rest = shuffleArr(cards.filter((c) => c.status === "known"));
+    return [...priority, ...rest];
+  };
+
+  const startRound = (queue) => {
+    const pairsCount = Math.min(PAIRS, queue.length);
+    const batch = queue.slice(0, pairsCount);
+    const newTiles = shuffleArr(
+      batch.flatMap((card, i) => [
+        { id: `w${i}`, type: "word", text: card.word, pairId: i },
+        { id: `m${i}`, type: "meaning", text: card.meaning, pairId: i },
+      ]),
+    );
+    setTiles(newTiles);
+    setMatchedIds(new Set());
+    setSelected(null);
+    setWrongPair(null);
+    setTime(0);
+    setPhase("playing");
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setTime((t) => t + 1), 1000);
+    return queue.slice(pairsCount);
+  };
+
+  useEffect(() => {
+    const q = buildQueue();
+    const remaining = startRound(q);
+    sessionQueueRef.current = remaining;
+    return () => clearInterval(timerRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleTile = (idx) => {
+    if (wrongPair || phase !== "playing") return;
+    const tile = tiles[idx];
+    if (matchedIds.has(tile.pairId)) return;
+    if (selected === idx) {
+      setSelected(null);
+      return;
+    }
+    if (selected === null) {
+      setSelected(idx);
+      return;
+    }
+
+    const selTile = tiles[selected];
+    if (selTile.pairId === tile.pairId && selTile.type !== tile.type) {
+      const newMatched = new Set(matchedIds);
+      newMatched.add(tile.pairId);
+      setMatchedIds(newMatched);
+      setSelected(null);
+
+      const totalPairs = tiles.length / 2;
+      if (newMatched.size >= totalPairs) {
+        clearInterval(timerRef.current);
+        setLastRoundTime(time);
+        setRoundsPlayed((r) => r + 1);
+        setTimeout(() => setPhase("roundEnd"), 500);
+      }
+    } else {
+      setWrongPair([selected, idx]);
+      setTimeout(() => {
+        setWrongPair(null);
+        setSelected(null);
+      }, 700);
+    }
+  };
+
+  const nextRound = () => {
+    let q = sessionQueueRef.current;
+    if (!q || q.length === 0) {
+      q = buildQueue();
+    }
+    const remaining = startRound(q);
+    sessionQueueRef.current = remaining;
+  };
+
+  if (cards.length < 2) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
+        <p className="text-slate-500">Cần ít nhất 2 từ để chơi.</p>
+        <button onClick={onClose} className="text-slate-400 text-sm underline">
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
+  if (phase === "roundEnd") {
+    const hasMore = (sessionQueueRef.current?.length ?? 0) > 0;
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
+        <div className="text-6xl">🎯</div>
+        <h2 className="text-xl font-bold text-slate-800">
+          Hoàn thành vòng {roundsPlayed}!
+        </h2>
+        <div className="bg-purple-50 rounded-3xl px-10 py-5 text-center">
+          <p className="text-4xl font-bold text-purple-600">{lastRoundTime}s</p>
+          <p className="text-slate-500 text-sm mt-1">thời gian hoàn thành</p>
+        </div>
+
+        {hasMore ? (
+          <button
+            onClick={nextRound}
+            className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+          >
+            Vòng tiếp theo →
+          </button>
+        ) : (
+          <>
+            <p className="text-slate-400 text-sm text-center">
+              Đã ôn hết tất cả từ! Bắt đầu lại?
+            </p>
+            <button
+              onClick={() => {
+                setRoundsPlayed(0);
+                const q = buildQueue();
+                const remaining = startRound(q);
+                sessionQueueRef.current = remaining;
+              }}
+              className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+            >
+              Chơi lại
+            </button>
+          </>
+        )}
+        <button onClick={onClose} className="text-slate-400 text-sm underline">
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+        <button
+          onClick={onClose}
+          className="p-1 text-slate-400 hover:text-slate-600"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="text-slate-700 font-mono text-xl font-bold">{time}s</div>
+        <div className="text-sm text-slate-400">Vòng {roundsPlayed + 1}</div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 p-4 flex-1 content-start">
+        {tiles.map((tile, idx) => {
+          const isMatched = matchedIds.has(tile.pairId);
+          const isSelected = selected === idx;
+          const isWrong = wrongPair?.includes(idx);
+
+          if (isMatched) {
+            return <div key={tile.id} className="aspect-[4/3] rounded-2xl" />;
+          }
+
+          let cls =
+            "aspect-[4/3] rounded-2xl border-2 flex items-center justify-center p-3 text-center text-sm font-medium cursor-pointer transition-all active:scale-95 ";
+          if (isWrong) cls += "border-red-400 bg-red-50 text-red-600";
+          else if (isSelected)
+            cls += "border-blue-500 bg-blue-50 text-blue-700 scale-[0.97]";
+          else
+            cls +=
+              "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50";
+
+          return (
+            <button
+              key={tile.id}
+              onClick={() => handleTile(idx)}
+              className={cls}
+            >
+              <span className="line-clamp-3 leading-snug">{tile.text}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// COMPONENT: GameTab (màn hình chọn trò chơi)
+// ============================================================================
+const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
+  const [activeGame, setActiveGame] = useState(null);
+
+  const deckCards =
+    deckInput === "Tất cả"
+      ? cards
+      : cards.filter((c) => (c.deck || "Chung") === deckInput);
+
+  if (activeGame === "quiz")
+    return <QuizGame cards={deckCards} onClose={() => setActiveGame(null)} />;
+  if (activeGame === "match")
+    return <MatchGame cards={deckCards} onClose={() => setActiveGame(null)} />;
+
+  return (
+    <div className="p-4 flex flex-col gap-5">
+      <h2 className="text-xl font-bold text-slate-800">Trò chơi</h2>
+
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {existingDecks.map((d) => (
+          <button
+            key={d}
+            onClick={() => onDeckChange(d)}
+            className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+              deckInput === d
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-slate-600 border-slate-200 hover:border-blue-300"
+            }`}
+          >
+            {d}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-sm text-slate-500">
+        {deckCards.length} từ trong chủ đề{" "}
+        <strong className="text-slate-700">{deckInput}</strong>
+      </p>
+
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => setActiveGame("quiz")}
+          disabled={deckCards.length < 4}
+          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+        >
+          <div className="text-3xl mb-2">❓</div>
+          <p className="text-lg font-bold">Kiểm tra</p>
+          <p className="text-blue-100 text-sm mt-0.5">
+            Xem nghĩa → Chọn từ đúng trong 4 đáp án
+          </p>
+          {deckCards.length < 4 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 4 từ</p>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveGame("match")}
+          disabled={deckCards.length < 2}
+          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+        >
+          <div className="text-3xl mb-2">🎯</div>
+          <p className="text-lg font-bold">Ghép thẻ</p>
+          <p className="text-violet-100 text-sm mt-0.5">
+            Ghép từ với nghĩa · 5 cặp/vòng · Đua thời gian
+          </p>
+          {deckCards.length < 2 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 2 từ</p>
+          )}
         </button>
       </div>
     </div>
@@ -1764,6 +2250,16 @@ export default function App() {
             existingDecks={existingDecks}
           />
         )}
+
+        {/* --- TAB: GAME --- */}
+        {activeTab === "game" && (
+          <GameTab
+            cards={cards}
+            deckInput={deckInput}
+            existingDecks={existingDecks}
+            onDeckChange={setDeckInput}
+          />
+        )}
       </main>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
@@ -1838,6 +2334,21 @@ export default function App() {
           <Mic className="w-5 h-5 mb-1" />
           <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
             Phát âm
+          </span>
+        </button>
+
+        {/* NÚT TAB MỚI: GAME */}
+        <button
+          onClick={() => setActiveTab("game")}
+          className={`flex-1 flex flex-col items-center py-2.5 relative ${
+            activeTab === "game"
+              ? "text-amber-500 font-bold"
+              : "text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          <Trophy className="w-5 h-5 mb-1" />
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            Game
           </span>
         </button>
       </nav>
