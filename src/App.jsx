@@ -618,9 +618,7 @@ const QuizGame = ({ cards, onClose }) => {
   const [showFeedback, setShowFeedback] = useState(false);
 
   const startGame = () => {
-    const priority = shuffleArr(cards.filter((c) => c.status === "unknown" || c.status === "new"));
-    const rest = shuffleArr(cards.filter((c) => c.status === "known"));
-    const pool = [...priority, ...rest].slice(0, wordCount);
+    const pool = shuffleArr(cards.filter((c) => c.status === "known")).slice(0, wordCount);
 
     const qs = pool.map((card) => {
       const distractors = shuffleArr(cards.filter((c) => c.id !== card.id))
@@ -817,11 +815,7 @@ const MatchGame = ({ cards, onClose }) => {
   const [timeLeft, setTimeLeft] = useState(COUNTDOWN);
 
   const buildQueue = () => {
-    const priority = shuffleArr(
-      cards.filter((c) => c.status === "unknown" || c.status === "new"),
-    );
-    const rest = shuffleArr(cards.filter((c) => c.status === "known"));
-    return [...priority, ...rest];
+    return shuffleArr(cards.filter((c) => c.status === "known"));
   };
 
   const startRound = (queue) => {
@@ -1042,10 +1036,12 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
       ? cards
       : cards.filter((c) => (c.deck || "Chung") === deckInput);
 
+  const knownCards = deckCards.filter((c) => c.status === "known");
+
   if (activeGame === "quiz")
-    return <QuizGame cards={deckCards} onClose={() => setActiveGame(null)} />;
+    return <QuizGame cards={knownCards} onClose={() => setActiveGame(null)} />;
   if (activeGame === "match")
-    return <MatchGame cards={deckCards} onClose={() => setActiveGame(null)} />;
+    return <MatchGame cards={knownCards} onClose={() => setActiveGame(null)} />;
 
   return (
     <div className="p-4 flex flex-col gap-5">
@@ -1068,14 +1064,15 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
       </div>
 
       <p className="text-sm text-slate-500">
-        {deckCards.length} từ trong chủ đề{" "}
+        <strong className="text-green-600">{knownCards.length}</strong> từ đã thuộc
+        {" "}/ {deckCards.length} từ trong chủ đề{" "}
         <strong className="text-slate-700">{deckInput}</strong>
       </p>
 
       <div className="flex flex-col gap-4">
         <button
           onClick={() => setActiveGame("quiz")}
-          disabled={deckCards.length < 4}
+          disabled={knownCards.length < 4}
           className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">❓</div>
@@ -1083,14 +1080,14 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           <p className="text-blue-100 text-sm mt-0.5">
             Xem nghĩa → Chọn từ đúng trong 4 đáp án
           </p>
-          {deckCards.length < 4 && (
-            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 4 từ</p>
+          {knownCards.length < 4 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 4 từ đã thuộc</p>
           )}
         </button>
 
         <button
           onClick={() => setActiveGame("match")}
-          disabled={deckCards.length < 2}
+          disabled={knownCards.length < 2}
           className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🎯</div>
@@ -1098,8 +1095,8 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           <p className="text-violet-100 text-sm mt-0.5">
             Ghép từ với nghĩa · 5 cặp/vòng · Đua thời gian
           </p>
-          {deckCards.length < 2 && (
-            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 2 từ</p>
+          {knownCards.length < 2 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 2 từ đã thuộc</p>
           )}
         </button>
       </div>
