@@ -803,6 +803,7 @@ const QuizGame = ({ cards, onClose }) => {
 // ============================================================================
 const MatchGame = ({ cards, onClose }) => {
   const PAIRS = Math.min(5, cards.length);
+  const COUNTDOWN = 15;
   const sessionQueueRef = useRef(null);
   const timerRef = useRef(null);
 
@@ -810,10 +811,10 @@ const MatchGame = ({ cards, onClose }) => {
   const [selected, setSelected] = useState(null);
   const [wrongPair, setWrongPair] = useState(null);
   const [matchedIds, setMatchedIds] = useState(new Set());
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(COUNTDOWN);
   const [roundsPlayed, setRoundsPlayed] = useState(0);
   const [phase, setPhase] = useState("playing");
-  const [lastRoundTime, setLastRoundTime] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(COUNTDOWN);
 
   const buildQueue = () => {
     const priority = shuffleArr(
@@ -836,10 +837,10 @@ const MatchGame = ({ cards, onClose }) => {
     setMatchedIds(new Set());
     setSelected(null);
     setWrongPair(null);
-    setTime(0);
+    setTime(COUNTDOWN);
     setPhase("playing");
     clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setTime((t) => t + 1), 1000);
+    timerRef.current = setInterval(() => setTime((t) => t - 1), 1000);
     return queue.slice(pairsCount);
   };
 
@@ -850,6 +851,13 @@ const MatchGame = ({ cards, onClose }) => {
     return () => clearInterval(timerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (time <= 0 && phase === "playing") {
+      clearInterval(timerRef.current);
+      setPhase("timeUp");
+    }
+  }, [time, phase]);
 
   const handleTile = (idx) => {
     if (wrongPair || phase !== "playing") return;
@@ -874,7 +882,7 @@ const MatchGame = ({ cards, onClose }) => {
       const totalPairs = tiles.length / 2;
       if (newMatched.size >= totalPairs) {
         clearInterval(timerRef.current);
-        setLastRoundTime(time);
+        setTimeLeft(time);
         setRoundsPlayed((r) => r + 1);
         setTimeout(() => setPhase("roundEnd"), 500);
       }
@@ -907,8 +915,30 @@ const MatchGame = ({ cards, onClose }) => {
     );
   }
 
+  if (phase === "timeUp") {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
+        <div className="text-6xl">⏰</div>
+        <h2 className="text-2xl font-bold text-red-600">Hết giờ!</h2>
+        <p className="text-slate-500 text-center text-sm">
+          Bạn chưa ghép xong {tiles.length / 2 - matchedIds.size} cặp còn lại
+        </p>
+        <button
+          onClick={nextRound}
+          className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+        >
+          Thử lại vòng này
+        </button>
+        <button onClick={onClose} className="text-slate-400 text-sm underline">
+          Quay lại
+        </button>
+      </div>
+    );
+  }
+
   if (phase === "roundEnd") {
     const hasMore = (sessionQueueRef.current?.length ?? 0) > 0;
+    const timeTaken = COUNTDOWN - timeLeft;
     return (
       <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
         <div className="text-6xl">🎯</div>
@@ -916,8 +946,8 @@ const MatchGame = ({ cards, onClose }) => {
           Hoàn thành vòng {roundsPlayed}!
         </h2>
         <div className="bg-purple-50 rounded-3xl px-10 py-5 text-center">
-          <p className="text-4xl font-bold text-purple-600">{lastRoundTime}s</p>
-          <p className="text-slate-500 text-sm mt-1">thời gian hoàn thành</p>
+          <p className="text-4xl font-bold text-purple-600">{timeTaken}s</p>
+          <p className="text-slate-500 text-sm mt-1">hoàn thành · còn {timeLeft}s</p>
         </div>
 
         {hasMore ? (
@@ -961,7 +991,9 @@ const MatchGame = ({ cards, onClose }) => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="text-slate-700 font-mono text-xl font-bold">{time}s</div>
+        <div className={`font-mono text-xl font-bold transition-colors ${time <= 5 ? "text-red-500 animate-pulse" : "text-slate-700"}`}>
+          {time}s
+        </div>
         <div className="text-sm text-slate-400">Vòng {roundsPlayed + 1}</div>
       </div>
 
