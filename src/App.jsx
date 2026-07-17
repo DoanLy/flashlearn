@@ -1172,7 +1172,7 @@ export default function App() {
     const loadDataFromSupabase = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.from("cards").select("*");
+        const { data, error } = await supabase.from("cards").select("*").limit(10000);
         if (error) throw error;
         const safeCards = (data || []).map((c) => ({
           ...c,
