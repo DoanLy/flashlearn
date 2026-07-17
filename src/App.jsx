@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createClient } from "@supabase/supabase-js";
 import {
   Plus,
   BookOpen,
@@ -27,6 +28,14 @@ import {
   Search,
   Trophy,
 } from "lucide-react";
+
+// ============================================================================
+// SUPABASE CLIENT
+// ============================================================================
+const supabase = createClient(
+  "https://qrufhskmxcuowavwokau.supabase.co",
+  "sb_publishable_1ET0n4As5q6kN0N3fRDfVA_sgw0uAPK",
+);
 
 // ============================================================================
 // COMPONENT: PronunciationCoach
@@ -1128,9 +1137,6 @@ export default function App() {
   const [editWord, setEditWord] = useState("");
   const [editMeaning, setEditMeaning] = useState("");
 
-  // Link Web App Google Sheets cứng
-  const SHEET_URL =
-    "https://script.google.com/macros/s/AKfycbzSdEuvkL9I_zSN8SeCm71gm4LXEd9uzKXkrNz_9vBscVvvfyZwXNsCdxe4jpLDEdAo/exec";
   const [syncStatus, setSyncStatus] = useState("idle"); // 'idle', 'syncing', 'success', 'error'
 
   // Danh sách các chủ đề do người dùng tự tạo
@@ -1161,50 +1167,35 @@ export default function App() {
     );
   });
 
-  // --- TẢI DỮ LIỆU TỪ GOOGLE SHEETS LÚC KHỞI ĐỘNG ---
+  // --- TẢI DỮ LIỆU TỪ SUPABASE LÚC KHỞI ĐỘNG ---
   useEffect(() => {
-    const loadDataFromSheets = async () => {
+    const loadDataFromSupabase = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(SHEET_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain",
-          },
-          body: JSON.stringify({ action: "load" }),
-          redirect: "follow",
-        });
-
-        if (!response.ok) {
-          throw new Error("Lỗi HTTP: " + response.status);
-        }
-
-        const result = await response.json();
-        if (result.status === "success" && result.cards) {
-          // Ép kiểu tất cả về chuỗi (String) để đảm bảo không bị lỗi hiển thị định dạng từ file
-          const safeCards = result.cards.map((c) => ({
-            ...c,
-            id: String(c.id || ""),
-            word: String(c.word || ""),
-            meaning: String(c.meaning || ""),
-            deck: String(c.deck || "Chung"),
-            status: String(c.status || "new"),
-          }));
-          setCards(safeCards);
-        }
+        const { data, error } = await supabase.from("cards").select("*");
+        if (error) throw error;
+        const safeCards = (data || []).map((c) => ({
+          ...c,
+          id: String(c.id || ""),
+          word: String(c.word || ""),
+          meaning: String(c.meaning || ""),
+          deck: String(c.deck || "Chung"),
+          status: String(c.status || "new"),
+        }));
+        setCards(safeCards);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
         setGlobalMessage({
           type: "error",
           title: "Lỗi kết nối máy chủ",
-          text: "Không thể kết nối đến Google Sheets (Lỗi 404). Ứng dụng sẽ chạy tạm thời bằng dữ liệu trống. Hãy kiểm tra lại SHEET_URL hoặc deploy lại Apps Script để đồng bộ!",
+          text: "Không thể kết nối đến Supabase. Ứng dụng sẽ chạy tạm thời bằng dữ liệu trống.",
         });
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadDataFromSheets();
+    loadDataFromSupabase();
   }, []);
 
   // --- CHỨC NĂNG EXPORT VÀ SYNC ---
@@ -1254,34 +1245,35 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // Hàm đồng bộ dữ liệu TỰ KÍCH HOẠT (Manual Sync triggered by specific actions)
+  // Hàm đồng bộ dữ liệu lên Supabase
   const syncDataToSheets = async (dataToSync) => {
     setSyncStatus("syncing");
-
     try {
-      // Tiền xử lý: Ép Google Sheets hiểu dữ liệu là chuỗi (Text) thuần túy bằng cách thêm dấu nháy đơn (')
-      const safeDataToSync = dataToSync.map((card) => ({
-        ...card,
-        word: card.word ? `'${card.word}` : "",
-        meaning: card.meaning ? `'${card.meaning}` : "",
-        deck: card.deck ? `'${card.deck}` : "'Chung",
-      }));
+      // Lấy danh sách ID hiện có trong DB để biết cái nào bị xóa
+      const { data: existing } = await supabase.from("cards").select("id");
+      const existingIds = new Set((existing || []).map((c) => c.id));
+      const currentIds = new Set(dataToSync.map((c) => c.id));
+      const toDelete = [...existingIds].filter((id) => !currentIds.has(id));
 
-      const response = await fetch(SHEET_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain",
-        },
-        body: JSON.stringify({ action: "sync", cards: safeDataToSync }),
-        redirect: "follow",
-      });
+      // Upsert tất cả card hiện tại (thêm mới hoặc cập nhật)
+      if (dataToSync.length > 0) {
+        const { error } = await supabase
+          .from("cards")
+          .upsert(dataToSync, { onConflict: "id" });
+        if (error) throw error;
+      }
 
-      if (!response.ok) {
-        throw new Error("Lỗi HTTP: " + response.status);
+      // Xóa các card đã bị loại bỏ
+      if (toDelete.length > 0) {
+        const { error } = await supabase
+          .from("cards")
+          .delete()
+          .in("id", toDelete);
+        if (error) throw error;
       }
 
       setSyncStatus("success");
-      setTimeout(() => setSyncStatus("idle"), 3000); // Ẩn thông báo sau 3s
+      setTimeout(() => setSyncStatus("idle"), 3000);
     } catch (error) {
       console.error(error);
       setSyncStatus("error");
