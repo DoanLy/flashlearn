@@ -1187,9 +1187,7 @@ export default function App() {
           if (batch.length < BATCH) break;
           from += BATCH;
         }
-        const data = allCards;
-        if (error) throw error;
-        const safeCards = (data || []).map((c) => ({
+        const safeCards = allCards.map((c) => ({
           ...c,
           id: String(c.id || ""),
           word: String(c.word || ""),
