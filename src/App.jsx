@@ -1172,7 +1172,22 @@ export default function App() {
     const loadDataFromSupabase = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.from("cards").select("*").limit(10000);
+        // Fetch tất cả cards theo từng batch 1000 (giới hạn mặc định của Supabase)
+        let allCards = [];
+        let from = 0;
+        const BATCH = 1000;
+        while (true) {
+          const { data: batch, error } = await supabase
+            .from("cards")
+            .select("*")
+            .range(from, from + BATCH - 1);
+          if (error) throw error;
+          if (!batch || batch.length === 0) break;
+          allCards = allCards.concat(batch);
+          if (batch.length < BATCH) break;
+          from += BATCH;
+        }
+        const data = allCards;
         if (error) throw error;
         const safeCards = (data || []).map((c) => ({
           ...c,
