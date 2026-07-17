@@ -1119,6 +1119,8 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
 export default function App() {
   // --- STATE QUẢN LÝ DỮ LIỆU ---
   const [cards, setCards] = useState([]);
+  // Ảnh chụp dữ liệu đã có trên Supabase, dùng để tính phần thay đổi khi sync
+  const syncedCardsRef = useRef([]);
   const [isLoading, setIsLoading] = useState(true);
   const [globalMessage, setGlobalMessage] = useState(null); // Thay thế alert
   // Tab hiện tại: 'input', 'study', 'unknown', 'known', 'pronunciation'
@@ -1196,6 +1198,7 @@ export default function App() {
           status: String(c.status || "new"),
         }));
         setCards(safeCards);
+        syncedCardsRef.current = safeCards;
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
         setGlobalMessage({
@@ -1258,25 +1261,47 @@ export default function App() {
     document.body.removeChild(link);
   };
 
-  // Hàm đồng bộ dữ liệu lên Supabase
-  const syncDataToSheets = async (dataToSync) => {
+  // Chỉ giữ đúng các cột có trong bảng Supabase
+  const toRow = (c) => ({
+    id: c.id,
+    word: c.word,
+    meaning: c.meaning,
+    deck: c.deck || "Chung",
+    status: c.status || "new",
+  });
+
+  const isSameCard = (a, b) =>
+    a.word === b.word &&
+    a.meaning === b.meaning &&
+    (a.deck || "Chung") === (b.deck || "Chung") &&
+    (a.status || "new") === (b.status || "new");
+
+  // Đồng bộ lên Supabase: chỉ gửi thẻ mới/đã sửa và xóa thẻ đã bỏ
+  const syncDataToSupabase = async (dataToSync) => {
     setSyncStatus("syncing");
     try {
-      // Lấy danh sách ID hiện có trong DB để biết cái nào bị xóa
-      const { data: existing } = await supabase.from("cards").select("id");
-      const existingIds = new Set((existing || []).map((c) => c.id));
+      const previous = syncedCardsRef.current;
+      const previousById = new Map(previous.map((c) => [c.id, c]));
       const currentIds = new Set(dataToSync.map((c) => c.id));
-      const toDelete = [...existingIds].filter((id) => !currentIds.has(id));
 
-      // Upsert tất cả card hiện tại (thêm mới hoặc cập nhật)
-      if (dataToSync.length > 0) {
+      const toUpsert = dataToSync
+        .filter((c) => {
+          const old = previousById.get(c.id);
+          return !old || !isSameCard(old, c);
+        })
+        .map(toRow);
+
+      const toDelete = previous
+        .filter((c) => !currentIds.has(c.id))
+        .map((c) => c.id);
+
+      if (toUpsert.length > 0) {
         const { error } = await supabase
           .from("cards")
-          .upsert(dataToSync, { onConflict: "id" });
+          .upsert(toUpsert, { onConflict: "id" });
         if (error) throw error;
       }
 
-      // Xóa các card đã bị loại bỏ
       if (toDelete.length > 0) {
         const { error } = await supabase
           .from("cards")
@@ -1285,6 +1310,7 @@ export default function App() {
         if (error) throw error;
       }
 
+      syncedCardsRef.current = dataToSync;
       setSyncStatus("success");
       setTimeout(() => setSyncStatus("idle"), 3000);
     } catch (error) {
@@ -1311,7 +1337,7 @@ export default function App() {
 
     const updatedCards = [...cards, newCard];
     setCards(updatedCards);
-    syncDataToSheets(updatedCards); // Lưu lên sheet ngay lập tức
+    syncDataToSupabase(updatedCards); // Lưu lên Supabase ngay lập tức
 
     setWordInput("");
     setMeaningInput("");
@@ -1347,7 +1373,7 @@ export default function App() {
     if (newCards.length > 0) {
       const updatedCards = [...cards, ...newCards];
       setCards(updatedCards);
-      syncDataToSheets(updatedCards); // Lưu lên sheet ngay lập tức
+      syncDataToSupabase(updatedCards); // Lưu lên Supabase ngay lập tức
       setBulkInput("");
     }
   };
@@ -1363,13 +1389,13 @@ export default function App() {
     };
     const updatedCards = [...cards, newCard];
     setCards(updatedCards);
-    syncDataToSheets(updatedCards);
+    syncDataToSupabase(updatedCards);
   };
 
   const handleDeleteCard = (id) => {
     const updatedCards = cards.filter((c) => c.id !== id);
     setCards(updatedCards);
-    syncDataToSheets(updatedCards); // Đồng bộ sự thay đổi (xóa) lên Sheet
+    syncDataToSupabase(updatedCards); // Đồng bộ sự thay đổi (xóa) lên Supabase
   };
 
   const handleStartEdit = (card) => {
@@ -1396,7 +1422,7 @@ export default function App() {
     );
 
     setCards(updatedCards);
-    syncDataToSheets(updatedCards); // Đồng bộ sự thay đổi (sửa) lên Sheet
+    syncDataToSupabase(updatedCards); // Đồng bộ sự thay đổi (sửa) lên Supabase
     setEditingId(null);
   };
 
@@ -1487,7 +1513,7 @@ export default function App() {
     );
 
     setCards(updatedCards);
-    syncDataToSheets(updatedCards); // Cập nhật trạng thái học lên Sheet
+    syncDataToSupabase(updatedCards); // Cập nhật trạng thái học lên Supabase
 
     setIsAdvancingCard(true);
     setSwipeOffset(0);
@@ -1560,9 +1586,7 @@ export default function App() {
         <h2 className="text-xl font-bold text-slate-800">
           Đang tải dữ liệu...
         </h2>
-        <p className="text-slate-500 mt-2 text-sm">
-          Đang kết nối với Google Sheets
-        </p>
+        <p className="text-slate-500 mt-2 text-sm">Đang kết nối với Supabase</p>
       </div>
     );
   }
@@ -2095,7 +2119,7 @@ export default function App() {
                         : c,
                     );
                     setCards(updatedCards);
-                    syncDataToSheets(updatedCards);
+                    syncDataToSupabase(updatedCards);
                     setActiveTab("study");
                   }}
                   className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
@@ -2154,7 +2178,7 @@ export default function App() {
                               c.id === card.id ? { ...c, status: "new" } : c,
                             );
                             setCards(updatedCards);
-                            syncDataToSheets(updatedCards);
+                            syncDataToSupabase(updatedCards);
                           }}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Học lại từ này"
@@ -2167,7 +2191,7 @@ export default function App() {
                               c.id === card.id ? { ...c, status: "known" } : c,
                             );
                             setCards(updatedCards);
-                            syncDataToSheets(updatedCards);
+                            syncDataToSupabase(updatedCards);
                           }}
                           className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-colors"
                           title="Đánh dấu đã thuộc"
@@ -2203,7 +2227,7 @@ export default function App() {
                         : c,
                     );
                     setCards(updatedCards);
-                    syncDataToSheets(updatedCards);
+                    syncDataToSupabase(updatedCards);
                     setActiveTab("study");
                   }}
                   className="flex items-center gap-1 text-sm bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium hover:bg-blue-200 transition-colors shadow-sm"
@@ -2262,7 +2286,7 @@ export default function App() {
                               c.id === card.id ? { ...c, status: "new" } : c,
                             );
                             setCards(updatedCards);
-                            syncDataToSheets(updatedCards);
+                            syncDataToSupabase(updatedCards);
                           }}
                           className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
                           title="Học lại từ này"
