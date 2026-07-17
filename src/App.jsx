@@ -1438,8 +1438,12 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [isAdvancingCard, setIsAdvancingCard] = useState(false);
+  // Tắt transition trong 1 frame để thẻ mới hiện ngay giữa màn hình,
+  // thay vì trượt ngược lại từ vị trí thẻ cũ vừa bay ra
+  const [skipCardTransition, setSkipCardTransition] = useState(false);
   const advanceTimerRef = useRef(null);
-  const STUDY_CARD_ADVANCE_DELAY = 2000;
+  // Thời gian thẻ bay ra khỏi màn hình, khớp với transition 0.3s của thẻ
+  const STUDY_CARD_ADVANCE_DELAY = 280;
 
   useEffect(() => {
     return () => {
@@ -1516,14 +1520,21 @@ export default function App() {
     syncDataToSupabase(updatedCards); // Cập nhật trạng thái học lên Supabase
 
     setIsAdvancingCard(true);
-    setSwipeOffset(0);
+    setIsDragging(false);
+    // Cho thẻ bay hẳn ra khỏi màn hình theo hướng vừa chọn
+    setSwipeOffset(newStatus === "known" ? 600 : -600);
 
     advanceTimerRef.current = setTimeout(() => {
+      setSkipCardTransition(true);
       setStudyQueue((prevQueue) => prevQueue.slice(1));
       setIsFlipped(false);
       setSwipeOffset(0);
       setIsAdvancingCard(false);
       advanceTimerRef.current = null;
+      // Bật lại transition sau khi thẻ mới đã được vẽ ở giữa
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => setSkipCardTransition(false)),
+      );
     }, STUDY_CARD_ADVANCE_DELAY);
   };
 
@@ -1986,7 +1997,10 @@ export default function App() {
                     transform: `translateX(${swipeOffset}px) rotate(${
                       swipeOffset * 0.05
                     }deg)`,
-                    transition: isDragging ? "none" : "transform 0.3s ease-out",
+                    transition:
+                      isDragging || skipCardTransition
+                        ? "none"
+                        : "transform 0.3s ease-out",
                   }}
                 >
                   <div
