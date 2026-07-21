@@ -28,8 +28,6 @@ import {
   Search,
   Trophy,
   Headphones,
-  Eye,
-  EyeOff,
   SkipBack,
   SkipForward,
   Rewind,
@@ -1190,11 +1188,20 @@ const DictationCoach = () => {
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [userInput, setUserInput] = useState("");
-  const [diffResult, setDiffResult] = useState(null);
-  const [revealAnswer, setRevealAnswer] = useState(false);
+  const [confirmedCount, setConfirmedCount] = useState(0);
+  const [wordStatus, setWordStatus] = useState("neutral"); // 'neutral' | 'incorrect'
+  const [wrongIndices, setWrongIndices] = useState({});
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isPlayingSegment, setIsPlayingSegment] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [showAnswerImmediately, setShowAnswerImmediately] = useState(() => {
+    try {
+      return localStorage.getItem("flashlearn_dictation_show_immediately") !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const [showFullAnswer, setShowFullAnswer] = useState(false);
 
   const [titleInput, setTitleInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -1212,6 +1219,14 @@ const DictationCoach = () => {
       // localStorage đầy hoặc bị chặn — bỏ qua, không chặn luyện tập
     }
   }, [videos]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("flashlearn_dictation_show_immediately", showAnswerImmediately ? "1" : "0");
+    } catch {
+      // bỏ qua
+    }
+  }, [showAnswerImmediately]);
 
   const activeVideo = videos.find((v) => v.id === activeVideoId) || null;
 
@@ -1302,29 +1317,83 @@ const DictationCoach = () => {
     );
   };
 
-  const checkSegment = () => {
+  const resetWordProgress = () => {
+    setUserInput("");
+    setConfirmedCount(0);
+    setWordStatus("neutral");
+    setWrongIndices({});
+    setShowFullAnswer(false);
+  };
+
+  // Chạy trên mỗi thay đổi của ô nhập (gõ, dán, bàn phím ảo...) — phát hiện khi một từ
+  // vừa được gõ xong (có khoảng trắng theo sau) và so khớp với từ mục tiêu hiện tại.
+  const processInputChange = (value) => {
     const seg = activeVideo.segments[currentIndex];
     if (!seg) return;
     const targetWords = seg.text.trim().split(/\s+/);
-    const typedWords = userInput.trim().split(/\s+/).filter(Boolean).map(cleanDictationWord);
-    let correctCount = 0;
-    const words = targetWords.map((w, i) => {
-      const clean = cleanDictationWord(w);
-      const isCorrect = !!clean && typedWords[i] === clean;
-      if (isCorrect) correctCount++;
-      return { display: w, isCorrect };
-    });
-    const accuracy = Math.round((correctCount / targetWords.length) * 100);
-    setDiffResult({ words, accuracy });
+    if (confirmedCount >= targetWords.length) return;
+
+    const confirmedPrefix =
+      targetWords.slice(0, confirmedCount).join(" ") + (confirmedCount > 0 ? " " : "");
+    const rest = value.startsWith(confirmedPrefix) ? value.slice(confirmedPrefix.length) : value;
+    const spaceIdx = rest.indexOf(" ");
+
+    if (spaceIdx === -1) {
+      setUserInput(value);
+      return;
+    }
+
+    const typedWord = rest.slice(0, spaceIdx);
+    if (!typedWord) {
+      setUserInput(confirmedPrefix);
+      return;
+    }
+
+    const isMatch = cleanDictationWord(typedWord) === cleanDictationWord(targetWords[confirmedCount]);
+    if (isMatch) {
+      const newConfirmed = confirmedCount + 1;
+      setConfirmedCount(newConfirmed);
+      setWordStatus("neutral");
+      setUserInput(
+        targetWords.slice(0, newConfirmed).join(" ") + (newConfirmed < targetWords.length ? " " : ""),
+      );
+      if (newConfirmed === targetWords.length) {
+        finalizeSegment(targetWords.length, Object.keys(wrongIndices).length);
+      }
+    } else {
+      setWordStatus("incorrect");
+      setWrongIndices((prev) => ({ ...prev, [confirmedCount]: true }));
+      setUserInput(confirmedPrefix);
+    }
+  };
+
+  const handleSkipWord = () => {
+    const seg = activeVideo.segments[currentIndex];
+    if (!seg) return;
+    const targetWords = seg.text.trim().split(/\s+/);
+    if (confirmedCount >= targetWords.length) return;
+    const nextWrongIndices = { ...wrongIndices, [confirmedCount]: true };
+    setWrongIndices(nextWrongIndices);
+    const newConfirmed = confirmedCount + 1;
+    setConfirmedCount(newConfirmed);
+    setWordStatus("neutral");
+    setUserInput(
+      targetWords.slice(0, newConfirmed).join(" ") + (newConfirmed < targetWords.length ? " " : ""),
+    );
+    if (newConfirmed === targetWords.length) {
+      finalizeSegment(targetWords.length, Object.keys(nextWrongIndices).length);
+    }
+  };
+
+  const finalizeSegment = (total, wrongCount) => {
+    const accuracy = Math.round(((total - wrongCount) / total) * 100);
     updateProgress(currentIndex, accuracy);
   };
 
   const goToSegment = (index) => {
     if (!activeVideo || index < 0 || index >= activeVideo.segments.length) return;
     setCurrentIndex(index);
-    setUserInput("");
-    setDiffResult(null);
-    setRevealAnswer(false);
+    resetWordProgress();
   };
 
   const startPractice = (video) => {
@@ -1332,9 +1401,7 @@ const DictationCoach = () => {
     const lastIndex = video.progress?.lastIndex ?? 0;
     const startIdx = lastIndex < video.segments.length ? lastIndex : 0;
     setCurrentIndex(startIdx);
-    setUserInput("");
-    setDiffResult(null);
-    setRevealAnswer(false);
+    resetWordProgress();
     setMode("practice");
   };
 
@@ -1375,7 +1442,6 @@ const DictationCoach = () => {
   const backToList = () => {
     setMode("list");
     setActiveVideoId(null);
-    setDiffResult(null);
   };
 
   // --- MÀN HÌNH: THÊM VIDEO ---
@@ -1508,66 +1574,101 @@ const DictationCoach = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
-          <textarea
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (!diffResult) checkSegment();
-                else if (!isLast) goToSegment(currentIndex + 1);
-              }
-            }}
-            rows={2}
-            placeholder="Gõ lại những gì bạn nghe được..."
-            className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          />
+        {(() => {
+          const targetWords = seg.text.trim().split(/\s+/);
+          const segmentDone = confirmedCount >= targetWords.length;
+          return (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+              <textarea
+                value={userInput}
+                onChange={(e) => processInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  if (segmentDone) {
+                    if (!isLast) goToSegment(currentIndex + 1);
+                    return;
+                  }
+                  // Enter cũng kết thúc từ đang gõ, kể cả từ cuối câu (không có khoảng trắng theo sau)
+                  processInputChange(`${userInput}${userInput.endsWith(" ") ? "" : " "}`);
+                }}
+                disabled={segmentDone}
+                rows={2}
+                autoFocus
+                placeholder="Gõ lại những gì bạn nghe được..."
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-slate-50"
+              />
 
-          {!diffResult ? (
-            <button
-              onClick={checkSegment}
-              className="w-full mt-3 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              Kiểm tra
-            </button>
-          ) : (
-            <div className="mt-3">
-              <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 bg-slate-50 rounded-xl">
-                {diffResult.words.map((w, i) => (
-                  <span
-                    key={i}
-                    className={
-                      w.isCorrect
-                        ? "text-green-700"
-                        : "text-red-600 underline decoration-wavy decoration-red-300"
-                    }
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
+                  {wordStatus === "incorrect" && !segmentDone && (
+                    <>
+                      <AlertCircle className="w-4 h-4" /> Chưa đúng
+                    </>
+                  )}
+                  {segmentDone && (
+                    <span className="text-green-600">
+                      Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
+                    </span>
+                  )}
+                </div>
+                {!segmentDone && (
+                  <button
+                    onClick={handleSkipWord}
+                    className="px-3 py-1 text-xs font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
                   >
-                    {w.display}
-                  </span>
-                ))}
+                    Bỏ qua từ
+                  </button>
+                )}
               </div>
-              <p
-                className={`text-sm font-bold mt-2 ${
-                  diffResult.accuracy >= 80 ? "text-green-600" : "text-amber-600"
-                }`}
-              >
-                Độ chính xác: {diffResult.accuracy}%
-              </p>
-            </div>
-          )}
 
-          <button
-            onClick={() => setRevealAnswer((r) => !r)}
-            className="flex items-center gap-1.5 mt-3 text-xs font-medium text-slate-400 hover:text-slate-600"
-          >
-            {revealAnswer ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            {revealAnswer ? "Ẩn đáp án" : "Xem đáp án"}
-          </button>
-          {revealAnswer && (
-            <p className="text-sm text-slate-600 mt-1.5 italic">{seg.text}</p>
-          )}
-        </div>
+              <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
+                {targetWords.map((w, i) => {
+                  if (i < confirmedCount) {
+                    return (
+                      <span key={i} className={wrongIndices[i] ? "text-amber-600" : "text-slate-500"}>
+                        {w}
+                      </span>
+                    );
+                  }
+                  const revealThis =
+                    showFullAnswer || (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
+                  if (revealThis) {
+                    return (
+                      <span key={i} className="text-green-600 font-bold">
+                        {w}
+                      </span>
+                    );
+                  }
+                  return (
+                    <span key={i} className="text-slate-300 tracking-widest">
+                      {"*".repeat(w.length)}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col gap-1.5 mt-3">
+                <label className="flex items-center gap-2 text-xs text-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={showAnswerImmediately}
+                    onChange={(e) => setShowAnswerImmediately(e.target.checked)}
+                  />
+                  Hiện đáp án ngay khi gõ sai
+                </label>
+                <label className="flex items-center gap-2 text-xs text-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={showFullAnswer}
+                    onChange={(e) => setShowFullAnswer(e.target.checked)}
+                  />
+                  Hiện toàn bộ đáp án
+                </label>
+              </div>
+            </div>
+          );
+        })()}
 
         <div className="flex justify-between gap-3">
           <button
