@@ -1303,6 +1303,7 @@ const DictationCoach = () => {
   const [urlInput, setUrlInput] = useState("");
   const [transcriptInput, setTranscriptInput] = useState("");
   const [formError, setFormError] = useState("");
+  const [isDraggingTranscript, setIsDraggingTranscript] = useState(false);
 
   const playerContainerRef = useRef(null);
   const playerRef = useRef(null);
@@ -1334,7 +1335,13 @@ const DictationCoach = () => {
     setPlayerReady(false);
     loadYouTubeIframeAPI().then((YT) => {
       if (cancelled || !YT || !playerContainerRef.current) return;
-      player = new YT.Player(playerContainerRef.current, {
+      // YT.Player thay thế hẳn node được truyền vào bằng <iframe>, khiến React "mất dấu" node
+      // đó và crash (NotFoundError: removeChild) khi unmount. Tạo một div con bằng tay, nằm
+      // ngoài tầm quản lý của React, để nhường cho YT.Player thay thế thay vì đụng vào node
+      // mà JSX/React đang theo dõi.
+      const mountEl = document.createElement("div");
+      playerContainerRef.current.appendChild(mountEl);
+      player = new YT.Player(mountEl, {
         videoId: activeVideo.videoId,
         playerVars: { rel: 0, modestbranding: 1 },
         events: {
@@ -1436,7 +1443,9 @@ const DictationCoach = () => {
     setHasChecked(false);
   };
 
-  // Chấm từ đang gõ dở — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
+  // Chấm điểm — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
+  // Chấm từ đầu ô nhập, cho phép gõ nhiều từ (hoặc cả câu) rồi kiểm tra một lần; KHÔNG xoá
+  // hay ghi đè nội dung người dùng đã gõ, kể cả khi sai — chỉ cập nhật số từ đã khớp đúng.
   const checkCurrentWord = () => {
     const seg = activeVideo.segments[currentIndex];
     if (!seg) return;
@@ -1444,45 +1453,44 @@ const DictationCoach = () => {
     if (confirmedCount >= targetWords.length) return;
     setHasChecked(true);
 
-    const confirmedPrefix =
-      targetWords.slice(0, confirmedCount).join(" ") + (confirmedCount > 0 ? " " : "");
-    const typedWord = userInput.slice(confirmedPrefix.length).trim();
-    if (!typedWord) return;
+    const typedWords = userInput.trim().split(/\s+/).filter(Boolean);
+    if (!typedWords.length) return;
 
-    const isMatch = cleanDictationWord(typedWord) === cleanDictationWord(targetWords[confirmedCount]);
-    if (isMatch) {
-      const newConfirmed = confirmedCount + 1;
-      setConfirmedCount(newConfirmed);
-      setWordStatus("neutral");
-      setUserInput(
-        targetWords.slice(0, newConfirmed).join(" ") + (newConfirmed < targetWords.length ? " " : ""),
-      );
-      if (newConfirmed === targetWords.length) {
-        finalizeSegment(targetWords.length, Object.keys(wrongIndices).length);
+    let newConfirmed = 0;
+    let hitWrong = false;
+    const newWrongIndices = {};
+    for (let i = 0; i < typedWords.length && i < targetWords.length; i++) {
+      const isMatch = cleanDictationWord(typedWords[i]) === cleanDictationWord(targetWords[i]);
+      if (isMatch) {
+        newConfirmed = i + 1;
+      } else {
+        newWrongIndices[i] = true;
+        hitWrong = true;
+        break;
       }
-    } else {
-      setWordStatus("incorrect");
-      setWrongIndices((prev) => ({ ...prev, [confirmedCount]: true }));
-      setUserInput(confirmedPrefix);
+    }
+
+    setConfirmedCount(newConfirmed);
+    setWordStatus(hitWrong ? "incorrect" : "neutral");
+    setWrongIndices((prev) => ({ ...prev, ...newWrongIndices }));
+    if (newConfirmed === targetWords.length) {
+      finalizeSegment(targetWords.length, Object.keys({ ...wrongIndices, ...newWrongIndices }).length);
     }
   };
 
-  const handleSkipWord = () => {
+  // Bỏ qua cả câu hiện tại (tính điểm theo số từ đã gõ đúng tính đến lúc bỏ qua) và chuyển
+  // sang câu tiếp theo, thay vì chỉ bỏ qua một từ.
+  const handleSkipSegment = () => {
     const seg = activeVideo.segments[currentIndex];
-    if (!seg) return;
-    const targetWords = seg.text.trim().split(/\s+/);
-    if (confirmedCount >= targetWords.length) return;
-    setHasChecked(true);
-    const nextWrongIndices = { ...wrongIndices, [confirmedCount]: true };
-    setWrongIndices(nextWrongIndices);
-    const newConfirmed = confirmedCount + 1;
-    setConfirmedCount(newConfirmed);
-    setWordStatus("neutral");
-    setUserInput(
-      targetWords.slice(0, newConfirmed).join(" ") + (newConfirmed < targetWords.length ? " " : ""),
-    );
-    if (newConfirmed === targetWords.length) {
-      finalizeSegment(targetWords.length, Object.keys(nextWrongIndices).length);
+    if (seg) {
+      const targetWords = seg.text.trim().split(/\s+/);
+      const wrongCount = targetWords.length - confirmedCount;
+      finalizeSegment(targetWords.length, wrongCount);
+    }
+    if (currentIndex < activeVideo.segments.length - 1) {
+      goToSegment(currentIndex + 1);
+    } else {
+      resetWordProgress();
     }
   };
 
@@ -1511,9 +1519,7 @@ const DictationCoach = () => {
     setVideos((prev) => prev.filter((v) => v.id !== id));
   };
 
-  const handleTranscriptFile = (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
+  const processTranscriptFile = (file) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
@@ -1523,6 +1529,19 @@ const DictationCoach = () => {
     };
     reader.onerror = () => setFormError("Không đọc được file. Hãy thử lại.");
     reader.readAsText(file);
+  };
+
+  const handleTranscriptFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    processTranscriptFile(file);
+  };
+
+  const handleTranscriptDrop = (e) => {
+    e.preventDefault();
+    setIsDraggingTranscript(false);
+    const file = e.dataTransfer.files?.[0];
+    processTranscriptFile(file);
   };
 
   const handleAddVideo = () => {
@@ -1602,9 +1621,21 @@ const DictationCoach = () => {
 
           <div>
             <label className="block text-sm font-medium text-slate-500 mb-1">Transcript</label>
-            <label className="flex items-center justify-center gap-2 px-3 py-2.5 mb-2 border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition-colors">
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDraggingTranscript(true);
+              }}
+              onDragLeave={() => setIsDraggingTranscript(false)}
+              onDrop={handleTranscriptDrop}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 mb-2 border border-dashed rounded-xl text-sm cursor-pointer transition-colors ${
+                isDraggingTranscript
+                  ? "border-blue-500 bg-blue-50 text-blue-600"
+                  : "border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600"
+              }`}
+            >
               <Upload className="w-4 h-4" />
-              Tải file phụ đề .srt / .vtt
+              {isDraggingTranscript ? "Thả file để tải lên" : "Tải file phụ đề .srt / .vtt (hoặc kéo-thả vào đây)"}
               <input
                 type="file"
                 accept=".srt,.vtt,text/plain,text/vtt"
@@ -1743,7 +1774,7 @@ const DictationCoach = () => {
                       Kiểm tra
                     </button>
                     <button
-                      onClick={handleSkipWord}
+                      onClick={handleSkipSegment}
                       className="px-3 py-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
                     >
                       Bỏ qua
