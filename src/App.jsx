@@ -1310,7 +1310,178 @@ function loadYouTubeIframeAPI() {
   return ytApiPromise;
 }
 
-const DictationCoach = () => {
+// Card tra nghĩa 1 từ khi bấm vào (phiên âm + nghĩa + phát âm + Lưu từ học) — dùng cho màn chép
+// chính tả, cùng kiểu popup với menu Phát âm. Tự fetch phiên âm (dictionaryapi.dev) và nghĩa
+// (mymemory), có cache toàn cục để mở lại không phải gọi mạng.
+const wordMeaningCache = {};
+
+function speakEnglishWord(text) {
+  if ("speechSynthesis" in window && text) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    window.speechSynthesis.speak(u);
+  }
+}
+
+const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) => {
+  const clean = cleanDictationWord(word);
+  const [data, setData] = useState(() => wordMeaningCache[clean] || null);
+  const [loading, setLoading] = useState(!wordMeaningCache[clean]);
+  const [isAddingMode, setIsAddingMode] = useState(false);
+  const deckOptions = existingDecks.filter((d) => d !== "Tất cả");
+  const [targetDeck, setTargetDeck] = useState(deckOptions[0] || "Chung");
+
+  useEffect(() => {
+    let cancelled = false;
+    speakEnglishWord(clean);
+    setIsAddingMode(false);
+    if (wordMeaningCache[clean]) {
+      setData(wordMeaningCache[clean]);
+      setLoading(false);
+      return;
+    }
+    setData(null);
+    setLoading(true);
+    (async () => {
+      try {
+        const [dictData, transData] = await Promise.all([
+          fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${clean}`).then((r) =>
+            r.ok ? r.json() : null,
+          ),
+          fetch(`https://api.mymemory.translated.net/get?q=${clean}&langpair=en|vi`).then((r) =>
+            r.ok ? r.json() : null,
+          ),
+        ]);
+        const phonetic =
+          dictData?.[0]?.phonetic ||
+          dictData?.[0]?.phonetics?.find((p) => p.text)?.text ||
+          "";
+        const meaning = transData?.responseData?.translatedText || "Không có dữ liệu.";
+        const d = { phonetic, meaning };
+        wordMeaningCache[clean] = d;
+        if (!cancelled) {
+          setData(d);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setData({ phonetic: "", meaning: "Lỗi kết nối." });
+          setLoading(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clean]);
+
+  if (!clean) return null;
+
+  const handleAdd = () => {
+    if (data?.meaning && onAddFlashcard) {
+      onAddFlashcard(clean, data.meaning, targetDeck);
+      onClose?.();
+    }
+  };
+
+  return (
+    <div className="mt-4 bg-slate-800 text-white rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-4 relative shadow-xl w-full">
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 text-slate-400 hover:text-white"
+      >
+        <X size={18} />
+      </button>
+
+      {loading ? (
+        <div className="flex flex-col items-center py-6 gap-3">
+          <Loader2 className="animate-spin text-blue-400 w-8 h-8" />
+          <p className="text-xs text-slate-400 tracking-widest uppercase font-bold">
+            Đang tra cứu...
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-between mb-3 pr-6">
+            <div className="flex items-center gap-3">
+              <div className="flex flex-col">
+                <h4 className="text-xl font-bold text-blue-400">{clean}</h4>
+                {data?.phonetic && (
+                  <span className="text-sm text-slate-400 italic font-mono">
+                    {data.phonetic}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => speakEnglishWord(clean)}
+                className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full text-blue-400 transition-all active:scale-90"
+              >
+                <Volume2 size={18} />
+              </button>
+            </div>
+
+            {!isAddingMode && onAddFlashcard && (
+              <button
+                onClick={() => setIsAddingMode(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors"
+              >
+                <BookmarkPlus size={14} /> Lưu từ học
+              </button>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-slate-700/50">
+            {isAddingMode ? (
+              <div className="animate-in fade-in zoom-in-95 duration-200 py-2">
+                <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2">
+                  Chọn chủ đề
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={targetDeck}
+                    onChange={(e) => setTargetDeck(e.target.value)}
+                    className="flex-1 bg-slate-700 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none"
+                  >
+                    {deckOptions.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleAdd}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500 flex items-center gap-1 transition-colors"
+                  >
+                    <Check size={16} /> Lưu
+                  </button>
+                  <button
+                    onClick={() => setIsAddingMode(false)}
+                    className="bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm hover:text-white"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <Languages className="text-blue-400 mt-1 shrink-0" size={14} />
+                <div>
+                  <span className="block text-[10px] font-bold uppercase text-slate-500">
+                    Nghĩa
+                  </span>
+                  <p className="text-sm font-medium leading-relaxed">{data?.meaning}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const [videos, setVideos] = useState(() => {
     try {
       const raw = localStorage.getItem(DICTATION_STORAGE_KEY);
@@ -1338,6 +1509,7 @@ const DictationCoach = () => {
     }
   });
   const [showFullAnswer, setShowFullAnswer] = useState(false);
+  const [lookupWord, setLookupWord] = useState(null); // từ đang được tra nghĩa (bấm vào)
 
   const [titleInput, setTitleInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -1490,6 +1662,7 @@ const DictationCoach = () => {
     setWrongIndices({});
     setShowFullAnswer(false);
     setHasChecked(false);
+    setLookupWord(null);
   };
 
   // Chấm điểm — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
@@ -1842,30 +2015,52 @@ const DictationCoach = () => {
                 <>
                   <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
                     {targetWords.map((w, i) => {
-                      if (i < confirmedCount) {
-                        return (
-                          <span key={i} className={wrongIndices[i] ? "text-amber-600" : "text-slate-500"}>
-                            {w}
-                          </span>
-                        );
-                      }
                       const revealThis =
                         showFullAnswer ||
                         (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
-                      if (revealThis) {
+                      const visible = i < confirmedCount || revealThis;
+                      if (!visible) {
                         return (
-                          <span key={i} className="text-green-600 font-bold">
+                          <span key={i} className="text-slate-300 tracking-widest">
+                            {"*".repeat(w.length)}
+                          </span>
+                        );
+                      }
+                      const colorCls =
+                        i < confirmedCount
+                          ? wrongIndices[i]
+                            ? "text-amber-600"
+                            : "text-slate-500"
+                          : "text-green-600 font-bold";
+                      // Chỉ từ có chữ cái mới bấm tra nghĩa được (bỏ qua "7.", "8." ...).
+                      if (!/[a-z]/i.test(w)) {
+                        return (
+                          <span key={i} className={colorCls}>
                             {w}
                           </span>
                         );
                       }
                       return (
-                        <span key={i} className="text-slate-300 tracking-widest">
-                          {"*".repeat(w.length)}
-                        </span>
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setLookupWord(w)}
+                          className={`${colorCls} hover:underline decoration-dotted underline-offset-2 cursor-pointer`}
+                        >
+                          {w}
+                        </button>
                       );
                     })}
                   </div>
+
+                  {lookupWord && (
+                    <WordMeaningCard
+                      word={lookupWord}
+                      onClose={() => setLookupWord(null)}
+                      onAddFlashcard={onAddFlashcard}
+                      existingDecks={existingDecks}
+                    />
+                  )}
 
                   <div className="flex flex-col gap-1.5 mt-3">
                     <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -3190,7 +3385,12 @@ export default function App() {
         )}
 
         {/* --- TAB: CHÉP CHÍNH TẢ --- */}
-        {activeTab === "dictation" && <DictationCoach />}
+        {activeTab === "dictation" && (
+          <DictationCoach
+            onAddFlashcard={handleSaveFromCoach}
+            existingDecks={existingDecks}
+          />
+        )}
       </main>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
