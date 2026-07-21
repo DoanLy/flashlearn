@@ -1577,7 +1577,11 @@ const DictationCoach = () => {
 
   const handleAddVideo = () => {
     setFormError("");
-    const videoId = extractYouTubeId(urlInput);
+    // Người dùng hay dán link nhầm vào ô Tiêu đề: thử ô Link trước, nếu không có thì lấy link
+    // từ ô Tiêu đề. Nếu tiêu đề thực chất là một link YouTube thì không dùng nó làm tiêu đề.
+    const idFromUrl = extractYouTubeId(urlInput);
+    const idFromTitle = idFromUrl ? null : extractYouTubeId(titleInput);
+    const videoId = idFromUrl || idFromTitle;
     if (!videoId) {
       setFormError("Link YouTube không hợp lệ. Dán link dạng youtube.com/watch?v=... hoặc youtu.be/...");
       return;
@@ -1589,9 +1593,11 @@ const DictationCoach = () => {
       );
       return;
     }
+    // Nếu link nằm ở ô Tiêu đề thì ô đó không phải tiêu đề thật → bỏ, dùng tên mặc định.
+    const cleanTitle = idFromTitle ? "" : titleInput.trim();
     const newVideo = {
       id: String(Date.now()),
-      title: titleInput.trim() || `Video ${videoId}`,
+      title: cleanTitle || `Video ${videoId}`,
       videoId,
       segments,
       createdAt: Date.now(),
