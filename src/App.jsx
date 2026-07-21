@@ -27,6 +27,11 @@ import {
   BookmarkPlus,
   Search,
   Trophy,
+  Headphones,
+  SkipBack,
+  SkipForward,
+  Rewind,
+  Upload,
 } from "lucide-react";
 
 // ============================================================================
@@ -1109,6 +1114,802 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           )}
         </button>
       </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// COMPONENT: DictationCoach (Chép chính tả theo video YouTube)
+// ============================================================================
+const DICTATION_STORAGE_KEY = "flashlearn_dictation_videos";
+
+function extractYouTubeId(input) {
+  if (!input) return null;
+  const trimmed = input.trim();
+  const patterns = [
+    /(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const p of patterns) {
+    const m = trimmed.match(p);
+    if (m) return m[1];
+  }
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  return null;
+}
+
+// Parse transcript dạng "Time / Subtitle" (vd: "0s\nWelcome to...\n4s\ntopic of food...")
+function parseTimedTranscript(raw) {
+  if (!raw) return null;
+  const text = raw.replace(/\r\n/g, "\n");
+  const markerRegex = /(?:^|\n)[ \t]*(\d+)s[ \t]*\n?/g;
+  const matches = [...text.matchAll(markerRegex)];
+  if (matches.length === 0) return null;
+  const segments = [];
+  for (let i = 0; i < matches.length; i++) {
+    const start = Number(matches[i][1]);
+    const contentStart = matches[i].index + matches[i][0].length;
+    const contentEnd = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const content = text.slice(contentStart, contentEnd).replace(/\s+/g, " ").trim();
+    if (content) segments.push({ start, text: content });
+  }
+  segments.sort((a, b) => a.start - b.start);
+  return segments.length ? segments : null;
+}
+
+function srtTimeToSeconds(t) {
+  const m = t.match(/(\d+):(\d{2}):(\d{2})[,.](\d{1,3})/);
+  if (!m) return null;
+  return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(m[4]) / 1000;
+}
+
+// Đọc từng "cue" thô từ file .srt hoặc .vtt (không phụ thuộc số thứ tự cue, vì VTT có thể bỏ số)
+function extractSrtCues(raw) {
+  if (!raw) return [];
+  const text = raw.replace(/\r\n/g, "\n").replace(/^WEBVTT[^\n]*\n/i, "");
+  const blocks = text.split(/\n\s*\n/);
+  const cues = [];
+  for (const block of blocks) {
+    const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+    const arrowIdx = lines.findIndex((l) => l.includes("-->"));
+    if (arrowIdx === -1) continue;
+    const arrowMatch = lines[arrowIdx].match(
+      /(\d+:\d{2}:\d{2}[,.]\d{1,3})\s*-->\s*(\d+:\d{2}:\d{2}[,.]\d{1,3})/,
+    );
+    if (!arrowMatch) continue;
+    const start = srtTimeToSeconds(arrowMatch[1]);
+    const end = srtTimeToSeconds(arrowMatch[2]);
+    const cueText = lines
+      .slice(arrowIdx + 1)
+      .join(" ")
+      .replace(/<[^>]+>/g, "")
+      .trim();
+    if (cueText) cues.push({ start, end, text: cueText });
+  }
+  return cues;
+}
+
+// Gộp các cue phụ đề (thường bị cắt giữa câu theo thời lượng hiển thị) thành từng câu hoàn
+// chỉnh để chép chính tả, tách câu mới mỗi khi đổi người nói (">>") dù câu trước chưa hết.
+function parseSrtTranscript(raw) {
+  const cues = extractSrtCues(raw);
+  if (!cues.length) return null;
+
+  const segments = [];
+  let buffer = "";
+  let bufferStart = null;
+
+  const emitCompleteSentences = () => {
+    const sentenceRegex = /[^.!?]*[.!?]+(?:["'”’)\]]+)?\s*/g;
+    let m;
+    let consumed = 0;
+    while ((m = sentenceRegex.exec(buffer)) !== null) {
+      const sentence = m[0].trim();
+      if (sentence) segments.push({ start: bufferStart, text: sentence.replace(/\s+/g, " ") });
+      consumed = sentenceRegex.lastIndex;
+    }
+    buffer = buffer.slice(consumed);
+    if (!buffer) bufferStart = null;
+  };
+
+  for (const cue of cues) {
+    // Dấu ">>" đánh dấu đổi người nói, có thể nằm ở đầu hoặc giữa cue (khi hai người nói
+    // xen kẽ trong cùng một cue phụ đề) — tách theo dấu này trước khi gộp câu.
+    const parts = cue.text.split(/>>/).map((p) => p.trim());
+    parts.forEach((part, i) => {
+      if (i > 0) {
+        const leftover = buffer.trim();
+        if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
+        buffer = "";
+        bufferStart = null;
+      }
+      if (!part) return;
+      if (!buffer) bufferStart = cue.start;
+      buffer += (buffer ? " " : "") + part;
+
+      const before = segments.length;
+      emitCompleteSentences();
+      if (segments.length > before && buffer) bufferStart = cue.start;
+    });
+  }
+  const leftover = buffer.trim();
+  if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
+
+  return segments.length ? segments : null;
+}
+
+function parseTranscriptInput(raw) {
+  if (!raw) return null;
+  if (raw.includes("-->")) return parseSrtTranscript(raw);
+  return parseTimedTranscript(raw);
+}
+
+function deriveTitleFromFilename(filename) {
+  let name = filename.replace(/\.(srt|vtt)$/i, "");
+  name = name.replace(/\[DownSub\.com\]/gi, "");
+  name = name.replace(/^\s*\[[^\]]*\]\s*/, "");
+  return name.replace(/\s+/g, " ").trim();
+}
+
+const cleanDictationWord = (w) => (w || "").toLowerCase().replace(/[^a-z0-9']/g, "");
+
+let ytApiPromise = null;
+function loadYouTubeIframeAPI() {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise((resolve) => {
+    const prevCallback = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      if (typeof prevCallback === "function") prevCallback();
+      resolve(window.YT);
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+  });
+  return ytApiPromise;
+}
+
+const DictationCoach = () => {
+  const [videos, setVideos] = useState(() => {
+    try {
+      const raw = localStorage.getItem(DICTATION_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [mode, setMode] = useState("list"); // 'list' | 'add' | 'practice'
+  const [activeVideoId, setActiveVideoId] = useState(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [userInput, setUserInput] = useState("");
+  const [confirmedCount, setConfirmedCount] = useState(0);
+  const [wordStatus, setWordStatus] = useState("neutral"); // 'neutral' | 'incorrect'
+  const [wrongIndices, setWrongIndices] = useState({});
+  const [hasChecked, setHasChecked] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isPlayingSegment, setIsPlayingSegment] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [showAnswerImmediately, setShowAnswerImmediately] = useState(() => {
+    try {
+      return localStorage.getItem("flashlearn_dictation_show_immediately") !== "0";
+    } catch {
+      return true;
+    }
+  });
+  const [showFullAnswer, setShowFullAnswer] = useState(false);
+
+  const [titleInput, setTitleInput] = useState("");
+  const [urlInput, setUrlInput] = useState("");
+  const [transcriptInput, setTranscriptInput] = useState("");
+  const [formError, setFormError] = useState("");
+  const [isDraggingTranscript, setIsDraggingTranscript] = useState(false);
+
+  const playerContainerRef = useRef(null);
+  const playerRef = useRef(null);
+  const watcherRef = useRef(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DICTATION_STORAGE_KEY, JSON.stringify(videos));
+    } catch {
+      // localStorage đầy hoặc bị chặn — bỏ qua, không chặn luyện tập
+    }
+  }, [videos]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("flashlearn_dictation_show_immediately", showAnswerImmediately ? "1" : "0");
+    } catch {
+      // bỏ qua
+    }
+  }, [showAnswerImmediately]);
+
+  const activeVideo = videos.find((v) => v.id === activeVideoId) || null;
+
+  // Khởi tạo YouTube player khi vào màn hình luyện tập
+  useEffect(() => {
+    if (mode !== "practice" || !activeVideo) return;
+    let cancelled = false;
+    let player = null;
+    setPlayerReady(false);
+    loadYouTubeIframeAPI().then((YT) => {
+      if (cancelled || !YT || !playerContainerRef.current) return;
+      // YT.Player thay thế hẳn node được truyền vào bằng <iframe>, khiến React "mất dấu" node
+      // đó và crash (NotFoundError: removeChild) khi unmount. Tạo một div con bằng tay, nằm
+      // ngoài tầm quản lý của React, để nhường cho YT.Player thay thế thay vì đụng vào node
+      // mà JSX/React đang theo dõi.
+      const mountEl = document.createElement("div");
+      playerContainerRef.current.appendChild(mountEl);
+      player = new YT.Player(mountEl, {
+        videoId: activeVideo.videoId,
+        playerVars: { rel: 0, modestbranding: 1 },
+        events: {
+          onReady: () => {
+            if (cancelled) return;
+            playerRef.current = player;
+            setPlayerReady(true);
+          },
+          onStateChange: (e) => {
+            if (e.data === 0 /* ENDED */) {
+              if (watcherRef.current) clearInterval(watcherRef.current);
+              setIsPlayingSegment(false);
+            }
+          },
+        },
+      });
+    });
+    return () => {
+      cancelled = true;
+      if (watcherRef.current) clearInterval(watcherRef.current);
+      if (player && player.destroy) player.destroy();
+      playerRef.current = null;
+      setPlayerReady(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, activeVideo?.id]);
+
+  const playSegment = (index) => {
+    const player = playerRef.current;
+    const seg = activeVideo?.segments?.[index];
+    if (!player || !seg) return;
+    const next = activeVideo.segments[index + 1];
+    const endTime = next ? next.start : seg.start + 8;
+    if (watcherRef.current) clearInterval(watcherRef.current);
+    player.seekTo(seg.start, true);
+    player.setPlaybackRate(playbackRate);
+    player.playVideo();
+    setIsPlayingSegment(true);
+    watcherRef.current = setInterval(() => {
+      const t = player.getCurrentTime ? player.getCurrentTime() : 0;
+      if (t >= endTime - 0.15) {
+        player.pauseVideo();
+        clearInterval(watcherRef.current);
+        setIsPlayingSegment(false);
+      }
+    }, 150);
+  };
+
+  // Tự phát đoạn hiện tại mỗi khi player sẵn sàng hoặc chuyển câu
+  useEffect(() => {
+    if (mode === "practice" && playerReady) {
+      playSegment(currentIndex);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, playerReady, mode]);
+
+  useEffect(() => {
+    if (playerRef.current && playerRef.current.setPlaybackRate) {
+      playerRef.current.setPlaybackRate(playbackRate);
+    }
+  }, [playbackRate]);
+
+  // Bấm phím Ctrl để nghe lại đoạn hiện tại, kể cả khi đang gõ trong ô nhập
+  useEffect(() => {
+    if (mode !== "practice") return;
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === "Control" && !e.repeat) {
+        e.preventDefault();
+        playSegment(currentIndex);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, currentIndex, playbackRate]);
+
+  const updateProgress = (index, accuracy) => {
+    setVideos((prev) =>
+      prev.map((v) => {
+        if (v.id !== activeVideoId) return v;
+        const attempts = { ...(v.progress?.attempts || {}) };
+        attempts[index] = Math.max(attempts[index] || 0, accuracy);
+        const accVals = Object.values(attempts);
+        const avg = Math.round(accVals.reduce((a, b) => a + b, 0) / accVals.length);
+        return {
+          ...v,
+          progress: { attempts, avgAccuracy: avg, lastIndex: index, updatedAt: Date.now() },
+        };
+      }),
+    );
+  };
+
+  const resetWordProgress = () => {
+    setUserInput("");
+    setConfirmedCount(0);
+    setWordStatus("neutral");
+    setWrongIndices({});
+    setShowFullAnswer(false);
+    setHasChecked(false);
+  };
+
+  // Chấm điểm — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
+  // Chấm từ đầu ô nhập, cho phép gõ nhiều từ (hoặc cả câu) rồi kiểm tra một lần; KHÔNG xoá
+  // hay ghi đè nội dung người dùng đã gõ, kể cả khi sai — chỉ cập nhật số từ đã khớp đúng.
+  const checkCurrentWord = () => {
+    const seg = activeVideo.segments[currentIndex];
+    if (!seg) return;
+    const targetWords = seg.text.trim().split(/\s+/);
+    if (confirmedCount >= targetWords.length) return;
+    setHasChecked(true);
+
+    const typedWords = userInput.trim().split(/\s+/).filter(Boolean);
+    if (!typedWords.length) return;
+
+    let newConfirmed = 0;
+    let hitWrong = false;
+    const newWrongIndices = {};
+    for (let i = 0; i < typedWords.length && i < targetWords.length; i++) {
+      const isMatch = cleanDictationWord(typedWords[i]) === cleanDictationWord(targetWords[i]);
+      if (isMatch) {
+        newConfirmed = i + 1;
+      } else {
+        newWrongIndices[i] = true;
+        hitWrong = true;
+        break;
+      }
+    }
+
+    setConfirmedCount(newConfirmed);
+    setWordStatus(hitWrong ? "incorrect" : "neutral");
+    setWrongIndices((prev) => ({ ...prev, ...newWrongIndices }));
+    if (newConfirmed === targetWords.length) {
+      finalizeSegment(targetWords.length, Object.keys({ ...wrongIndices, ...newWrongIndices }).length);
+    }
+  };
+
+  // Bỏ qua cả câu hiện tại (tính điểm theo số từ đã gõ đúng tính đến lúc bỏ qua) và chuyển
+  // sang câu tiếp theo, thay vì chỉ bỏ qua một từ.
+  const handleSkipSegment = () => {
+    const seg = activeVideo.segments[currentIndex];
+    if (seg) {
+      const targetWords = seg.text.trim().split(/\s+/);
+      const wrongCount = targetWords.length - confirmedCount;
+      finalizeSegment(targetWords.length, wrongCount);
+    }
+    if (currentIndex < activeVideo.segments.length - 1) {
+      goToSegment(currentIndex + 1);
+    } else {
+      resetWordProgress();
+    }
+  };
+
+  const finalizeSegment = (total, wrongCount) => {
+    const accuracy = Math.round(((total - wrongCount) / total) * 100);
+    updateProgress(currentIndex, accuracy);
+  };
+
+  const goToSegment = (index) => {
+    if (!activeVideo || index < 0 || index >= activeVideo.segments.length) return;
+    setCurrentIndex(index);
+    resetWordProgress();
+  };
+
+  const startPractice = (video) => {
+    setActiveVideoId(video.id);
+    const lastIndex = video.progress?.lastIndex ?? 0;
+    const startIdx = lastIndex < video.segments.length ? lastIndex : 0;
+    setCurrentIndex(startIdx);
+    resetWordProgress();
+    setMode("practice");
+  };
+
+  const handleDeleteVideo = (id) => {
+    if (!window.confirm("Xoá video này khỏi danh sách chép chính tả?")) return;
+    setVideos((prev) => prev.filter((v) => v.id !== id));
+  };
+
+  const processTranscriptFile = (file) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTranscriptInput(String(reader.result || ""));
+      setTitleInput((prev) => (prev.trim() ? prev : deriveTitleFromFilename(file.name)));
+      setFormError("");
+    };
+    reader.onerror = () => setFormError("Không đọc được file. Hãy thử lại.");
+    reader.readAsText(file);
+  };
+
+  const handleTranscriptFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    processTranscriptFile(file);
+  };
+
+  const handleTranscriptDrop = (e) => {
+    e.preventDefault();
+    setIsDraggingTranscript(false);
+    const file = e.dataTransfer.files?.[0];
+    processTranscriptFile(file);
+  };
+
+  const handleAddVideo = () => {
+    setFormError("");
+    const videoId = extractYouTubeId(urlInput);
+    if (!videoId) {
+      setFormError("Link YouTube không hợp lệ. Dán link dạng youtube.com/watch?v=... hoặc youtu.be/...");
+      return;
+    }
+    const segments = parseTranscriptInput(transcriptInput);
+    if (!segments) {
+      setFormError(
+        "Không đọc được transcript. Hãy tải file phụ đề .srt/.vtt, hoặc dán bảng Time / Subtitle (mỗi mốc trên một dòng, vd: '0s' rồi tới câu phụ đề).",
+      );
+      return;
+    }
+    const newVideo = {
+      id: String(Date.now()),
+      title: titleInput.trim() || `Video ${videoId}`,
+      videoId,
+      segments,
+      createdAt: Date.now(),
+      progress: { attempts: {}, avgAccuracy: 0, lastIndex: 0 },
+    };
+    setVideos((prev) => [newVideo, ...prev]);
+    setTitleInput("");
+    setUrlInput("");
+    setTranscriptInput("");
+    setMode("list");
+  };
+
+  const backToList = () => {
+    setMode("list");
+    setActiveVideoId(null);
+  };
+
+  // --- MÀN HÌNH: THÊM VIDEO ---
+  if (mode === "add") {
+    return (
+      <div className="animate-in fade-in duration-300 pb-24">
+        <div className="flex items-center gap-2 mb-4">
+          <button
+            onClick={() => setMode("list")}
+            className="p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-full hover:bg-slate-100"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h2 className="text-lg font-bold text-slate-800">Thêm video chép chính tả</h2>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-500 mb-1">
+              Tiêu đề (không bắt buộc)
+            </label>
+            <input
+              type="text"
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              placeholder="VD: IELTS Speaking Part 1 – Food"
+              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-500 mb-1">
+              Link YouTube
+            </label>
+            <input
+              type="text"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-500 mb-1">Transcript</label>
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDraggingTranscript(true);
+              }}
+              onDragLeave={() => setIsDraggingTranscript(false)}
+              onDrop={handleTranscriptDrop}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 mb-2 border border-dashed rounded-xl text-sm cursor-pointer transition-colors ${
+                isDraggingTranscript
+                  ? "border-blue-500 bg-blue-50 text-blue-600"
+                  : "border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600"
+              }`}
+            >
+              <Upload className="w-4 h-4" />
+              {isDraggingTranscript ? "Thả file để tải lên" : "Tải file phụ đề .srt / .vtt (hoặc kéo-thả vào đây)"}
+              <input
+                type="file"
+                accept=".srt,.vtt,text/plain,text/vtt"
+                onChange={handleTranscriptFile}
+                className="hidden"
+              />
+            </label>
+            <textarea
+              value={transcriptInput}
+              onChange={(e) => setTranscriptInput(e.target.value)}
+              rows={10}
+              placeholder={"0s\nWelcome to IELTS time...\n4s\ntopic of food...\n9s\n..."}
+              className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none font-mono text-sm"
+            />
+            <p className="text-xs text-slate-400 mt-1">
+              Tải file .srt/.vtt tải từ YouTube (vd qua DownSub), hoặc tự dán bảng "Time /
+              Subtitle" — mỗi câu sẽ đồng bộ với đúng thời điểm trong video.
+            </p>
+          </div>
+
+          {formError && (
+            <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3">
+              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{formError}</span>
+            </div>
+          )}
+
+          <button
+            onClick={handleAddVideo}
+            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Lưu video
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- MÀN HÌNH: LUYỆN TẬP ---
+  if (mode === "practice" && activeVideo) {
+    const seg = activeVideo.segments[currentIndex];
+    const total = activeVideo.segments.length;
+    const isLast = currentIndex === total - 1;
+    const isFirst = currentIndex === 0;
+
+    return (
+      <div className="animate-in fade-in duration-300 pb-24">
+        <div className="flex items-center gap-2 mb-3">
+          <button
+            onClick={backToList}
+            className="p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-full hover:bg-slate-100"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-bold text-slate-800 truncate">{activeVideo.title}</h2>
+            <p className="text-xs text-slate-400">
+              Câu {currentIndex + 1}/{total}
+              {activeVideo.progress?.avgAccuracy ? ` · TB ${activeVideo.progress.avgAccuracy}%` : ""}
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden mb-3">
+          <div ref={playerContainerRef} className="w-full h-full" />
+        </div>
+
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex gap-1.5">
+            {[0.75, 1].map((rate) => (
+              <button
+                key={rate}
+                onClick={() => setPlaybackRate(rate)}
+                className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
+                  playbackRate === rate
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-slate-500 border-slate-200"
+                }`}
+              >
+                {rate}x
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => playSegment(currentIndex)}
+            disabled={!playerReady || isPlayingSegment}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
+          >
+            <Rewind className="w-4 h-4" /> Nghe lại
+          </button>
+        </div>
+
+        {(() => {
+          const targetWords = seg.text.trim().split(/\s+/);
+          const segmentDone = confirmedCount >= targetWords.length;
+          return (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+              <textarea
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  e.preventDefault();
+                  if (segmentDone) {
+                    if (!isLast) goToSegment(currentIndex + 1);
+                    return;
+                  }
+                  checkCurrentWord();
+                }}
+                disabled={segmentDone}
+                rows={2}
+                autoFocus
+                placeholder="Gõ lại những gì bạn nghe được..."
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-slate-50"
+              />
+
+              <div className="flex items-center justify-between mt-3">
+                <div className="flex items-center gap-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
+                  {wordStatus === "incorrect" && !segmentDone && (
+                    <>
+                      <AlertCircle className="w-4 h-4" /> Chưa đúng
+                    </>
+                  )}
+                  {segmentDone && (
+                    <span className="text-green-600">
+                      Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
+                    </span>
+                  )}
+                </div>
+                {!segmentDone && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={checkCurrentWord}
+                      className="px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-full hover:bg-blue-700"
+                    >
+                      Kiểm tra
+                    </button>
+                    <button
+                      onClick={handleSkipSegment}
+                      className="px-3 py-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
+                    >
+                      Bỏ qua
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {hasChecked && (
+                <>
+                  <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
+                    {targetWords.map((w, i) => {
+                      if (i < confirmedCount) {
+                        return (
+                          <span key={i} className={wrongIndices[i] ? "text-amber-600" : "text-slate-500"}>
+                            {w}
+                          </span>
+                        );
+                      }
+                      const revealThis =
+                        showFullAnswer ||
+                        (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
+                      if (revealThis) {
+                        return (
+                          <span key={i} className="text-green-600 font-bold">
+                            {w}
+                          </span>
+                        );
+                      }
+                      return (
+                        <span key={i} className="text-slate-300 tracking-widest">
+                          {"*".repeat(w.length)}
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 mt-3">
+                    <label className="flex items-center gap-2 text-xs text-slate-500">
+                      <input
+                        type="checkbox"
+                        checked={showAnswerImmediately}
+                        onChange={(e) => setShowAnswerImmediately(e.target.checked)}
+                      />
+                      Hiện đáp án ngay khi gõ sai
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-500">
+                      <input
+                        type="checkbox"
+                        checked={showFullAnswer}
+                        onChange={(e) => setShowFullAnswer(e.target.checked)}
+                      />
+                      Hiện toàn bộ đáp án
+                    </label>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
+
+        <div className="flex justify-between gap-3">
+          <button
+            onClick={() => goToSegment(currentIndex - 1)}
+            disabled={isFirst}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
+          >
+            <SkipBack className="w-4 h-4" /> Câu trước
+          </button>
+          <button
+            onClick={() => goToSegment(currentIndex + 1)}
+            disabled={isLast}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
+          >
+            Câu sau <SkipForward className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- MÀN HÌNH: DANH SÁCH VIDEO ---
+  return (
+    <div className="animate-in fade-in duration-300 pb-24">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-slate-800">Chép chính tả</h2>
+        <button
+          onClick={() => {
+            setFormError("");
+            setMode("add");
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-bold rounded-full"
+        >
+          <Plus className="w-4 h-4" /> Thêm video
+        </button>
+      </div>
+
+      {videos.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center text-sm text-slate-500">
+          <Headphones className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+          Chưa có video nào. Bấm "Thêm video", dán link YouTube và transcript
+          (cột Time / Subtitle) để bắt đầu luyện chép chính tả.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {videos.map((v) => (
+            <div
+              key={v.id}
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 flex items-center gap-3"
+            >
+              <button
+                onClick={() => startPractice(v)}
+                className="flex-1 min-w-0 text-left flex items-center gap-3"
+              >
+                <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl shrink-0">
+                  <Play className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-800 truncate">{v.title}</p>
+                  <p className="text-xs text-slate-400">
+                    {v.segments.length} câu
+                    {v.progress?.avgAccuracy ? ` · TB ${v.progress.avgAccuracy}%` : ""}
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleDeleteVideo(v.id)}
+                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full shrink-0"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -2332,6 +3133,9 @@ export default function App() {
             onDeckChange={setDeckInput}
           />
         )}
+
+        {/* --- TAB: CHÉP CHÍNH TẢ --- */}
+        {activeTab === "dictation" && <DictationCoach />}
       </main>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
@@ -2421,6 +3225,21 @@ export default function App() {
           <Trophy className="w-5 h-5 mb-1" />
           <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
             Game
+          </span>
+        </button>
+
+        {/* NÚT TAB MỚI: CHÉP CHÍNH TẢ */}
+        <button
+          onClick={() => setActiveTab("dictation")}
+          className={`flex-1 flex flex-col items-center py-2.5 relative ${
+            activeTab === "dictation"
+              ? "text-blue-600 font-bold"
+              : "text-slate-400 hover:text-slate-600"
+          }`}
+        >
+          <Headphones className="w-5 h-5 mb-1" />
+          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            Chép chính tả
           </span>
         </button>
       </nav>
