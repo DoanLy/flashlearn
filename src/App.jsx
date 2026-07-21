@@ -31,6 +31,7 @@ import {
   SkipBack,
   SkipForward,
   Rewind,
+  Upload,
 } from "lucide-react";
 
 // ============================================================================
@@ -1155,6 +1156,100 @@ function parseTimedTranscript(raw) {
   return segments.length ? segments : null;
 }
 
+function srtTimeToSeconds(t) {
+  const m = t.match(/(\d+):(\d{2}):(\d{2})[,.](\d{1,3})/);
+  if (!m) return null;
+  return Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) + Number(m[4]) / 1000;
+}
+
+// Đọc từng "cue" thô từ file .srt hoặc .vtt (không phụ thuộc số thứ tự cue, vì VTT có thể bỏ số)
+function extractSrtCues(raw) {
+  if (!raw) return [];
+  const text = raw.replace(/\r\n/g, "\n").replace(/^WEBVTT[^\n]*\n/i, "");
+  const blocks = text.split(/\n\s*\n/);
+  const cues = [];
+  for (const block of blocks) {
+    const lines = block.split("\n").map((l) => l.trim()).filter(Boolean);
+    const arrowIdx = lines.findIndex((l) => l.includes("-->"));
+    if (arrowIdx === -1) continue;
+    const arrowMatch = lines[arrowIdx].match(
+      /(\d+:\d{2}:\d{2}[,.]\d{1,3})\s*-->\s*(\d+:\d{2}:\d{2}[,.]\d{1,3})/,
+    );
+    if (!arrowMatch) continue;
+    const start = srtTimeToSeconds(arrowMatch[1]);
+    const end = srtTimeToSeconds(arrowMatch[2]);
+    const cueText = lines
+      .slice(arrowIdx + 1)
+      .join(" ")
+      .replace(/<[^>]+>/g, "")
+      .trim();
+    if (cueText) cues.push({ start, end, text: cueText });
+  }
+  return cues;
+}
+
+// Gộp các cue phụ đề (thường bị cắt giữa câu theo thời lượng hiển thị) thành từng câu hoàn
+// chỉnh để chép chính tả, tách câu mới mỗi khi đổi người nói (">>") dù câu trước chưa hết.
+function parseSrtTranscript(raw) {
+  const cues = extractSrtCues(raw);
+  if (!cues.length) return null;
+
+  const segments = [];
+  let buffer = "";
+  let bufferStart = null;
+
+  const emitCompleteSentences = () => {
+    const sentenceRegex = /[^.!?]*[.!?]+(?:["'”’)\]]+)?\s*/g;
+    let m;
+    let consumed = 0;
+    while ((m = sentenceRegex.exec(buffer)) !== null) {
+      const sentence = m[0].trim();
+      if (sentence) segments.push({ start: bufferStart, text: sentence.replace(/\s+/g, " ") });
+      consumed = sentenceRegex.lastIndex;
+    }
+    buffer = buffer.slice(consumed);
+    if (!buffer) bufferStart = null;
+  };
+
+  for (const cue of cues) {
+    // Dấu ">>" đánh dấu đổi người nói, có thể nằm ở đầu hoặc giữa cue (khi hai người nói
+    // xen kẽ trong cùng một cue phụ đề) — tách theo dấu này trước khi gộp câu.
+    const parts = cue.text.split(/>>/).map((p) => p.trim());
+    parts.forEach((part, i) => {
+      if (i > 0) {
+        const leftover = buffer.trim();
+        if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
+        buffer = "";
+        bufferStart = null;
+      }
+      if (!part) return;
+      if (!buffer) bufferStart = cue.start;
+      buffer += (buffer ? " " : "") + part;
+
+      const before = segments.length;
+      emitCompleteSentences();
+      if (segments.length > before && buffer) bufferStart = cue.start;
+    });
+  }
+  const leftover = buffer.trim();
+  if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
+
+  return segments.length ? segments : null;
+}
+
+function parseTranscriptInput(raw) {
+  if (!raw) return null;
+  if (raw.includes("-->")) return parseSrtTranscript(raw);
+  return parseTimedTranscript(raw);
+}
+
+function deriveTitleFromFilename(filename) {
+  let name = filename.replace(/\.(srt|vtt)$/i, "");
+  name = name.replace(/\[DownSub\.com\]/gi, "");
+  name = name.replace(/^\s*\[[^\]]*\]\s*/, "");
+  return name.replace(/\s+/g, " ").trim();
+}
+
 const cleanDictationWord = (w) => (w || "").toLowerCase().replace(/[^a-z0-9']/g, "");
 
 let ytApiPromise = null;
@@ -1410,6 +1505,20 @@ const DictationCoach = () => {
     setVideos((prev) => prev.filter((v) => v.id !== id));
   };
 
+  const handleTranscriptFile = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setTranscriptInput(String(reader.result || ""));
+      setTitleInput((prev) => (prev.trim() ? prev : deriveTitleFromFilename(file.name)));
+      setFormError("");
+    };
+    reader.onerror = () => setFormError("Không đọc được file. Hãy thử lại.");
+    reader.readAsText(file);
+  };
+
   const handleAddVideo = () => {
     setFormError("");
     const videoId = extractYouTubeId(urlInput);
@@ -1417,10 +1526,10 @@ const DictationCoach = () => {
       setFormError("Link YouTube không hợp lệ. Dán link dạng youtube.com/watch?v=... hoặc youtu.be/...");
       return;
     }
-    const segments = parseTimedTranscript(transcriptInput);
+    const segments = parseTranscriptInput(transcriptInput);
     if (!segments) {
       setFormError(
-        "Không tìm thấy mốc thời gian dạng '12s' trong transcript. Dán đúng định dạng cột Time / Subtitle (mỗi mốc trên một dòng, vd: '0s' rồi tới câu phụ đề).",
+        "Không đọc được transcript. Hãy tải file phụ đề .srt/.vtt, hoặc dán bảng Time / Subtitle (mỗi mốc trên một dòng, vd: '0s' rồi tới câu phụ đề).",
       );
       return;
     }
@@ -1486,8 +1595,16 @@ const DictationCoach = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-500 mb-1">
-              Transcript (dán cột Time / Subtitle)
+            <label className="block text-sm font-medium text-slate-500 mb-1">Transcript</label>
+            <label className="flex items-center justify-center gap-2 px-3 py-2.5 mb-2 border border-dashed border-slate-300 rounded-xl text-sm text-slate-500 cursor-pointer hover:border-blue-400 hover:text-blue-600 transition-colors">
+              <Upload className="w-4 h-4" />
+              Tải file phụ đề .srt / .vtt
+              <input
+                type="file"
+                accept=".srt,.vtt,text/plain,text/vtt"
+                onChange={handleTranscriptFile}
+                className="hidden"
+              />
             </label>
             <textarea
               value={transcriptInput}
@@ -1497,8 +1614,8 @@ const DictationCoach = () => {
               className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none font-mono text-sm"
             />
             <p className="text-xs text-slate-400 mt-1">
-              Dán nguyên bảng "Time / Subtitle" — mỗi mốc thời gian (vd: 0s, 4s, 9s...) sẽ trở
-              thành một câu để chép chính tả, đồng bộ với video.
+              Tải file .srt/.vtt tải từ YouTube (vd qua DownSub), hoặc tự dán bảng "Time /
+              Subtitle" — mỗi câu sẽ đồng bộ với đúng thời điểm trong video.
             </p>
           </div>
 
