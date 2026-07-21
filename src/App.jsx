@@ -1188,51 +1188,73 @@ function extractSrtCues(raw) {
   return cues;
 }
 
-// Gộp các cue phụ đề (thường bị cắt giữa câu theo thời lượng hiển thị) thành từng câu hoàn
-// chỉnh để chép chính tả, tách câu mới mỗi khi đổi người nói (">>") dù câu trước chưa hết.
+// Một câu được coi là ĐÃ KẾT THÚC khi cuối chuỗi có dấu . ! ? … (kèm dấu đóng ngoặc/nháy nếu
+// có). Lưu ý: KHÔNG khớp dấu chấm nằm giữa chữ như trong "TheFableCottage.com)" — vì ở đó dấu
+// chấm đứng ngay trước "com" chứ không phải ở cuối chuỗi, nên không bị nhận nhầm là hết câu.
+const SENTENCE_END_RE = /[.!?…]+["'”’)\]]*\s*$/;
+// Hai cue cách nhau quá lâu (giây) coi như hai câu/đoạn khác nhau, không gộp dù câu chưa có
+// dấu kết thúc (vd: dòng tiêu đề, dòng giới thiệu không có dấu chấm cuối).
+const CUE_MERGE_GAP = 1.0;
+
+// Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả, GIỮ ĐÚNG mốc thời gian.
+// Nguyên tắc cốt lõi: KHÔNG BAO GIỜ cắt một cue làm đôi — nhờ vậy khung thời gian [start, end]
+// của mỗi câu luôn khớp chính xác với phần chữ hiển thị (audio không lệch với text). Chỉ gộp
+// cue hiện tại với cue kế tiếp khi câu chưa kết thúc VÀ khoảng lặng giữa hai cue đủ ngắn (cùng
+// một mạch nói). Dấu ">>" (đổi người nói) luôn tách câu.
 function parseSrtTranscript(raw) {
-  const cues = extractSrtCues(raw);
-  if (!cues.length) return null;
+  const rawCues = extractSrtCues(raw);
+  if (!rawCues.length) return null;
 
-  const segments = [];
-  let buffer = "";
-  let bufferStart = null;
-
-  const emitCompleteSentences = () => {
-    const sentenceRegex = /[^.!?]*[.!?]+(?:["'”’)\]]+)?\s*/g;
-    let m;
-    let consumed = 0;
-    while ((m = sentenceRegex.exec(buffer)) !== null) {
-      const sentence = m[0].trim();
-      if (sentence) segments.push({ start: bufferStart, text: sentence.replace(/\s+/g, " ") });
-      consumed = sentenceRegex.lastIndex;
+  // Tách cue theo ">>" thành các cue con, chia thời gian theo tỉ lệ số ký tự để mỗi phần vẫn
+  // có mốc start/end riêng thay vì dùng chung mốc của cả cue.
+  const cues = [];
+  for (const cue of rawCues) {
+    if (!cue.text.includes(">>")) {
+      cues.push({ start: cue.start, end: cue.end, text: cue.text });
+      continue;
     }
-    buffer = buffer.slice(consumed);
-    if (!buffer) bufferStart = null;
-  };
-
-  for (const cue of cues) {
-    // Dấu ">>" đánh dấu đổi người nói, có thể nằm ở đầu hoặc giữa cue (khi hai người nói
-    // xen kẽ trong cùng một cue phụ đề) — tách theo dấu này trước khi gộp câu.
-    const parts = cue.text.split(/>>/).map((p) => p.trim());
+    const parts = cue.text.split(/>>/);
+    const total = cue.text.length || 1;
+    const span = (cue.end ?? cue.start) - cue.start;
+    let offset = 0;
     parts.forEach((part, i) => {
-      if (i > 0) {
-        const leftover = buffer.trim();
-        if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
-        buffer = "";
-        bufferStart = null;
-      }
-      if (!part) return;
-      if (!buffer) bufferStart = cue.start;
-      buffer += (buffer ? " " : "") + part;
-
-      const before = segments.length;
-      emitCompleteSentences();
-      if (segments.length > before && buffer) bufferStart = cue.start;
+      const s = cue.start + (span * offset) / total;
+      const e = cue.start + (span * (offset + part.length)) / total;
+      const text = part.trim();
+      if (text) cues.push({ start: s, end: e, text });
+      offset += part.length + 2; // +2 cho ký tự ">>" đã bị split bỏ đi
     });
   }
-  const leftover = buffer.trim();
-  if (leftover) segments.push({ start: bufferStart, text: leftover.replace(/\s+/g, " ") });
+
+  const segments = [];
+  let buf = null; // { start, end, text }
+  for (let i = 0; i < cues.length; i++) {
+    const cue = cues[i];
+    if (!buf) buf = { start: cue.start, end: cue.end, text: cue.text };
+    else {
+      buf.text += " " + cue.text;
+      buf.end = cue.end;
+    }
+    const endsSentence = SENTENCE_END_RE.test(buf.text);
+    const next = cues[i + 1];
+    const gap = next ? next.start - (cue.end ?? cue.start) : Infinity;
+    const forceBreak = !next || gap >= CUE_MERGE_GAP;
+    if (endsSentence || forceBreak) {
+      segments.push({
+        start: buf.start,
+        end: buf.end,
+        text: buf.text.replace(/\s+/g, " ").trim(),
+      });
+      buf = null;
+    }
+  }
+  if (buf) {
+    segments.push({
+      start: buf.start,
+      end: buf.end,
+      text: buf.text.replace(/\s+/g, " ").trim(),
+    });
+  }
 
   return segments.length ? segments : null;
 }
@@ -1374,7 +1396,16 @@ const DictationCoach = () => {
     const seg = activeVideo?.segments?.[index];
     if (!player || !seg) return;
     const next = activeVideo.segments[index + 1];
-    const endTime = next ? next.start : seg.start + 8;
+    // Ưu tiên dừng theo mốc end thật của cue (chính xác, không phát lấn sang khoảng lặng của
+    // câu sau). Thêm 0.4s đệm để không cụt từ cuối, nhưng không vượt quá lúc câu sau bắt đầu.
+    // Câu từ định dạng dán tay "Ns" không có end → quay lại dùng mốc bắt đầu của câu kế tiếp.
+    let endTime;
+    if (seg.end != null) {
+      endTime = seg.end + 0.4;
+      if (next && next.start != null && endTime > next.start) endTime = next.start;
+    } else {
+      endTime = next ? next.start : seg.start + 8;
+    }
     if (watcherRef.current) clearInterval(watcherRef.current);
     player.seekTo(seg.start, true);
     player.setPlaybackRate(playbackRate);
