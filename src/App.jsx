@@ -1782,11 +1782,11 @@ const DictationCoach = () => {
                   }
                   checkCurrentWord();
                 }}
-                disabled={segmentDone}
+                readOnly={segmentDone}
                 rows={2}
                 autoFocus
                 placeholder="Gõ lại những gì bạn nghe được..."
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none disabled:bg-slate-50"
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
               />
 
               <div className="flex items-center justify-between mt-3">
