@@ -1137,6 +1137,19 @@ function extractYouTubeId(input) {
   return null;
 }
 
+// Loại bỏ nhãn chú thích phụ đề (không phải lời thoại): [music], [Applause], [laughter],
+// [inaudible], ký hiệu nốt nhạc ♪ ♫... — người học không cần và không thể gõ lại những thứ này.
+// Chỉ lọc ngoặc VUÔNG [ ] (gần như luôn là chú thích), KHÔNG đụng tới ngoặc tròn ( ) vì đó có
+// thể là nội dung thật cần chép (vd dòng giới thiệu "(A version of the tale by ...)").
+function stripCaptionAnnotations(text) {
+  if (!text) return "";
+  return text
+    .replace(/\[[^\]]*\]/g, " ")
+    .replace(/[♪♫♬🎵🎶]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 // Parse transcript dạng "Time / Subtitle" (vd: "0s\nWelcome to...\n4s\ntopic of food...")
 function parseTimedTranscript(raw) {
   if (!raw) return null;
@@ -1149,7 +1162,7 @@ function parseTimedTranscript(raw) {
     const start = Number(matches[i][1]);
     const contentStart = matches[i].index + matches[i][0].length;
     const contentEnd = i + 1 < matches.length ? matches[i + 1].index : text.length;
-    const content = text.slice(contentStart, contentEnd).replace(/\s+/g, " ").trim();
+    const content = stripCaptionAnnotations(text.slice(contentStart, contentEnd));
     if (content) segments.push({ start, text: content });
   }
   segments.sort((a, b) => a.start - b.start);
@@ -1178,11 +1191,9 @@ function extractSrtCues(raw) {
     if (!arrowMatch) continue;
     const start = srtTimeToSeconds(arrowMatch[1]);
     const end = srtTimeToSeconds(arrowMatch[2]);
-    const cueText = lines
-      .slice(arrowIdx + 1)
-      .join(" ")
-      .replace(/<[^>]+>/g, "")
-      .trim();
+    const cueText = stripCaptionAnnotations(
+      lines.slice(arrowIdx + 1).join(" ").replace(/<[^>]+>/g, ""),
+    );
     if (cueText) cues.push({ start, end, text: cueText });
   }
   return cues;
