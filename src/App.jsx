@@ -1286,6 +1286,7 @@ const DictationCoach = () => {
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [wordStatus, setWordStatus] = useState("neutral"); // 'neutral' | 'incorrect'
   const [wrongIndices, setWrongIndices] = useState({});
+  const [hasChecked, setHasChecked] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isPlayingSegment, setIsPlayingSegment] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
@@ -1396,6 +1397,20 @@ const DictationCoach = () => {
     }
   }, [playbackRate]);
 
+  // Bấm phím Ctrl để nghe lại đoạn hiện tại, kể cả khi đang gõ trong ô nhập
+  useEffect(() => {
+    if (mode !== "practice") return;
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === "Control" && !e.repeat) {
+        e.preventDefault();
+        playSegment(currentIndex);
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, currentIndex, playbackRate]);
+
   const updateProgress = (index, accuracy) => {
     setVideos((prev) =>
       prev.map((v) => {
@@ -1418,31 +1433,21 @@ const DictationCoach = () => {
     setWordStatus("neutral");
     setWrongIndices({});
     setShowFullAnswer(false);
+    setHasChecked(false);
   };
 
-  // Chạy trên mỗi thay đổi của ô nhập (gõ, dán, bàn phím ảo...) — phát hiện khi một từ
-  // vừa được gõ xong (có khoảng trắng theo sau) và so khớp với từ mục tiêu hiện tại.
-  const processInputChange = (value) => {
+  // Chấm từ đang gõ dở — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
+  const checkCurrentWord = () => {
     const seg = activeVideo.segments[currentIndex];
     if (!seg) return;
     const targetWords = seg.text.trim().split(/\s+/);
     if (confirmedCount >= targetWords.length) return;
+    setHasChecked(true);
 
     const confirmedPrefix =
       targetWords.slice(0, confirmedCount).join(" ") + (confirmedCount > 0 ? " " : "");
-    const rest = value.startsWith(confirmedPrefix) ? value.slice(confirmedPrefix.length) : value;
-    const spaceIdx = rest.indexOf(" ");
-
-    if (spaceIdx === -1) {
-      setUserInput(value);
-      return;
-    }
-
-    const typedWord = rest.slice(0, spaceIdx);
-    if (!typedWord) {
-      setUserInput(confirmedPrefix);
-      return;
-    }
+    const typedWord = userInput.slice(confirmedPrefix.length).trim();
+    if (!typedWord) return;
 
     const isMatch = cleanDictationWord(typedWord) === cleanDictationWord(targetWords[confirmedCount]);
     if (isMatch) {
@@ -1467,6 +1472,7 @@ const DictationCoach = () => {
     if (!seg) return;
     const targetWords = seg.text.trim().split(/\s+/);
     if (confirmedCount >= targetWords.length) return;
+    setHasChecked(true);
     const nextWrongIndices = { ...wrongIndices, [confirmedCount]: true };
     setWrongIndices(nextWrongIndices);
     const newConfirmed = confirmedCount + 1;
@@ -1698,7 +1704,7 @@ const DictationCoach = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
               <textarea
                 value={userInput}
-                onChange={(e) => processInputChange(e.target.value)}
+                onChange={(e) => setUserInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter") return;
                   e.preventDefault();
@@ -1706,8 +1712,7 @@ const DictationCoach = () => {
                     if (!isLast) goToSegment(currentIndex + 1);
                     return;
                   }
-                  // Enter cũng kết thúc từ đang gõ, kể cả từ cuối câu (không có khoảng trắng theo sau)
-                  processInputChange(`${userInput}${userInput.endsWith(" ") ? "" : " "}`);
+                  checkCurrentWord();
                 }}
                 disabled={segmentDone}
                 rows={2}
@@ -1730,59 +1735,72 @@ const DictationCoach = () => {
                   )}
                 </div>
                 {!segmentDone && (
-                  <button
-                    onClick={handleSkipWord}
-                    className="px-3 py-1 text-xs font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
-                  >
-                    Bỏ qua từ
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={checkCurrentWord}
+                      className="px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-full hover:bg-blue-700"
+                    >
+                      Kiểm tra
+                    </button>
+                    <button
+                      onClick={handleSkipWord}
+                      className="px-3 py-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
+                    >
+                      Bỏ qua
+                    </button>
+                  </div>
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
-                {targetWords.map((w, i) => {
-                  if (i < confirmedCount) {
-                    return (
-                      <span key={i} className={wrongIndices[i] ? "text-amber-600" : "text-slate-500"}>
-                        {w}
-                      </span>
-                    );
-                  }
-                  const revealThis =
-                    showFullAnswer || (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
-                  if (revealThis) {
-                    return (
-                      <span key={i} className="text-green-600 font-bold">
-                        {w}
-                      </span>
-                    );
-                  }
-                  return (
-                    <span key={i} className="text-slate-300 tracking-widest">
-                      {"*".repeat(w.length)}
-                    </span>
-                  );
-                })}
-              </div>
+              {hasChecked && (
+                <>
+                  <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
+                    {targetWords.map((w, i) => {
+                      if (i < confirmedCount) {
+                        return (
+                          <span key={i} className={wrongIndices[i] ? "text-amber-600" : "text-slate-500"}>
+                            {w}
+                          </span>
+                        );
+                      }
+                      const revealThis =
+                        showFullAnswer ||
+                        (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
+                      if (revealThis) {
+                        return (
+                          <span key={i} className="text-green-600 font-bold">
+                            {w}
+                          </span>
+                        );
+                      }
+                      return (
+                        <span key={i} className="text-slate-300 tracking-widest">
+                          {"*".repeat(w.length)}
+                        </span>
+                      );
+                    })}
+                  </div>
 
-              <div className="flex flex-col gap-1.5 mt-3">
-                <label className="flex items-center gap-2 text-xs text-slate-500">
-                  <input
-                    type="checkbox"
-                    checked={showAnswerImmediately}
-                    onChange={(e) => setShowAnswerImmediately(e.target.checked)}
-                  />
-                  Hiện đáp án ngay khi gõ sai
-                </label>
-                <label className="flex items-center gap-2 text-xs text-slate-500">
-                  <input
-                    type="checkbox"
-                    checked={showFullAnswer}
-                    onChange={(e) => setShowFullAnswer(e.target.checked)}
-                  />
-                  Hiện toàn bộ đáp án
-                </label>
-              </div>
+                  <div className="flex flex-col gap-1.5 mt-3">
+                    <label className="flex items-center gap-2 text-xs text-slate-500">
+                      <input
+                        type="checkbox"
+                        checked={showAnswerImmediately}
+                        onChange={(e) => setShowAnswerImmediately(e.target.checked)}
+                      />
+                      Hiện đáp án ngay khi gõ sai
+                    </label>
+                    <label className="flex items-center gap-2 text-xs text-slate-500">
+                      <input
+                        type="checkbox"
+                        checked={showFullAnswer}
+                        onChange={(e) => setShowFullAnswer(e.target.checked)}
+                      />
+                      Hiện toàn bộ đáp án
+                    </label>
+                  </div>
+                </>
+              )}
             </div>
           );
         })()}
