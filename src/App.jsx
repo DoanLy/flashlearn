@@ -1206,12 +1206,17 @@ const SENTENCE_END_RE = /[.!?…]+["'”’)\]]*\s*$/;
 // Hai cue cách nhau quá lâu (giây) coi như hai câu/đoạn khác nhau, không gộp dù câu chưa có
 // dấu kết thúc (vd: dòng tiêu đề, dòng giới thiệu không có dấu chấm cuối).
 const CUE_MERGE_GAP = 1.0;
+// Giới hạn số từ tối đa của một câu chép chính tả. Cần cho phụ đề tự động (auto-generated) của
+// YouTube: loại này KHÔNG có dấu chấm câu và các cue nối liền nhau không có khoảng lặng, nên nếu
+// chỉ dựa vào dấu kết câu / khoảng lặng thì sẽ gộp cả một đoạn dài thành một "câu" khổng lồ không
+// thể gõ. Khi câu gộp đã đủ dài thì chốt luôn tại ranh giới cue (vẫn không cắt giữa cue).
+const MAX_SEGMENT_WORDS = 12;
 
 // Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả, GIỮ ĐÚNG mốc thời gian.
 // Nguyên tắc cốt lõi: KHÔNG BAO GIỜ cắt một cue làm đôi — nhờ vậy khung thời gian [start, end]
-// của mỗi câu luôn khớp chính xác với phần chữ hiển thị (audio không lệch với text). Chỉ gộp
-// cue hiện tại với cue kế tiếp khi câu chưa kết thúc VÀ khoảng lặng giữa hai cue đủ ngắn (cùng
-// một mạch nói). Dấu ">>" (đổi người nói) luôn tách câu.
+// của mỗi câu luôn khớp chính xác với phần chữ hiển thị (audio không lệch với text). Gộp cue
+// hiện tại với cue kế tiếp khi câu chưa kết thúc, khoảng lặng đủ ngắn VÀ câu chưa quá dài. Dấu
+// ">>" (đổi người nói) luôn tách câu.
 function parseSrtTranscript(raw) {
   const rawCues = extractSrtCues(raw);
   if (!rawCues.length) return null;
@@ -1247,10 +1252,12 @@ function parseSrtTranscript(raw) {
       buf.end = cue.end;
     }
     const endsSentence = SENTENCE_END_RE.test(buf.text);
+    const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
     const next = cues[i + 1];
     const gap = next ? next.start - (cue.end ?? cue.start) : Infinity;
     const forceBreak = !next || gap >= CUE_MERGE_GAP;
-    if (endsSentence || forceBreak) {
+    const tooLong = wordCount >= MAX_SEGMENT_WORDS;
+    if (endsSentence || forceBreak || tooLong) {
       segments.push({
         start: buf.start,
         end: buf.end,
