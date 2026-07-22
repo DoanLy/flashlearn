@@ -1209,8 +1209,8 @@ const CUE_MERGE_GAP = 1.0;
 // Số từ tối thiểu/tối đa của một câu chép chính tả. Cần cho phụ đề tự động (auto-generated) của
 // YouTube: loại này KHÔNG có dấu chấm câu, nên nếu chỉ dựa vào dấu kết câu / khoảng lặng thì sẽ
 // gộp cả một đoạn dài thành một "câu" khổng lồ không thể gõ.
-const MIN_SEGMENT_WORDS = 6;
-const MAX_SEGMENT_WORDS = 16;
+const MIN_SEGMENT_WORDS = 5;
+const MAX_SEGMENT_WORDS = 13;
 // Cụm từ hầu như luôn mở đầu một mệnh đề/câu mới trong văn nói — điểm ngắt tin cậy cao.
 const STRONG_CLAUSE_MARKERS = new Set([
   "however", "although", "firstly", "secondly", "thirdly", "fourthly", "fifthly",
@@ -1222,7 +1222,7 @@ const STRONG_CLAUSE_MARKERS = new Set([
 ]);
 // Đại từ quan hệ / liên từ phụ thuộc — điểm ngắt khá tốt (mở đầu mệnh đề quan hệ/phụ thuộc).
 const MEDIUM_CLAUSE_MARKERS = new Set([
-  "who", "which", "that", "when", "where", "while", "whereas", "whether", "whose", "whom",
+  "who", "which", "when", "where", "while", "whereas", "whether", "whose", "whom",
 ]);
 // Chỉ tính là điểm ngắt khi đi kèm chủ ngữ theo sau (vd "but I", "so we're", "and there's").
 const WEAK_CLAUSE_MARKERS = new Set(["and", "but", "so", "now", "then", "yet", "or"]);
@@ -1231,60 +1231,36 @@ const CLAUSE_SUBJECT_START = new Set([
   "you", "you're", "he", "he's", "she", "she's", "they", "they're", "it's",
   "there's", "this", "that",
 ]);
-// Điểm ngắt dự phòng yếu — giới từ thường đứng ở ranh giới cụm từ. Chỉ dùng khi buộc phải cắt
-// tại giới hạn MAX_SEGMENT_WORDS mà không tìm được điểm ngắt tốt hơn ở gần đó.
-const WEAK_FALLBACK_MARKERS = new Set([
-  "for", "with", "in", "on", "to", "of", "by", "from", "as", "about", "at",
-  "into", "onto", "during", "before", "after", "since", "until", "though",
-]);
-// Khi buộc cắt tại MAX_SEGMENT_WORDS, lùi lại tối đa ngần này từ để tìm điểm ngắt hợp lý hơn
-// thay vì chốt cứng đúng tại từ thứ MAX_SEGMENT_WORDS (thường rơi giữa chừng một cụm từ).
-const CLAUSE_LOOKBACK_WORDS = 6;
 
 function normalizeClauseWord(w) {
   return w.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/gi, "");
 }
 
-// Chấm điểm mức độ "điểm ngắt câu tốt" của từ tại vị trí idx, NẾU nó là từ ĐẦU TIÊN của câu kế
-// tiếp (tức cắt ngay trước từ này). 0 = không phải điểm ngắt.
-function clauseBreakScore(words, idx) {
-  if (idx <= 0 || idx >= words.length) return 0;
-  const w = normalizeClauseWord(words[idx].text);
-  if (STRONG_CLAUSE_MARKERS.has(w)) return 3;
-  if (MEDIUM_CLAUSE_MARKERS.has(w)) return 2;
-  if (WEAK_CLAUSE_MARKERS.has(w) && words[idx + 1] && CLAUSE_SUBJECT_START.has(normalizeClauseWord(words[idx + 1].text))) {
-    return 2;
+// Cue kế tiếp có MỞ ĐẦU một mệnh đề mới không (dựa vào từ đầu — however/because/which..., hoặc
+// liên từ yếu + chủ ngữ như "but I", "so we're"). Chỉ xét từ ĐẦU của cue vì ta chỉ được phép
+// ngắt tại ranh giới cue (xem parseSrtTranscript) để audio không lệch với chữ.
+function cueStartsNewClause(cueText) {
+  const parts = cueText.split(/\s+/).filter(Boolean);
+  const w0 = normalizeClauseWord(parts[0] || "");
+  if (STRONG_CLAUSE_MARKERS.has(w0) || MEDIUM_CLAUSE_MARKERS.has(w0)) return true;
+  if (WEAK_CLAUSE_MARKERS.has(w0)) {
+    const w1 = normalizeClauseWord(parts[1] || "");
+    if (CLAUSE_SUBJECT_START.has(w1)) return true;
   }
-  if (WEAK_FALLBACK_MARKERS.has(w)) return 1;
-  return 0;
+  return false;
 }
 
-// Trải các cue thành danh sách từng từ kèm mốc thời gian nội suy (chia đều theo số từ trong
-// cue, cùng nguyên tắc nội suy tỉ lệ đã dùng khi tách cue theo ">>" ở trên). Nhờ vậy có thể cắt
-// câu NGAY GIỮA một cue tại đúng ranh giới mệnh đề, thay vì chỉ được cắt ở ranh giới cue — điều
-// vốn khiến câu bị chặt vụn ở những vị trí vô nghĩa với phụ đề auto-generated (cue của YouTube
-// tự ngắt dòng theo độ dài hiển thị, không theo ngữ pháp).
-function cuesToClauseWords(cues) {
-  const words = [];
-  for (const cue of cues) {
-    const raw = cue.text.split(/\s+/).filter(Boolean);
-    const span = (cue.end ?? cue.start) - cue.start;
-    const n = raw.length;
-    raw.forEach((text, i) => {
-      words.push({
-        text,
-        start: cue.start + (span * i) / n,
-        end: cue.start + (span * (i + 1)) / n,
-      });
-    });
-  }
-  return words;
-}
-
-// Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả, GIỮ ĐÚNG mốc thời gian.
-// Ưu tiên cắt tại dấu kết câu thật (nếu có) hoặc tại ranh giới mệnh đề (however, because, who,
-// which, and I, ...); chỉ khi không tìm được điểm ngắt nào mới chốt cứng ở giới hạn số từ. Dấu
-// ">>" (đổi người nói) luôn tách câu.
+// Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả.
+//
+// NGUYÊN TẮC SỐNG CÒN: KHÔNG BAO GIỜ cắt một cue làm đôi. Vì file .srt/.vtt chỉ có mốc thời gian
+// theo TỪNG DÒNG (cue), không có mốc theo từng từ, nên nếu cắt giữa cue thì mốc [start, end] của
+// câu phải suy đoán (nội suy) — và caption tự động đọc không đều mỗi từ, khiến audio phát ra
+// lệch hẳn với phần chữ hiển thị. Giữ mỗi câu = một dãy cue trọn vẹn thì [start, end] luôn bằng
+// mốc thật của caption ⇒ audio khớp chính xác với chữ.
+//
+// Trong ràng buộc đó, chọn điểm ngắt tốt nhất CÓ THỂ ở ranh giới cue: ưu tiên dấu kết câu thật,
+// khoảng lặng, hoặc khi cue kế mở đầu một mệnh đề mới (however, because, which, and I...); và
+// chốt cứng khi câu đã quá dài. Dấu ">>" (đổi người nói) luôn tách câu.
 function parseSrtTranscript(raw) {
   const rawCues = extractSrtCues(raw);
   if (!rawCues.length) return null;
@@ -1310,55 +1286,45 @@ function parseSrtTranscript(raw) {
     });
   }
 
-  const words = cuesToClauseWords(cues);
-  if (!words.length) return null;
-
   const segments = [];
-  let segStart = 0;
-  const pushSegment = (endIdxExclusive) => {
-    const segWords = words.slice(segStart, endIdxExclusive);
+  let buf = null; // { start, end, text } — luôn gồm các cue TRỌN VẸN
+  const flush = () => {
+    if (!buf) return;
     segments.push({
-      start: words[segStart].start,
-      end: segWords[segWords.length - 1].end,
-      text: segWords.map((w) => w.text).join(" "),
+      start: buf.start,
+      end: buf.end,
+      text: buf.text.replace(/\s+/g, " ").trim(),
     });
-    segStart = endIdxExclusive;
+    buf = null;
   };
 
-  for (let i = 0; i < words.length; i++) {
-    const count = i - segStart + 1;
-    const endsSentence = SENTENCE_END_RE.test(words[i].text);
-    const next = words[i + 1];
-    const gap = next ? next.start - words[i].end : Infinity;
-    const gapBreak = gap >= CUE_MERGE_GAP;
-
-    if (endsSentence || gapBreak) {
-      if (next) pushSegment(i + 1);
-      continue;
+  for (let i = 0; i < cues.length; i++) {
+    const cue = cues[i];
+    if (!buf) buf = { start: cue.start, end: cue.end, text: cue.text };
+    else {
+      buf.text += " " + cue.text;
+      buf.end = cue.end;
     }
 
-    if (count >= MIN_SEGMENT_WORDS && next && clauseBreakScore(words, i + 1) >= 2) {
-      pushSegment(i + 1);
-      continue;
-    }
+    const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
+    const endsSentence = SENTENCE_END_RE.test(buf.text);
+    const next = cues[i + 1];
+    const gap = next ? next.start - (cue.end ?? cue.start) : Infinity;
+    const gapBreak = !next || gap >= CUE_MERGE_GAP;
+    // Cue của video này thường dài sẵn (8–9 từ/dòng). Chốt câu TRƯỚC khi gộp thêm một cue mà
+    // sẽ làm vượt giới hạn — nhờ vậy câu ngắn, dễ chép, thay vì gộp lố lên 18–21 từ. Vẫn chỉ
+    // ngắt ở ranh giới cue nên audio luôn khớp chữ.
+    const nextWords = next ? next.text.split(/\s+/).filter(Boolean).length : 0;
+    const wouldOverflow = next && wordCount + nextWords > MAX_SEGMENT_WORDS;
+    const softBreak =
+      wordCount >= MIN_SEGMENT_WORDS &&
+      (wouldOverflow || (next && cueStartsNewClause(next.text)));
+    // An toàn: một cue đơn lẻ đã dài hơn giới hạn (không có cue nào để gộp thêm) vẫn phải chốt.
+    const hardTooLong = wordCount >= MAX_SEGMENT_WORDS;
 
-    if (count >= MAX_SEGMENT_WORDS) {
-      // Buộc phải cắt: lùi lại trong cửa sổ gần đây tìm điểm ngắt tốt nhất, thay vì chốt cứng
-      // đúng tại từ thứ MAX_SEGMENT_WORDS (thường rơi giữa chừng một cụm từ).
-      let bestIdx = -1;
-      let bestScore = 0;
-      const lo = Math.max(segStart + MIN_SEGMENT_WORDS, i + 1 - CLAUSE_LOOKBACK_WORDS);
-      for (let j = i + 1; j > lo; j--) {
-        const score = clauseBreakScore(words, j);
-        if (score > bestScore) {
-          bestScore = score;
-          bestIdx = j;
-        }
-      }
-      pushSegment(bestIdx > 0 ? bestIdx : i + 1);
-    }
+    if (endsSentence || gapBreak || softBreak || hardTooLong) flush();
   }
-  if (segStart < words.length) pushSegment(words.length);
+  flush();
 
   return segments.length ? segments : null;
 }

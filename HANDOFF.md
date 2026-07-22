@@ -21,12 +21,14 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 
 ## Phiên làm việc gần nhất (2026-07-22)
 
-1. **Sửa thuật toán cắt câu của "Chép chính tả"** (`src/App.jsx`, hàm `parseSrtTranscript` và các hằng số `*_CLAUSE_MARKERS` xung quanh dòng ~1200).
-   - Vấn đề cũ: phụ đề auto-generated của YouTube không có dấu câu, nên hàm cũ chỉ cắt câu khi đủ 12 từ hoặc gặp khoảng lặng giữa cue → cắt bừa giữa mệnh đề, không theo nghĩa.
-   - Đã sửa: trải phụ đề thành từng từ kèm mốc thời gian nội suy, ưu tiên cắt tại các điểm ngắt mệnh đề tự nhiên (however, because, which, who, so/and/but + chủ ngữ, firstly/secondly/lastly, …); chỉ khi không tìm được điểm ngắt tốt mới lùi lại tìm giới từ gần nhất trong cửa sổ 6 từ, và cuối cùng mới cắt cứng ở giới hạn 16 từ (MAX_SEGMENT_WORDS).
-   - Đã test bằng script Node độc lập trên file SRT thật (video "Unit 4 Family structures") và chạy thử trong app: 151 câu cũ → 166 câu, ranh giới câu tự nhiên hơn hẳn.
-   - **Caveat quan trọng:** segment được tính một lần lúc lưu video (lúc bấm "Lưu video"), lưu cứng vào `localStorage`. Video "Chép chính tả" nào **đã lưu từ trước** vẫn giữ nguyên cách cắt câu cũ — muốn áp thuật toán mới thì phải xoá và thêm lại video đó (dán lại transcript).
-2. **Thêm badge version build** như mô tả ở trên (`vite.config.js`, `eslint.config.js`, `package.json`, `src/App.jsx`).
+1. **Cắt câu "Chép chính tả" — bản v1.1.1 (RÀNG BUỘC SYNC, thay cho v1.1.0):** (`src/App.jsx`, hàm `parseSrtTranscript` + `cueStartsNewClause` + các hằng số `*_CLAUSE_MARKERS`, quanh dòng ~1200).
+   - **Bài học quan trọng nhất:** file `.srt`/`.vtt` từ DownSub chỉ có mốc thời gian theo TỪNG DÒNG caption (cue), KHÔNG có mốc theo từng từ. Bản v1.1.0 mình từng trải phụ đề thành từng từ rồi nội suy mốc thời gian để cắt câu ĐẸP giữa cue — nhưng caption tự động đọc không đều mỗi từ, nên mốc nội suy sai → **audio phát ra lệch hẳn với chữ hiển thị** (user báo lỗi ngay). Playback (`playSegment`, ~dòng 1670) seek đúng `seg.start` và dừng ở `seg.end`, nên `[start,end]` BẮT BUỘC phải là mốc cue thật thì audio mới khớp.
+   - **Nguyên tắc sống còn (đừng phá lại):** KHÔNG BAO GIỜ cắt một cue làm đôi. Mỗi câu = một dãy cue TRỌN VẸN ⇒ `[start,end]` luôn bằng mốc caption thật ⇒ audio khớp chữ 100%.
+   - Trong ràng buộc đó, chọn điểm ngắt tốt nhất CÓ THỂ ở ranh giới cue: ưu tiên dấu kết câu, khoảng lặng, hoặc khi cue kế mở đầu mệnh đề mới (however/because/which/and+chủ ngữ…); và chốt sớm TRƯỚC khi gộp thêm cue làm vượt `MAX_SEGMENT_WORDS` (=13) để câu ngắn dễ chép. `MIN_SEGMENT_WORDS`=5.
+   - Hệ quả: ranh giới câu vẫn bám theo dòng caption của YouTube (đôi khi ngắt giữa cụm), KHÔNG thể "đẹp như câu văn" nếu transcript không có dấu câu — đây là giới hạn dữ liệu, không phải bug. Muốn ranh giới đúng câu hoàn chỉnh: dùng transcript CÓ dấu chấm câu (khi đó `SENTENCE_END_RE` sẽ cắt đúng câu, vẫn synced).
+   - Đã test Node độc lập trên SRT thật + chạy trong app: 224 câu, sync 224/224 (mọi start/end trùng mốc cue thật), độ dài 5–13 từ (tb 9.6).
+   - **Caveat:** segment tính một lần lúc "Lưu video", lưu cứng vào `localStorage` (video đã lưu KHÔNG giữ transcript gốc). Video "Chép chính tả" đã lưu từ trước vẫn mang segment cũ/lỗi → **phải xoá và Thêm video lại** (dán lại transcript) mới có cách cắt mới.
+2. **Thêm badge version build** (`vite.config.js`, `eslint.config.js`, `package.json`, `src/App.jsx`).
 
 ## Việc còn treo / có thể làm tiếp
 
