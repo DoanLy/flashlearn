@@ -3585,6 +3585,14 @@ export default function App() {
         </button>
       </nav>
 
+      {/* Badge version build — để nhận biết mỗi khi có bản deploy mới trên Vercel */}
+      <div
+        title={`Build lúc ${new Date(__BUILD_TIME__).toLocaleString("vi-VN")}`}
+        className="fixed bottom-16 right-1.5 z-30 select-none rounded-full bg-slate-900/70 px-2 py-0.5 text-[9px] font-mono text-white/80"
+      >
+        v{__APP_VERSION__} · {__BUILD_COMMIT__}
+      </div>
+
       {/* --- GLOBAL MESSAGE MODAL --- */}
       {globalMessage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
