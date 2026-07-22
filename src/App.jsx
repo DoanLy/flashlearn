@@ -1206,16 +1206,84 @@ const SENTENCE_END_RE = /[.!?…]+["'”’)\]]*\s*$/;
 // Hai cue cách nhau quá lâu (giây) coi như hai câu/đoạn khác nhau, không gộp dù câu chưa có
 // dấu kết thúc (vd: dòng tiêu đề, dòng giới thiệu không có dấu chấm cuối).
 const CUE_MERGE_GAP = 1.0;
-// Giới hạn số từ tối đa của một câu chép chính tả. Cần cho phụ đề tự động (auto-generated) của
-// YouTube: loại này KHÔNG có dấu chấm câu và các cue nối liền nhau không có khoảng lặng, nên nếu
-// chỉ dựa vào dấu kết câu / khoảng lặng thì sẽ gộp cả một đoạn dài thành một "câu" khổng lồ không
-// thể gõ. Khi câu gộp đã đủ dài thì chốt luôn tại ranh giới cue (vẫn không cắt giữa cue).
-const MAX_SEGMENT_WORDS = 12;
+// Số từ tối thiểu/tối đa của một câu chép chính tả. Cần cho phụ đề tự động (auto-generated) của
+// YouTube: loại này KHÔNG có dấu chấm câu, nên nếu chỉ dựa vào dấu kết câu / khoảng lặng thì sẽ
+// gộp cả một đoạn dài thành một "câu" khổng lồ không thể gõ.
+const MIN_SEGMENT_WORDS = 6;
+const MAX_SEGMENT_WORDS = 16;
+// Cụm từ hầu như luôn mở đầu một mệnh đề/câu mới trong văn nói — điểm ngắt tin cậy cao.
+const STRONG_CLAUSE_MARKERS = new Set([
+  "however", "although", "firstly", "secondly", "thirdly", "fourthly", "fifthly",
+  "sixthly", "seventhly", "eighthly", "finally", "lastly", "meanwhile", "therefore",
+  "additionally", "furthermore", "moreover", "consequently", "nevertheless",
+  "nowadays", "undoubtedly", "importantly", "admittedly", "essentially", "basically",
+  "ideally", "ultimately", "incidentally", "apparently", "indeed", "overall",
+  "because", "obviously",
+]);
+// Đại từ quan hệ / liên từ phụ thuộc — điểm ngắt khá tốt (mở đầu mệnh đề quan hệ/phụ thuộc).
+const MEDIUM_CLAUSE_MARKERS = new Set([
+  "who", "which", "that", "when", "where", "while", "whereas", "whether", "whose", "whom",
+]);
+// Chỉ tính là điểm ngắt khi đi kèm chủ ngữ theo sau (vd "but I", "so we're", "and there's").
+const WEAK_CLAUSE_MARKERS = new Set(["and", "but", "so", "now", "then", "yet", "or"]);
+const CLAUSE_SUBJECT_START = new Set([
+  "i", "i'm", "i've", "i'd", "i'll", "we", "we're", "we've", "we'd", "we'll",
+  "you", "you're", "he", "he's", "she", "she's", "they", "they're", "it's",
+  "there's", "this", "that",
+]);
+// Điểm ngắt dự phòng yếu — giới từ thường đứng ở ranh giới cụm từ. Chỉ dùng khi buộc phải cắt
+// tại giới hạn MAX_SEGMENT_WORDS mà không tìm được điểm ngắt tốt hơn ở gần đó.
+const WEAK_FALLBACK_MARKERS = new Set([
+  "for", "with", "in", "on", "to", "of", "by", "from", "as", "about", "at",
+  "into", "onto", "during", "before", "after", "since", "until", "though",
+]);
+// Khi buộc cắt tại MAX_SEGMENT_WORDS, lùi lại tối đa ngần này từ để tìm điểm ngắt hợp lý hơn
+// thay vì chốt cứng đúng tại từ thứ MAX_SEGMENT_WORDS (thường rơi giữa chừng một cụm từ).
+const CLAUSE_LOOKBACK_WORDS = 6;
+
+function normalizeClauseWord(w) {
+  return w.toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/gi, "");
+}
+
+// Chấm điểm mức độ "điểm ngắt câu tốt" của từ tại vị trí idx, NẾU nó là từ ĐẦU TIÊN của câu kế
+// tiếp (tức cắt ngay trước từ này). 0 = không phải điểm ngắt.
+function clauseBreakScore(words, idx) {
+  if (idx <= 0 || idx >= words.length) return 0;
+  const w = normalizeClauseWord(words[idx].text);
+  if (STRONG_CLAUSE_MARKERS.has(w)) return 3;
+  if (MEDIUM_CLAUSE_MARKERS.has(w)) return 2;
+  if (WEAK_CLAUSE_MARKERS.has(w) && words[idx + 1] && CLAUSE_SUBJECT_START.has(normalizeClauseWord(words[idx + 1].text))) {
+    return 2;
+  }
+  if (WEAK_FALLBACK_MARKERS.has(w)) return 1;
+  return 0;
+}
+
+// Trải các cue thành danh sách từng từ kèm mốc thời gian nội suy (chia đều theo số từ trong
+// cue, cùng nguyên tắc nội suy tỉ lệ đã dùng khi tách cue theo ">>" ở trên). Nhờ vậy có thể cắt
+// câu NGAY GIỮA một cue tại đúng ranh giới mệnh đề, thay vì chỉ được cắt ở ranh giới cue — điều
+// vốn khiến câu bị chặt vụn ở những vị trí vô nghĩa với phụ đề auto-generated (cue của YouTube
+// tự ngắt dòng theo độ dài hiển thị, không theo ngữ pháp).
+function cuesToClauseWords(cues) {
+  const words = [];
+  for (const cue of cues) {
+    const raw = cue.text.split(/\s+/).filter(Boolean);
+    const span = (cue.end ?? cue.start) - cue.start;
+    const n = raw.length;
+    raw.forEach((text, i) => {
+      words.push({
+        text,
+        start: cue.start + (span * i) / n,
+        end: cue.start + (span * (i + 1)) / n,
+      });
+    });
+  }
+  return words;
+}
 
 // Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả, GIỮ ĐÚNG mốc thời gian.
-// Nguyên tắc cốt lõi: KHÔNG BAO GIỜ cắt một cue làm đôi — nhờ vậy khung thời gian [start, end]
-// của mỗi câu luôn khớp chính xác với phần chữ hiển thị (audio không lệch với text). Gộp cue
-// hiện tại với cue kế tiếp khi câu chưa kết thúc, khoảng lặng đủ ngắn VÀ câu chưa quá dài. Dấu
+// Ưu tiên cắt tại dấu kết câu thật (nếu có) hoặc tại ranh giới mệnh đề (however, because, who,
+// which, and I, ...); chỉ khi không tìm được điểm ngắt nào mới chốt cứng ở giới hạn số từ. Dấu
 // ">>" (đổi người nói) luôn tách câu.
 function parseSrtTranscript(raw) {
   const rawCues = extractSrtCues(raw);
@@ -1233,7 +1301,7 @@ function parseSrtTranscript(raw) {
     const total = cue.text.length || 1;
     const span = (cue.end ?? cue.start) - cue.start;
     let offset = 0;
-    parts.forEach((part, i) => {
+    parts.forEach((part) => {
       const s = cue.start + (span * offset) / total;
       const e = cue.start + (span * (offset + part.length)) / total;
       const text = part.trim();
@@ -1242,37 +1310,55 @@ function parseSrtTranscript(raw) {
     });
   }
 
+  const words = cuesToClauseWords(cues);
+  if (!words.length) return null;
+
   const segments = [];
-  let buf = null; // { start, end, text }
-  for (let i = 0; i < cues.length; i++) {
-    const cue = cues[i];
-    if (!buf) buf = { start: cue.start, end: cue.end, text: cue.text };
-    else {
-      buf.text += " " + cue.text;
-      buf.end = cue.end;
-    }
-    const endsSentence = SENTENCE_END_RE.test(buf.text);
-    const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
-    const next = cues[i + 1];
-    const gap = next ? next.start - (cue.end ?? cue.start) : Infinity;
-    const forceBreak = !next || gap >= CUE_MERGE_GAP;
-    const tooLong = wordCount >= MAX_SEGMENT_WORDS;
-    if (endsSentence || forceBreak || tooLong) {
-      segments.push({
-        start: buf.start,
-        end: buf.end,
-        text: buf.text.replace(/\s+/g, " ").trim(),
-      });
-      buf = null;
-    }
-  }
-  if (buf) {
+  let segStart = 0;
+  const pushSegment = (endIdxExclusive) => {
+    const segWords = words.slice(segStart, endIdxExclusive);
     segments.push({
-      start: buf.start,
-      end: buf.end,
-      text: buf.text.replace(/\s+/g, " ").trim(),
+      start: words[segStart].start,
+      end: segWords[segWords.length - 1].end,
+      text: segWords.map((w) => w.text).join(" "),
     });
+    segStart = endIdxExclusive;
+  };
+
+  for (let i = 0; i < words.length; i++) {
+    const count = i - segStart + 1;
+    const endsSentence = SENTENCE_END_RE.test(words[i].text);
+    const next = words[i + 1];
+    const gap = next ? next.start - words[i].end : Infinity;
+    const gapBreak = gap >= CUE_MERGE_GAP;
+
+    if (endsSentence || gapBreak) {
+      if (next) pushSegment(i + 1);
+      continue;
+    }
+
+    if (count >= MIN_SEGMENT_WORDS && next && clauseBreakScore(words, i + 1) >= 2) {
+      pushSegment(i + 1);
+      continue;
+    }
+
+    if (count >= MAX_SEGMENT_WORDS) {
+      // Buộc phải cắt: lùi lại trong cửa sổ gần đây tìm điểm ngắt tốt nhất, thay vì chốt cứng
+      // đúng tại từ thứ MAX_SEGMENT_WORDS (thường rơi giữa chừng một cụm từ).
+      let bestIdx = -1;
+      let bestScore = 0;
+      const lo = Math.max(segStart + MIN_SEGMENT_WORDS, i + 1 - CLAUSE_LOOKBACK_WORDS);
+      for (let j = i + 1; j > lo; j--) {
+        const score = clauseBreakScore(words, j);
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = j;
+        }
+      }
+      pushSegment(bestIdx > 0 ? bestIdx : i + 1);
+    }
   }
+  if (segStart < words.length) pushSegment(words.length);
 
   return segments.length ? segments : null;
 }
