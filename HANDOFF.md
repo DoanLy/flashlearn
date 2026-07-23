@@ -19,7 +19,17 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-23) — v1.4.0: bookmarklet "FlashLearn Sub"
+## Phiên làm việc gần nhất (2026-07-23) — v1.5.0: che hình video khi luyện Chép chính tả
+
+User không muốn nhìn thấy hình video (chỉ muốn nghe) trong màn hình luyện tập. Thêm một lớp
+phủ `absolute inset-0` đè lên khung player YouTube (`App.jsx`, quanh dòng ~2394): nền
+`bg-slate-900/95` + `backdrop-blur-md`, giữa có icon loa và chữ "Chỉ nghe, không xem hình".
+`pointer-events-none` để không chặn nút điều khiển gốc của YouTube nếu cần bấm tới. Đã test
+bằng cách chạy `vite` riêng (không qua `vercel dev`, vì credentials Supabase hardcode trong
+App.jsx nên không cần env) và bơm video giả vào `localStorage` (`flashlearn_dictation_videos`)
+để vào được màn hình luyện tập — xác nhận overlay che kín, đúng vị trí, đè lên iframe.
+
+## Phiên trước cùng ngày (2026-07-23) — v1.4.0: bookmarklet "FlashLearn Sub"
 
 **v1.3.0 bị chặn ngoài thực tế:** YouTube bot-check IP datacenter → `/api/transcript` trên
 Vercel dính "Sign in to confirm you're not a bot" với TẤT CẢ client innertube đã thử

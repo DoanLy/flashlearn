@@ -2391,8 +2391,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           </div>
         </div>
 
-        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden mb-3">
+        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
           <div ref={playerContainerRef} className="w-full h-full" />
+          <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-2 text-slate-400 pointer-events-none">
+            <Volume2 className="w-8 h-8" />
+            <span className="text-xs font-medium">Chỉ nghe, không xem hình</span>
+          </div>
         </div>
 
         <div className="flex items-center justify-between gap-2 mb-4">
