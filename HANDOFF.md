@@ -2,6 +2,8 @@
 
 Ghi lại bối cảnh cho phiên làm việc (người hoặc AI) tiếp theo trên project FlashLearn, để không phải đọc lại toàn bộ git history mới hiểu được đang ở đâu.
 
+**Quy tắc bắt buộc:** làm xong BẤT KỲ task nào trong repo này đều phải `git add` → `git commit` → `git push origin main` ngay, không đợi user nhắc.
+
 ## Project
 
 - Source: `C:\Users\lenovo\flashlearn`, repo GitHub `DoanLy/flashlearn.git`.
