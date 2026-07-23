@@ -1224,6 +1224,10 @@ const MAX_PUNCTUATED_SEGMENT_WORDS = 20;
 // thêm chừng này từ để câu kịp KẾT THÚC trọn vẹn — cắt cứng ngay tại trần dễ để lại cái đuôi
 // mồ côi vô nghĩa kiểu "there." (1 từ) ở câu kế tiếp.
 const PUNCTUATED_HARD_SLACK_WORDS = 6;
+// Phòng sai số cho mốc thời gian NỘI SUY (cắt giữa cue): tỉ lệ trên độ dài cue bị cắt. Cửa sổ
+// audio của câu được nới thêm chừng này về mỗi phía tại ranh giới nội suy (kẹp trong phạm vi
+// cue). 0.35 ⇒ cue 2.4s được nới ±0.85s — đủ bù chênh lệch tốc độ nói trong đa số trường hợp.
+const FUZZY_CUT_SLACK_RATIO = 0.35;
 // Cụm từ hầu như luôn mở đầu một mệnh đề/câu mới trong văn nói — điểm ngắt tin cậy cao.
 const STRONG_CLAUSE_MARKERS = new Set([
   "however", "although", "firstly", "secondly", "thirdly", "fourthly", "fifthly",
@@ -1273,8 +1277,14 @@ const ABBREVIATION_BEFORE_DOT_RE =
 // không bao giờ thành điểm ngắt được — vì logic ghép chỉ được cắt ở ranh giới cue — dẫn tới
 // câu chép bị cắt chỗ vô nghĩa. (Tách ở dấu phẩy KHÔNG có nghĩa là câu sẽ bị cắt ở đó — chỉ
 // là cho logic ghép thêm lựa chọn điểm ngắt "đỡ vô nghĩa" khi một câu quá dài buộc phải chia.)
-// Thời gian của từng phần được nội suy theo tỉ lệ ký tự (cùng cách đã dùng khi tách ">>"):
-// sai số bị chặn trong phạm vi MỘT cue (~2-3 giây) nên audio vẫn khớp chữ ở mức chấp nhận được.
+//
+// Thời gian của từng phần được nội suy theo tỉ lệ ký tự (cùng cách đã dùng khi tách ">>"),
+// nhưng tốc độ nói KHÔNG đều (vd đoạn đánh vần "A U D L E Y" — ít ký tự mà đọc rất chậm) nên
+// mốc nội suy có thể lệch tới cỡ giây. Vì vậy mỗi phần mang thêm startSlack/endSlack — lượng
+// "phòng sai số" hai bên mốc nội suy (một phần của độ dài cue, kẹp trong phạm vi cue) — để
+// mergeCuesIntoSegments NỚI cửa sổ audio tại ranh giới nội suy: câu hiển thị luôn nằm TRỌN
+// trong audio phát ra, đổi lại có thể nghe chờm vài từ của câu bên cạnh (đỡ tệ hơn nhiều so
+// với bị cụt từ của chính câu đang chép). Mốc ở ranh giới cue THẬT không có slack.
 function splitCueAtSentenceEnds(cue) {
   const text = cue.text;
   const re = /(?:[.!?…]+["'”’)\]]*|[,;:]["'”’)\]]*)\s+/g;
@@ -1296,15 +1306,31 @@ function splitCueAtSentenceEnds(cue) {
   if (!cutOffsets.length) return [cue];
   const total = text.length || 1;
   const span = (cue.end ?? cue.start) - cue.start;
+  const margin = span * FUZZY_CUT_SLACK_RATIO;
   const pieces = [];
   let prev = 0;
-  for (const cut of [...cutOffsets, text.length]) {
+  const bounds = [...cutOffsets, text.length];
+  for (let bi = 0; bi < bounds.length; bi++) {
+    const cut = bounds[bi];
     const t = text.slice(prev, cut).trim();
     if (t) {
+      const estStart = cue.start + (span * prev) / total;
+      const estEnd = cue.end == null ? null : cue.start + (span * cut) / total;
       pieces.push({
-        start: cue.start + (span * prev) / total,
-        end: cue.end == null ? null : cue.start + (span * cut) / total,
+        start: estStart,
+        end: estEnd,
         text: t,
+        // Mốc nội suy (không phải mép cue thật) → mang phòng sai số, kẹp trong phạm vi cue.
+        // Mép ĐẦU/CUỐI giữ nguyên slack sẵn có của cue (vd cue này là một phần tách ">>" —
+        // mép đó cũng là nội suy, đã có slack riêng).
+        startSlack:
+          prev > 0
+            ? Math.min(margin, estStart - cue.start)
+            : cue.startSlack || 0,
+        endSlack:
+          cut < text.length && estEnd != null
+            ? Math.min(margin, cue.end - estEnd)
+            : cue.endSlack || 0,
       });
     }
     prev = cut;
@@ -1342,12 +1368,16 @@ function mergeCuesIntoSegments(inputCues) {
     : MAX_SEGMENT_WORDS;
 
   const segments = [];
-  let buf = null; // { start, end, text } — luôn gồm các cue TRỌN VẸN
+  let buf = null; // { start, end, text, startSlack, endSlack } — luôn gồm các cue TRỌN VẸN
   const flush = () => {
     if (!buf) return;
     segments.push({
-      start: buf.start,
-      end: buf.end,
+      // Nới cửa sổ audio bằng phòng sai số ở mép nội suy (mép cue thật có slack = 0).
+      start: Math.max(0, buf.start - buf.startSlack),
+      end: buf.end == null ? null : buf.end + buf.endSlack,
+      // Đánh dấu cho playSegment: mốc end này là nội suy đã nới — đừng kẹp về mốc bắt đầu
+      // của câu kế (hai câu quanh ranh giới nội suy cố tình phát chờm lên nhau một chút).
+      fuzzyEnd: buf.endSlack > 0,
       text: buf.text.replace(/\s+/g, " ").trim(),
     });
     buf = null;
@@ -1355,10 +1385,18 @@ function mergeCuesIntoSegments(inputCues) {
 
   for (let i = 0; i < cues.length; i++) {
     const cue = cues[i];
-    if (!buf) buf = { start: cue.start, end: cue.end, text: cue.text };
+    if (!buf)
+      buf = {
+        start: cue.start,
+        end: cue.end,
+        text: cue.text,
+        startSlack: cue.startSlack || 0,
+        endSlack: cue.endSlack || 0,
+      };
     else {
       buf.text += " " + cue.text;
       buf.end = cue.end;
+      buf.endSlack = cue.endSlack || 0;
     }
 
     const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
@@ -1417,12 +1455,22 @@ function parseSrtTranscript(raw) {
     const parts = cue.text.split(/>>/);
     const total = cue.text.length || 1;
     const span = (cue.end ?? cue.start) - cue.start;
+    const margin = span * FUZZY_CUT_SLACK_RATIO;
     let offset = 0;
-    parts.forEach((part) => {
+    parts.forEach((part, pi) => {
       const s = cue.start + (span * offset) / total;
       const e = cue.start + (span * (offset + part.length)) / total;
       const text = part.trim();
-      if (text) cues.push({ start: s, end: e, text });
+      if (text)
+        cues.push({
+          start: s,
+          end: e,
+          text,
+          // Mốc tách ">>" cũng là nội suy → mang phòng sai số như tách dấu câu.
+          startSlack: pi > 0 ? Math.min(margin, s - cue.start) : 0,
+          endSlack:
+            pi < parts.length - 1 ? Math.min(margin, (cue.end ?? s) - e) : 0,
+        });
       offset += part.length + 2; // +2 cho ký tự ">>" đã bị split bỏ đi
     });
   }
@@ -1741,11 +1789,15 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     const next = activeVideo.segments[index + 1];
     // Ưu tiên dừng theo mốc end thật của cue (chính xác, không phát lấn sang khoảng lặng của
     // câu sau). Thêm 0.4s đệm để không cụt từ cuối, nhưng không vượt quá lúc câu sau bắt đầu.
+    // NGOẠI LỆ fuzzyEnd: mốc end là nội suy (cắt giữa cue) đã cộng sẵn phòng sai số — không
+    // kẹp về mốc câu sau nữa, hai câu quanh ranh giới nội suy cố tình phát chờm lên nhau
+    // (thà nghe lấn vài từ của câu bên cạnh còn hơn cụt từ của chính câu đang chép).
     // Câu từ định dạng dán tay "Ns" không có end → quay lại dùng mốc bắt đầu của câu kế tiếp.
     let endTime;
     if (seg.end != null) {
       endTime = seg.end + 0.4;
-      if (next && next.start != null && endTime > next.start) endTime = next.start;
+      if (!seg.fuzzyEnd && next && next.start != null && endTime > next.start)
+        endTime = next.start;
     } else {
       endTime = next ? next.start : seg.start + 8;
     }
