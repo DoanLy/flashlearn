@@ -1492,12 +1492,19 @@ function parseSrtTranscript(raw) {
 
 function parseTranscriptInput(raw) {
   if (!raw) return null;
-  if (raw.includes("<timedtext")) {
-    const cues = parseSrv3WordCues(raw);
+  const trimmed = raw.trim();
+  // json3 từ bookmarklet (player YouTube fetch khi bật CC) — mốc theo TỪNG TỪ, chính xác nhất.
+  if (trimmed.startsWith("{") && trimmed.includes('"events"')) {
+    const cues = parseJson3WordCues(trimmed);
     return cues ? mergeCuesIntoSegments(cues) : null;
   }
-  if (raw.includes("-->")) return parseSrtTranscript(raw);
-  return parseTimedTranscript(raw);
+  // srv3 XML từ /api/transcript — cũng mốc theo từng từ.
+  if (trimmed.includes("<timedtext")) {
+    const cues = parseSrv3WordCues(trimmed);
+    return cues ? mergeCuesIntoSegments(cues) : null;
+  }
+  if (trimmed.includes("-->")) return parseSrtTranscript(trimmed);
+  return parseTimedTranscript(trimmed);
 }
 
 function decodeXmlEntities(s) {
@@ -1553,10 +1560,15 @@ function parseSrv3WordCues(xml) {
         words.push({ start: pStart / 1000, pEnd: pEnd / 1000, text });
     }
   }
+  return wordListToCues(words);
+}
+
+// Đuôi chung cho srv3 + json3: words [{start, pEnd, text, speakerChange?}] → cues cho
+// mergeCuesIntoSegments. end của một từ = mốc bắt đầu của từ kế tiếp, kẹp trong đoạn chứa nó
+// (các đoạn hiển thị chờm lên nhau nên p.d không dùng trực tiếp làm end được).
+function wordListToCues(words) {
   if (!words.length) return null;
   words.sort((a, b) => a.start - b.start);
-  // end của một từ = mốc bắt đầu của từ kế tiếp, kẹp trong đoạn chứa nó (các đoạn hiển thị
-  // chờm lên nhau nên p.d không dùng trực tiếp làm end được).
   const cues = [];
   let pendingBreak = false;
   for (let i = 0; i < words.length; i++) {
@@ -1564,10 +1576,10 @@ function parseSrv3WordCues(xml) {
     const next = words[i + 1];
     const end = Math.min(next ? next.start : w.pEnd, w.pEnd);
     let text = w.text;
-    let forceBreak = pendingBreak;
+    let forceBreak = pendingBreak || !!w.speakerChange;
     pendingBreak = false;
     // ">>" = đổi người nói (có thể là token riêng hoặc dính vào từ như ">>The"): bỏ ký hiệu,
-    // ép ngắt câu tại đây.
+    // ép ngắt câu tại đây. (json3 còn có cờ isSpeakerChange riêng — đã gộp vào w.speakerChange.)
     if (text.startsWith(">>") || text.startsWith("≫")) {
       forceBreak = true;
       text = text.replace(/^[>≫]+\s*/, "");
@@ -1581,14 +1593,82 @@ function parseSrv3WordCues(xml) {
   return cues.length ? cues : null;
 }
 
+// Parse phụ đề json3 ("wireMagic":"pb3") — định dạng mà CHÍNH player YouTube fetch khi bật CC.
+// Cấu trúc: events[].segs[] với tOffsetMs theo TỪNG TỪ (như srv3 nhưng dạng JSON). Đây là thứ
+// bookmarklet "FlashLearn Sub" chộp được từ trang YouTube và người dùng dán vào ô Transcript.
+function parseJson3WordCues(raw) {
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (!data || !Array.isArray(data.events)) return null;
+  const words = [];
+  for (const ev of data.events) {
+    // Sự kiện a="1"/aAppend là "cửa sổ cuộn" (chỉ chứa "\n" lặp lại), bỏ qua.
+    if (!Array.isArray(ev.segs) || ev.aAppend || ev.tStartMs == null) continue;
+    const pEnd = (ev.tStartMs + (ev.dDurationMs ?? 0)) / 1000;
+    for (const s of ev.segs) {
+      const text = stripCaptionAnnotations(s.utf8 || "");
+      if (!text) continue;
+      words.push({
+        start: (ev.tStartMs + (s.tOffsetMs ?? 0)) / 1000,
+        pEnd,
+        text,
+        speakerChange: !!s.isSpeakerChange,
+      });
+    }
+  }
+  return wordListToCues(words);
+}
+
 // Endpoint lấy phụ đề word-level (api/transcript.js — serverless trên Vercel). Khi chạy
 // `npm run dev` ở local thì không có hàm này → gọi thẳng bản production (đã mở CORS *).
+// LƯU Ý: YouTube bot-check IP datacenter nên endpoint này thường bị chặn (đã thử 5 client
+// innertube lẫn Invidious/Piped công cộng — đều chết, xem HANDOFF). Đường tin cậy là
+// bookmarklet bên dưới; endpoint vẫn được thử trước phòng khi YouTube nới tay.
 const TRANSCRIPT_API_BASE = import.meta.env.DEV
   ? "https://flashlearn-its7.vercel.app"
   : "";
 
+// Bookmarklet "FlashLearn Sub": chạy NGAY TRONG trang youtube.com của người dùng (IP dân cư,
+// cùng origin — không CORS, không bot-check, không cần POT token). Cách hoạt động: hook
+// fetch/XHR để chộp response '/api/timedtext' mà CHÍNH player YouTube fetch (kèm đầy đủ token)
+// khi bật CC, rồi copy json3 word-level đó vào clipboard cho người dùng dán vào app.
+// Đã kiểm chứng 2026-07-23: gọi baseUrl trực tiếp từ trang trả RỖNG (thiếu POT) — bắt buộc
+// phải chộp qua hook như thế này.
+const BOOKMARKLET_SRC =
+  "(async()=>{try{" +
+  "if(location.hostname.indexOf('youtube.')===-1){alert('Hãy mở video trên youtube.com rồi bấm nút này.');return}" +
+  "let body=null;" +
+  "const oF=window.fetch,oO=XMLHttpRequest.prototype.open,oS=XMLHttpRequest.prototype.send;" +
+  "XMLHttpRequest.prototype.open=function(m,u){this.__fl=u;return oO.apply(this,arguments)};" +
+  "XMLHttpRequest.prototype.send=function(){if(this.__fl&&String(this.__fl).indexOf('/api/timedtext')!==-1){this.addEventListener('load',()=>{body=this.responseText})}return oS.apply(this,arguments)};" +
+  "window.fetch=async function(){const r=await oF.apply(this,arguments);try{const u=typeof arguments[0]==='string'?arguments[0]:arguments[0]&&arguments[0].url;if(u&&u.indexOf('/api/timedtext')!==-1)r.clone().text().then(t=>{body=t})}catch(e){}return r};" +
+  "const btn=document.querySelector('.ytp-subtitles-button');" +
+  "const restore=()=>{window.fetch=oF;XMLHttpRequest.prototype.open=oO;XMLHttpRequest.prototype.send=oS};" +
+  "if(!btn||btn.getAttribute('aria-disabled')==='true'){restore();alert('Video này không có phụ đề.');return}" +
+  "const wasOn=btn.getAttribute('aria-pressed')==='true';" +
+  "if(wasOn){btn.click();await new Promise(r=>setTimeout(r,500))}" +
+  "btn.click();" +
+  "const t0=Date.now();" +
+  "while(!body&&Date.now()-t0<8000){await new Promise(r=>setTimeout(r,200))}" +
+  "restore();" +
+  "if(!wasOn)btn.click();" +
+  "if(!body){alert('Chưa bắt được phụ đề — hãy bấm lại nút bookmark lần nữa.');return}" +
+  "await navigator.clipboard.writeText(body);" +
+  "alert('Đã copy phụ đề chính xác theo từng từ ('+Math.round(body.length/1024)+' KB).\\nQuay lại FlashLearn, dán vào ô Transcript rồi Lưu video.')" +
+  "}catch(e){alert('Lỗi: '+e)}})()";
+// React chặn href="javascript:..." → phải render anchor qua dangerouslySetInnerHTML.
+const BOOKMARKLET_ANCHOR_HTML =
+  '<a href="javascript:' +
+  encodeURIComponent(BOOKMARKLET_SRC).replace(/"/g, "&quot;") +
+  '" draggable="true" onclick="return false" title="KÉO tôi lên thanh bookmark (đừng bấm)" ' +
+  'class="inline-block px-2 py-0.5 bg-amber-500 text-white font-bold rounded-md cursor-move whitespace-nowrap">⚡ FlashLearn Sub</a>';
+
 function deriveTitleFromFilename(filename) {
-  let name = filename.replace(/\.(srt|vtt)$/i, "");
+  let name = filename.replace(/\.(srt|vtt|json3?|xml|srv3)$/i, "");
   name = name.replace(/\[DownSub\.com\]/gi, "");
   name = name.replace(/^\s*\[[^\]]*\]\s*/, "");
   return name.replace(/\s+/g, " ").trim();
@@ -2119,13 +2199,13 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           return;
         } else {
           setFormError(
-            "Không tự lấy được phụ đề từ YouTube lúc này. Hãy tải file .srt/.vtt (vd qua DownSub) vào ô Transcript rồi thử lại.",
+            "YouTube đang chặn máy chủ tự lấy phụ đề. Hãy dùng nút '⚡ FlashLearn Sub' theo hướng dẫn bên dưới ô Transcript — chính xác hơn cả tự lấy.",
           );
           return;
         }
       } catch {
         setFormError(
-          "Không tự lấy được phụ đề từ YouTube lúc này. Hãy tải file .srt/.vtt (vd qua DownSub) vào ô Transcript rồi thử lại.",
+          "YouTube đang chặn máy chủ tự lấy phụ đề. Hãy dùng nút '⚡ FlashLearn Sub' theo hướng dẫn bên dưới ô Transcript — chính xác hơn cả tự lấy.",
         );
         return;
       } finally {
@@ -2133,16 +2213,28 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       }
       if (!segments) {
         setFormError(
-          "Phụ đề YouTube của video này không đọc được. Hãy tải file .srt/.vtt vào ô Transcript rồi thử lại.",
+          "Phụ đề YouTube của video này không đọc được. Hãy dùng nút '⚡ FlashLearn Sub' theo hướng dẫn bên dưới ô Transcript.",
         );
         return;
       }
     }
     // Nếu link nằm ở ô Tiêu đề thì ô đó không phải tiêu đề thật → bỏ, dùng tên mặc định.
     const cleanTitle = idFromTitle ? "" : titleInput.trim();
+    let finalTitle = cleanTitle || autoTitle;
+    if (!finalTitle) {
+      // oEmbed của YouTube mở CORS → lấy được tiêu đề thật từ browser, không cần server.
+      try {
+        const o = await fetch(
+          `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+        );
+        if (o.ok) finalTitle = (await o.json())?.title || "";
+      } catch {
+        /* không lấy được tiêu đề thì dùng tên mặc định */
+      }
+    }
     const newVideo = {
       id: String(Date.now()),
-      title: cleanTitle || autoTitle || `Video ${videoId}`,
+      title: finalTitle || `Video ${videoId}`,
       videoId,
       segments,
       createdAt: Date.now(),
@@ -2222,7 +2314,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               {isDraggingTranscript ? "Thả file để tải lên" : "Tải file phụ đề .srt / .vtt (hoặc kéo-thả vào đây)"}
               <input
                 type="file"
-                accept=".srt,.vtt,text/plain,text/vtt"
+                accept=".srt,.vtt,.json,.json3,.xml,.srv3,text/plain,text/vtt,application/json,text/xml"
                 onChange={handleTranscriptFile}
                 className="hidden"
               />
@@ -2234,11 +2326,25 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               placeholder={"0s\nWelcome to IELTS time...\n4s\ntopic of food...\n9s\n..."}
               className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none font-mono text-sm"
             />
-            <p className="text-xs text-slate-400 mt-1">
-              <strong>Để trống là tốt nhất</strong> — app tự lấy phụ đề từ YouTube với mốc thời
-              gian theo TỪNG TỪ, audio khớp chữ chính xác nhất. Chỉ cần tải file .srt/.vtt (vd
-              qua DownSub) khi cách tự động không lấy được.
-            </p>
+            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-slate-600 leading-relaxed">
+              <p className="font-semibold text-amber-700 mb-1">
+                ⚡ Cách lấy phụ đề CHÍNH XÁC THEO TỪNG TỪ (audio khớp chữ tuyệt đối — khuyên dùng):
+              </p>
+              <ol className="list-decimal ml-4 flex flex-col gap-0.5">
+                <li>
+                  Kéo nút{" "}
+                  <span dangerouslySetInnerHTML={{ __html: BOOKMARKLET_ANCHOR_HTML }} />{" "}
+                  lên thanh bookmark của trình duyệt (chỉ cần làm một lần — bấm Ctrl+Shift+B nếu
+                  chưa thấy thanh bookmark).
+                </li>
+                <li>Mở video trên youtube.com, bấm bookmark vừa tạo — phụ đề sẽ được copy tự động.</li>
+                <li>Quay lại đây, dán (Ctrl+V) vào ô Transcript rồi bấm Lưu video.</li>
+              </ol>
+              <p className="mt-1 text-slate-400">
+                File .srt/.vtt (DownSub) vẫn dùng được nhưng mốc thời gian chỉ theo DÒNG nên audio
+                có thể lệch nhẹ ở ranh giới câu.
+              </p>
+            </div>
           </div>
 
           {formError && (

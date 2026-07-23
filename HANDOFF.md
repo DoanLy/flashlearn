@@ -19,7 +19,31 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-23) — v1.3.0: phụ đề word-level, hết hẳn lệch audio
+## Phiên làm việc gần nhất (2026-07-23) — v1.4.0: bookmarklet "FlashLearn Sub"
+
+**v1.3.0 bị chặn ngoài thực tế:** YouTube bot-check IP datacenter → `/api/transcript` trên
+Vercel dính "Sign in to confirm you're not a bot" với TẤT CẢ client innertube đã thử
+(ANDROID, ANDROID_VR, IOS, TVHTML5_EMBED, MWEB — xem `api/transcript.js`, có `?debug=1`).
+Invidious/Piped công cộng cũng chết gần hết (đã test ~10 instance). Từ IP dân cư (máy user)
+thì innertube chạy tốt — nhưng browser bị CORS (youtubei KHÔNG trả CORS header, và gọi kèm
+Origin còn bị 403 sorry-page luôn).
+
+**Giải pháp v1.4.0 — bookmarklet chộp phụ đề ngay trong trang youtube.com:**
+- Trang watch: `baseUrl` từ `getPlayerResponse()` fetch trực tiếp trả RỖNG (thiếu POT token).
+  Nhưng khi bật CC, CHÍNH player fetch `/api/timedtext...&fmt=json3` kèm đầy đủ token →
+  bookmarklet hook `window.fetch` + `XMLHttpRequest` để chộp response đó, copy vào clipboard.
+- Flow người dùng: kéo nút "⚡ FlashLearn Sub" (trong form Thêm video) lên thanh bookmark một
+  lần → mở video YouTube → bấm bookmark (nó tự tắt/bật CC để ép fetch mới, chờ tối đa 8s) →
+  quay lại app dán vào ô Transcript → Lưu.
+- `parseJson3WordCues` parse json3 (`"wireMagic":"pb3"`, events[].segs[].tOffsetMs theo TỪNG
+  TỪ, cờ `isSpeakerChange` cho ">>") → `wordListToCues` (đuôi chung với srv3) → merge như cũ.
+  Kết quả trên json3 THẬT chộp từ player: 98 câu, 100% trọn vẹn, 0 chờm — y hệt srv3.
+- Tiêu đề video: lấy qua oEmbed (`youtube.com/oembed` CÓ mở CORS) khi user không nhập.
+- `/api/transcript` vẫn được thử trước (phòng khi YouTube nới tay với datacenter); lỗi thì
+  thông báo hướng dẫn dùng bookmarklet.
+- Lint: 3 lỗi CÓ SẴN (emoji regex ~1148, setState-in-effect ~1722) — không thuộc thay đổi này.
+
+## Phiên trước cùng ngày (2026-07-23) — v1.3.0: phụ đề word-level, hết hẳn lệch audio
 
 **User vẫn báo lệch text/voice sau v1.2.1** (đệm quanh mốc nội suy chỉ giảm chứ không hết —
 và phần phát chờm làm cảm giác lệch nặng hơn). Giải pháp triệt để: bỏ hẳn nội suy, lấy mốc
