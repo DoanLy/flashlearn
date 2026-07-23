@@ -1151,22 +1151,28 @@ function stripCaptionAnnotations(text) {
 }
 
 // Parse transcript dạng "Time / Subtitle" (vd: "0s\nWelcome to...\n4s\ntopic of food...")
+// Mỗi block chỉ là một DÒNG caption bị cắt tùy tiện (giống cue .srt), không phải một câu —
+// nên cũng phải đi qua mergeCuesIntoSegments để ghép/tách lại thành câu có nghĩa.
 function parseTimedTranscript(raw) {
   if (!raw) return null;
   const text = raw.replace(/\r\n/g, "\n");
   const markerRegex = /(?:^|\n)[ \t]*(\d+)s[ \t]*\n?/g;
   const matches = [...text.matchAll(markerRegex)];
   if (matches.length === 0) return null;
-  const segments = [];
+  const cues = [];
   for (let i = 0; i < matches.length; i++) {
     const start = Number(matches[i][1]);
     const contentStart = matches[i].index + matches[i][0].length;
     const contentEnd = i + 1 < matches.length ? matches[i + 1].index : text.length;
     const content = stripCaptionAnnotations(text.slice(contentStart, contentEnd));
-    if (content) segments.push({ start, text: content });
+    if (content) cues.push({ start, end: null, text: content });
   }
-  segments.sort((a, b) => a.start - b.start);
-  return segments.length ? segments : null;
+  cues.sort((a, b) => a.start - b.start);
+  // Định dạng này không có mốc end — lấy xấp xỉ bằng mốc bắt đầu của block kế tiếp (gồm cả
+  // khoảng lặng, nhưng đủ tốt để chia thời gian khi tách câu). Block cuối giữ end = null,
+  // playback đã có sẵn đường lui cho trường hợp đó.
+  for (let i = 0; i + 1 < cues.length; i++) cues[i].end = cues[i + 1].start;
+  return mergeCuesIntoSegments(cues);
 }
 
 function srtTimeToSeconds(t) {
@@ -1211,6 +1217,13 @@ const CUE_MERGE_GAP = 1.0;
 // gộp cả một đoạn dài thành một "câu" khổng lồ không thể gõ.
 const MIN_SEGMENT_WORDS = 5;
 const MAX_SEGMENT_WORDS = 13;
+// Trần số từ khi phụ đề CÓ dấu chấm câu tử tế: nới rộng hơn để ưu tiên giữ TRỌN CÂU (một câu
+// nói 15-18 từ vẫn chép được), thay vì cắt ngang câu ở mốc 13 từ như phụ đề không dấu câu.
+const MAX_PUNCTUATED_SEGMENT_WORDS = 20;
+// Khi câu đã chạm trần mà chưa gặp điểm ngắt đẹp (dấu phẩy / từ mở mệnh đề), cho phép "nợ"
+// thêm chừng này từ để câu kịp KẾT THÚC trọn vẹn — cắt cứng ngay tại trần dễ để lại cái đuôi
+// mồ côi vô nghĩa kiểu "there." (1 từ) ở câu kế tiếp.
+const PUNCTUATED_HARD_SLACK_WORDS = 6;
 // Cụm từ hầu như luôn mở đầu một mệnh đề/câu mới trong văn nói — điểm ngắt tin cậy cao.
 const STRONG_CLAUSE_MARKERS = new Set([
   "however", "although", "firstly", "secondly", "thirdly", "fourthly", "fifthly",
@@ -1250,41 +1263,83 @@ function cueStartsNewClause(cueText) {
   return false;
 }
 
-// Ghép các cue phụ đề (.srt/.vtt) thành từng câu để chép chính tả.
-//
-// NGUYÊN TẮC SỐNG CÒN: KHÔNG BAO GIỜ cắt một cue làm đôi. Vì file .srt/.vtt chỉ có mốc thời gian
-// theo TỪNG DÒNG (cue), không có mốc theo từng từ, nên nếu cắt giữa cue thì mốc [start, end] của
-// câu phải suy đoán (nội suy) — và caption tự động đọc không đều mỗi từ, khiến audio phát ra
-// lệch hẳn với phần chữ hiển thị. Giữ mỗi câu = một dãy cue trọn vẹn thì [start, end] luôn bằng
-// mốc thật của caption ⇒ audio khớp chính xác với chữ.
-//
-// Trong ràng buộc đó, chọn điểm ngắt tốt nhất CÓ THỂ ở ranh giới cue: ưu tiên dấu kết câu thật,
-// khoảng lặng, hoặc khi cue kế mở đầu một mệnh đề mới (however, because, which, and I...); và
-// chốt cứng khi câu đã quá dài. Dấu ">>" (đổi người nói) luôn tách câu.
-function parseSrtTranscript(raw) {
-  const rawCues = extractSrtCues(raw);
-  if (!rawCues.length) return null;
+// "Mr. Smith", "Dr. Jones", "J. K. Rowling", "St. John"... — dấu chấm sau các chữ này là viết
+// tắt, KHÔNG phải kết câu, dù ngay sau đó là chữ hoa.
+const ABBREVIATION_BEFORE_DOT_RE =
+  /\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|No|vs|[A-Z])\.$/;
 
-  // Tách cue theo ">>" thành các cue con, chia thời gian theo tỉ lệ số ký tự để mỗi phần vẫn
-  // có mốc start/end riêng thay vì dùng chung mốc của cả cue.
-  const cues = [];
-  for (const cue of rawCues) {
-    if (!cue.text.includes(">>")) {
-      cues.push({ start: cue.start, end: cue.end, text: cue.text });
-      continue;
+// Tách một cue tại các dấu câu nằm GIỮA cue: dấu KẾT CÂU (vd cue auto-caption "birthday. And
+// I liked the sound of that") và dấu phẩy/chấm phẩy/hai chấm. Nếu không tách thì các dấu này
+// không bao giờ thành điểm ngắt được — vì logic ghép chỉ được cắt ở ranh giới cue — dẫn tới
+// câu chép bị cắt chỗ vô nghĩa. (Tách ở dấu phẩy KHÔNG có nghĩa là câu sẽ bị cắt ở đó — chỉ
+// là cho logic ghép thêm lựa chọn điểm ngắt "đỡ vô nghĩa" khi một câu quá dài buộc phải chia.)
+// Thời gian của từng phần được nội suy theo tỉ lệ ký tự (cùng cách đã dùng khi tách ">>"):
+// sai số bị chặn trong phạm vi MỘT cue (~2-3 giây) nên audio vẫn khớp chữ ở mức chấp nhận được.
+function splitCueAtSentenceEnds(cue) {
+  const text = cue.text;
+  const re = /(?:[.!?…]+["'”’)\]]*|[,;:]["'”’)\]]*)\s+/g;
+  const cutOffsets = [];
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const cut = m.index + m[0].length;
+    if (cut >= text.length) break;
+    const isSentenceEnd = /[.!?…]/.test(m[0]);
+    if (isSentenceEnd) {
+      // Chỉ coi là hết câu khi phần sau mở đầu bằng chữ hoa / số / dấu mở ngoặc-nháy
+      // ("etc. and so on" → không cắt), và phần trước không kết thúc bằng chữ viết tắt.
+      if (!/[A-Z0-9"'“‘(]/.test(text[cut])) continue;
+      const head = text.slice(0, m.index + m[0].length).trimEnd();
+      if (ABBREVIATION_BEFORE_DOT_RE.test(head)) continue;
     }
-    const parts = cue.text.split(/>>/);
-    const total = cue.text.length || 1;
-    const span = (cue.end ?? cue.start) - cue.start;
-    let offset = 0;
-    parts.forEach((part) => {
-      const s = cue.start + (span * offset) / total;
-      const e = cue.start + (span * (offset + part.length)) / total;
-      const text = part.trim();
-      if (text) cues.push({ start: s, end: e, text });
-      offset += part.length + 2; // +2 cho ký tự ">>" đã bị split bỏ đi
-    });
+    cutOffsets.push(cut);
   }
+  if (!cutOffsets.length) return [cue];
+  const total = text.length || 1;
+  const span = (cue.end ?? cue.start) - cue.start;
+  const pieces = [];
+  let prev = 0;
+  for (const cut of [...cutOffsets, text.length]) {
+    const t = text.slice(prev, cut).trim();
+    if (t) {
+      pieces.push({
+        start: cue.start + (span * prev) / total,
+        end: cue.end == null ? null : cue.start + (span * cut) / total,
+        text: t,
+      });
+    }
+    prev = cut;
+  }
+  return pieces;
+}
+
+// Phụ đề này có dấu chấm câu tử tế không? Auto-caption đời cũ hoàn toàn không có dấu câu;
+// auto-caption đời mới (và phụ đề người làm) có. Nếu trung bình ≤ 30 từ lại gặp một dấu kết
+// câu thì tin được — khi đó ưu tiên cắt theo câu thật thay vì theo số từ/mệnh đề.
+function transcriptIsPunctuated(cues) {
+  const totalWords = cues.reduce(
+    (n, c) => n + c.text.split(/\s+/).filter(Boolean).length,
+    0,
+  );
+  const enders = cues.filter((c) => SENTENCE_END_RE.test(c.text)).length;
+  return enders >= 3 && totalWords / enders <= 30;
+}
+
+// Ghép các cue phụ đề thành từng câu để chép chính tả (dùng chung cho .srt/.vtt lẫn định dạng
+// dán tay "Ns"). Điểm ngắt chỉ nằm ở ranh giới cue — nhưng trước khi ghép, mỗi cue đã được
+// tách sẵn tại các dấu kết câu nằm giữa cue (splitCueAtSentenceEnds), nên "ranh giới cue"
+// luôn bao gồm mọi chỗ hết câu thật.
+//
+// Với phụ đề CÓ dấu câu: ưu tiên giữ trọn câu (trần 20 từ), chỉ cắt giữa câu khi sắp vượt trần
+// và tại chỗ đỡ vô nghĩa nhất — sau dấu phẩy hoặc trước từ mở mệnh đề mới.
+// Với phụ đề KHÔNG dấu câu: giữ hành vi cũ — cắt theo khoảng lặng, từ mở mệnh đề, trần 13 từ.
+// Dấu ">>" (đổi người nói) luôn tách câu (đã tách từ trước khi vào đây).
+function mergeCuesIntoSegments(inputCues) {
+  const cues = inputCues.flatMap(splitCueAtSentenceEnds);
+  if (!cues.length) return null;
+  const punctuated = transcriptIsPunctuated(cues);
+  const maxWords = punctuated
+    ? MAX_PUNCTUATED_SEGMENT_WORDS
+    : MAX_SEGMENT_WORDS;
 
   const segments = [];
   let buf = null; // { start, end, text } — luôn gồm các cue TRỌN VẸN
@@ -1309,24 +1364,70 @@ function parseSrtTranscript(raw) {
     const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
     const endsSentence = SENTENCE_END_RE.test(buf.text);
     const next = cues[i + 1];
-    const gap = next ? next.start - (cue.end ?? cue.start) : Infinity;
+    const gap =
+      next && cue.end != null ? next.start - cue.end : next ? 0 : Infinity;
     const gapBreak = !next || gap >= CUE_MERGE_GAP;
-    // Cue của video này thường dài sẵn (8–9 từ/dòng). Chốt câu TRƯỚC khi gộp thêm một cue mà
-    // sẽ làm vượt giới hạn — nhờ vậy câu ngắn, dễ chép, thay vì gộp lố lên 18–21 từ. Vẫn chỉ
-    // ngắt ở ranh giới cue nên audio luôn khớp chữ.
+    // Chốt câu TRƯỚC khi gộp thêm một cue mà sẽ làm vượt giới hạn — nhờ vậy câu không bị gộp
+    // lố quá dài. Vẫn chỉ ngắt ở ranh giới cue nên audio luôn khớp chữ.
     const nextWords = next ? next.text.split(/\s+/).filter(Boolean).length : 0;
-    const wouldOverflow = next && wordCount + nextWords > MAX_SEGMENT_WORDS;
-    const softBreak =
-      wordCount >= MIN_SEGMENT_WORDS &&
-      (wouldOverflow || (next && cueStartsNewClause(next.text)));
-    // An toàn: một cue đơn lẻ đã dài hơn giới hạn (không có cue nào để gộp thêm) vẫn phải chốt.
-    const hardTooLong = wordCount >= MAX_SEGMENT_WORDS;
+    let softBreak;
+    let hardTooLong;
+    if (punctuated) {
+      // Có dấu câu thật → KHÔNG cắt theo từ mở mệnh đề nữa (sẽ chẻ đôi câu đang trọn vẹn).
+      // Chỉ cắt sớm khi gộp thêm sẽ CHẠM trần (>=, không phải vượt — nếu chờ vượt hẳn thì
+      // buffer kịp phình tới đúng trần rồi bị chốt cứng ngay chỗ vô nghĩa, bỏ qua dấu phẩy
+      // ngay trước đó), và tại chỗ đỡ vô nghĩa nhất: sau dấu phẩy hoặc ngay trước từ mở
+      // mệnh đề mới (however, because, and I...).
+      const wouldReachCap = next && wordCount + nextWords >= maxWords;
+      softBreak =
+        wordCount >= MIN_SEGMENT_WORDS &&
+        wouldReachCap &&
+        (/,["'”’)\]]*$/.test(buf.text) || (next && cueStartsNewClause(next.text)));
+      // Quá trần mà chưa có chỗ ngắt đẹp: cho nợ thêm vài từ để câu kịp kết thúc trọn vẹn,
+      // chỉ chốt cứng khi đã vượt cả mức nợ đó.
+      hardTooLong = wordCount >= maxWords + PUNCTUATED_HARD_SLACK_WORDS;
+    } else {
+      const wouldOverflow = next && wordCount + nextWords > maxWords;
+      softBreak =
+        wordCount >= MIN_SEGMENT_WORDS &&
+        (wouldOverflow || (next && cueStartsNewClause(next.text)));
+      // An toàn: câu đã chạm trần mà vẫn chưa có chỗ ngắt đẹp thì vẫn phải chốt.
+      hardTooLong = wordCount >= maxWords;
+    }
 
     if (endsSentence || gapBreak || softBreak || hardTooLong) flush();
   }
   flush();
 
   return segments.length ? segments : null;
+}
+
+// Đọc .srt/.vtt: bóc cue thô, tách theo ">>" (đổi người nói) thành cue con — chia thời gian
+// theo tỉ lệ ký tự để mỗi phần vẫn có mốc start/end riêng — rồi ghép thành câu.
+function parseSrtTranscript(raw) {
+  const rawCues = extractSrtCues(raw);
+  if (!rawCues.length) return null;
+
+  const cues = [];
+  for (const cue of rawCues) {
+    if (!cue.text.includes(">>")) {
+      cues.push({ start: cue.start, end: cue.end, text: cue.text });
+      continue;
+    }
+    const parts = cue.text.split(/>>/);
+    const total = cue.text.length || 1;
+    const span = (cue.end ?? cue.start) - cue.start;
+    let offset = 0;
+    parts.forEach((part) => {
+      const s = cue.start + (span * offset) / total;
+      const e = cue.start + (span * (offset + part.length)) / total;
+      const text = part.trim();
+      if (text) cues.push({ start: s, end: e, text });
+      offset += part.length + 2; // +2 cho ký tự ">>" đã bị split bỏ đi
+    });
+  }
+
+  return mergeCuesIntoSegments(cues);
 }
 
 function parseTranscriptInput(raw) {
