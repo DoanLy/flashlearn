@@ -1320,6 +1320,8 @@ function splitCueAtSentenceEnds(cue) {
         start: estStart,
         end: estEnd,
         text: t,
+        // Cờ "ép ngắt trước cue này" chỉ có nghĩa ở mảnh ĐẦU tiên.
+        forceBreak: prev === 0 ? cue.forceBreak || false : false,
         // Mốc nội suy (không phải mép cue thật) → mang phòng sai số, kẹp trong phạm vi cue.
         // Mép ĐẦU/CUỐI giữ nguyên slack sẵn có của cue (vd cue này là một phần tách ">>" —
         // mép đó cũng là nội suy, đã có slack riêng).
@@ -1385,6 +1387,8 @@ function mergeCuesIntoSegments(inputCues) {
 
   for (let i = 0; i < cues.length; i++) {
     const cue = cues[i];
+    // Đổi người nói (">>" trong phụ đề word-level) → luôn bắt đầu câu mới.
+    if (buf && cue.forceBreak) flush();
     if (!buf)
       buf = {
         start: cue.start,
@@ -1400,14 +1404,22 @@ function mergeCuesIntoSegments(inputCues) {
     }
 
     const wordCount = buf.text.split(/\s+/).filter(Boolean).length;
-    const endsSentence = SENTENCE_END_RE.test(buf.text);
     const next = cues[i + 1];
+    // Không coi là hết câu nếu từ kế mở đầu bằng chữ THƯỜNG — thường là lỗi chấm câu của
+    // transcription (vd "It's on Grayson Street. only about a 2-minute walk...").
+    const endsSentence =
+      SENTENCE_END_RE.test(buf.text) && (!next || !/^[a-z]/.test(next.text));
     const gap =
       next && cue.end != null ? next.start - cue.end : next ? 0 : Infinity;
     const gapBreak = !next || gap >= CUE_MERGE_GAP;
     // Chốt câu TRƯỚC khi gộp thêm một cue mà sẽ làm vượt giới hạn — nhờ vậy câu không bị gộp
     // lố quá dài. Vẫn chỉ ngắt ở ranh giới cue nên audio luôn khớp chữ.
     const nextWords = next ? next.text.split(/\s+/).filter(Boolean).length : 0;
+    // Với cue theo TỪNG TỪ (word-level), một cue chỉ có 1 từ nên muốn nhận diện "but I",
+    // "so we're"... phải ghép thêm cue kế nữa mới đủ ngữ cảnh cho cueStartsNewClause.
+    const nextText = next
+      ? (next.text + " " + (cues[i + 2]?.text || "")).trim()
+      : "";
     let softBreak;
     let hardTooLong;
     if (punctuated) {
@@ -1420,7 +1432,7 @@ function mergeCuesIntoSegments(inputCues) {
       softBreak =
         wordCount >= MIN_SEGMENT_WORDS &&
         wouldReachCap &&
-        (/,["'”’)\]]*$/.test(buf.text) || (next && cueStartsNewClause(next.text)));
+        (/,["'”’)\]]*$/.test(buf.text) || (next && cueStartsNewClause(nextText)));
       // Quá trần mà chưa có chỗ ngắt đẹp: cho nợ thêm vài từ để câu kịp kết thúc trọn vẹn,
       // chỉ chốt cứng khi đã vượt cả mức nợ đó.
       hardTooLong = wordCount >= maxWords + PUNCTUATED_HARD_SLACK_WORDS;
@@ -1428,7 +1440,7 @@ function mergeCuesIntoSegments(inputCues) {
       const wouldOverflow = next && wordCount + nextWords > maxWords;
       softBreak =
         wordCount >= MIN_SEGMENT_WORDS &&
-        (wouldOverflow || (next && cueStartsNewClause(next.text)));
+        (wouldOverflow || (next && cueStartsNewClause(nextText)));
       // An toàn: câu đã chạm trần mà vẫn chưa có chỗ ngắt đẹp thì vẫn phải chốt.
       hardTooLong = wordCount >= maxWords;
     }
@@ -1480,9 +1492,100 @@ function parseSrtTranscript(raw) {
 
 function parseTranscriptInput(raw) {
   if (!raw) return null;
+  if (raw.includes("<timedtext")) {
+    const cues = parseSrv3WordCues(raw);
+    return cues ? mergeCuesIntoSegments(cues) : null;
+  }
   if (raw.includes("-->")) return parseSrtTranscript(raw);
   return parseTimedTranscript(raw);
 }
+
+function decodeXmlEntities(s) {
+  return s
+    .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, "&");
+}
+
+// Parse phụ đề srv3 ("timedtext format 3") lấy từ YouTube (qua /api/transcript) thành cue theo
+// TỪNG TỪ: <p t="2399" d="7361"><s>IELTS</s><s t="721"> 20</s>...</p> — mỗi <s> có offset ms
+// so với đầu đoạn. Đây là nguồn mốc thời gian CHÍNH XÁC TUYỆT ĐỐI theo từ, thứ mà file .srt
+// của DownSub đã làm phẳng mất — nhờ nó việc cắt câu không cần nội suy/phòng sai số gì nữa:
+// mọi ranh giới câu đều rơi đúng mốc một từ thật.
+function parseSrv3WordCues(xml) {
+  if (!xml || !xml.includes("<timedtext")) return null;
+  const words = [];
+  const attrNum = (attrs, name) => {
+    const m = attrs.match(new RegExp("\\b" + name + '="(-?\\d+)"'));
+    return m ? Number(m[1]) : null;
+  };
+  const pRe = /<p\b([^>]*)>([\s\S]*?)<\/p>/g;
+  let pm;
+  while ((pm = pRe.exec(xml)) !== null) {
+    const attrs = pm[1];
+    const inner = pm[2];
+    // Đoạn a="1" là "cửa sổ cuộn" (append) — chỉ lặp lại nội dung đã có, bỏ qua.
+    if (/\ba="1"/.test(attrs)) continue;
+    const pStart = attrNum(attrs, "t");
+    if (pStart == null) continue;
+    const pEnd = pStart + (attrNum(attrs, "d") ?? 0);
+    const sRe = /<s\b([^>]*)>([\s\S]*?)<\/s>/g;
+    let sm;
+    let hasWordTags = false;
+    while ((sm = sRe.exec(inner)) !== null) {
+      hasWordTags = true;
+      const off = attrNum(sm[1], "t") ?? 0;
+      const text = stripCaptionAnnotations(decodeXmlEntities(sm[2]));
+      if (text)
+        words.push({ start: (pStart + off) / 1000, pEnd: pEnd / 1000, text });
+    }
+    if (!hasWordTags) {
+      // Phụ đề người làm thủ công: <p> không có <s> con — cả đoạn là một cue (mốc vẫn thật,
+      // chỉ là theo dòng thay vì theo từ).
+      const text = stripCaptionAnnotations(
+        decodeXmlEntities(inner.replace(/<[^>]+>/g, " ")),
+      );
+      if (text)
+        words.push({ start: pStart / 1000, pEnd: pEnd / 1000, text });
+    }
+  }
+  if (!words.length) return null;
+  words.sort((a, b) => a.start - b.start);
+  // end của một từ = mốc bắt đầu của từ kế tiếp, kẹp trong đoạn chứa nó (các đoạn hiển thị
+  // chờm lên nhau nên p.d không dùng trực tiếp làm end được).
+  const cues = [];
+  let pendingBreak = false;
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const next = words[i + 1];
+    const end = Math.min(next ? next.start : w.pEnd, w.pEnd);
+    let text = w.text;
+    let forceBreak = pendingBreak;
+    pendingBreak = false;
+    // ">>" = đổi người nói (có thể là token riêng hoặc dính vào từ như ">>The"): bỏ ký hiệu,
+    // ép ngắt câu tại đây.
+    if (text.startsWith(">>") || text.startsWith("≫")) {
+      forceBreak = true;
+      text = text.replace(/^[>≫]+\s*/, "");
+    }
+    if (!text) {
+      pendingBreak = forceBreak || pendingBreak;
+      continue;
+    }
+    cues.push({ start: w.start, end: Math.max(end, w.start), text, forceBreak });
+  }
+  return cues.length ? cues : null;
+}
+
+// Endpoint lấy phụ đề word-level (api/transcript.js — serverless trên Vercel). Khi chạy
+// `npm run dev` ở local thì không có hàm này → gọi thẳng bản production (đã mở CORS *).
+const TRANSCRIPT_API_BASE = import.meta.env.DEV
+  ? "https://flashlearn-its7.vercel.app"
+  : "";
 
 function deriveTitleFromFilename(filename) {
   let name = filename.replace(/\.(srt|vtt)$/i, "");
@@ -1717,6 +1820,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const [transcriptInput, setTranscriptInput] = useState("");
   const [formError, setFormError] = useState("");
   const [isDraggingTranscript, setIsDraggingTranscript] = useState(false);
+  const [isFetchingTranscript, setIsFetchingTranscript] = useState(false);
 
   const playerContainerRef = useRef(null);
   const playerRef = useRef(null);
@@ -1808,7 +1912,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setIsPlayingSegment(true);
     watcherRef.current = setInterval(() => {
       const t = player.getCurrentTime ? player.getCurrentTime() : 0;
-      if (t >= endTime - 0.15) {
+      // Ngưỡng -0.05: với mốc word-level (end = đúng lúc từ kế bắt đầu), dừng sớm hơn nữa sẽ
+      // cụt đuôi từ cuối; lố nhẹ sang từ đầu câu sau (~0.1s) thì gần như không nghe thấy.
+      if (t >= endTime - 0.05) {
         player.pauseVideo();
         clearInterval(watcherRef.current);
         setIsPlayingSegment(false);
@@ -1971,7 +2077,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     processTranscriptFile(file);
   };
 
-  const handleAddVideo = () => {
+  const handleAddVideo = async () => {
     setFormError("");
     // Người dùng hay dán link nhầm vào ô Tiêu đề: thử ô Link trước, nếu không có thì lấy link
     // từ ô Tiêu đề. Nếu tiêu đề thực chất là một link YouTube thì không dùng nó làm tiêu đề.
@@ -1982,18 +2088,61 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       setFormError("Link YouTube không hợp lệ. Dán link dạng youtube.com/watch?v=... hoặc youtu.be/...");
       return;
     }
-    const segments = parseTranscriptInput(transcriptInput);
-    if (!segments) {
-      setFormError(
-        "Không đọc được transcript. Hãy tải file phụ đề .srt/.vtt, hoặc dán bảng Time / Subtitle (mỗi mốc trên một dòng, vd: '0s' rồi tới câu phụ đề).",
-      );
-      return;
+    let segments = null;
+    let autoTitle = "";
+    const pasted = transcriptInput.trim();
+    if (pasted) {
+      // Người dùng chủ động dán transcript → tôn trọng, dùng bản dán.
+      segments = parseTranscriptInput(pasted);
+      if (!segments) {
+        setFormError(
+          "Không đọc được transcript đã dán. Hãy xoá trống ô này để app tự lấy phụ đề từ YouTube, hoặc tải file .srt/.vtt.",
+        );
+        return;
+      }
+    } else {
+      // Ô transcript trống → tự lấy phụ đề word-level từ YouTube (chính xác theo từng từ,
+      // audio khớp chữ tuyệt đối — khuyên dùng).
+      setIsFetchingTranscript(true);
+      try {
+        const r = await fetch(
+          `${TRANSCRIPT_API_BASE}/api/transcript?v=${videoId}`,
+        );
+        const j = await r.json().catch(() => null);
+        if (r.ok && j?.xml) {
+          segments = parseTranscriptInput(j.xml);
+          autoTitle = j.title || "";
+        } else if (j?.error === "no_captions") {
+          setFormError(
+            "Video này không có phụ đề trên YouTube. Hãy tải file .srt/.vtt (vd qua DownSub) rồi thử lại.",
+          );
+          return;
+        } else {
+          setFormError(
+            "Không tự lấy được phụ đề từ YouTube lúc này. Hãy tải file .srt/.vtt (vd qua DownSub) vào ô Transcript rồi thử lại.",
+          );
+          return;
+        }
+      } catch {
+        setFormError(
+          "Không tự lấy được phụ đề từ YouTube lúc này. Hãy tải file .srt/.vtt (vd qua DownSub) vào ô Transcript rồi thử lại.",
+        );
+        return;
+      } finally {
+        setIsFetchingTranscript(false);
+      }
+      if (!segments) {
+        setFormError(
+          "Phụ đề YouTube của video này không đọc được. Hãy tải file .srt/.vtt vào ô Transcript rồi thử lại.",
+        );
+        return;
+      }
     }
     // Nếu link nằm ở ô Tiêu đề thì ô đó không phải tiêu đề thật → bỏ, dùng tên mặc định.
     const cleanTitle = idFromTitle ? "" : titleInput.trim();
     const newVideo = {
       id: String(Date.now()),
-      title: cleanTitle || `Video ${videoId}`,
+      title: cleanTitle || autoTitle || `Video ${videoId}`,
       videoId,
       segments,
       createdAt: Date.now(),
@@ -2053,7 +2202,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-500 mb-1">Transcript</label>
+            <label className="block text-sm font-medium text-slate-500 mb-1">
+              Transcript (không bắt buộc)
+            </label>
             <label
               onDragOver={(e) => {
                 e.preventDefault();
@@ -2084,8 +2235,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none font-mono text-sm"
             />
             <p className="text-xs text-slate-400 mt-1">
-              Tải file .srt/.vtt tải từ YouTube (vd qua DownSub), hoặc tự dán bảng "Time /
-              Subtitle" — mỗi câu sẽ đồng bộ với đúng thời điểm trong video.
+              <strong>Để trống là tốt nhất</strong> — app tự lấy phụ đề từ YouTube với mốc thời
+              gian theo TỪNG TỪ, audio khớp chữ chính xác nhất. Chỉ cần tải file .srt/.vtt (vd
+              qua DownSub) khi cách tự động không lấy được.
             </p>
           </div>
 
@@ -2098,9 +2250,10 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
           <button
             onClick={handleAddVideo}
-            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+            disabled={isFetchingTranscript}
+            className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-wait"
           >
-            Lưu video
+            {isFetchingTranscript ? "Đang lấy phụ đề từ YouTube..." : "Lưu video"}
           </button>
         </div>
       </div>
