@@ -21,7 +21,17 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.9.3: fix "Ong Chính Tả" nuốt ký tự khi gõ (caret/IME)
+## Phiên làm việc gần nhất (2026-07-24) — v1.9.4: "Ong Chính Tả" hiện nghĩa sau mỗi từ (đúng/sai)
+
+User muốn: gõ xong 1 từ, dù ĐÚNG hay SAI, đều hiện nghĩa tiếng Việt. Trước đó chỉ báo
+"Chính xác! 🎉" hoặc "Đáp án: WORD". Thêm biến `wordMeaning = pickMeaning(current?.meaning)`
+(bỏ dòng phiên âm, KHÁC `meaningHint` vốn lấy dòng đầu có thể trúng phiên âm), render dưới cả 2
+nhánh correct/wrong trong khối `.min-h-16` (đổi từ `h-12` để đủ chỗ 2 dòng, thêm `gap-1`).
+- **Đã test** (vite 5199, đọc word từ React fiber của input.sr-only → hook[1]=idx, hook[7]=queue):
+  từ "struggle" gõ đúng → "Chính xác! 🎉 | cuộc chiến đấu"; từ "borrow" gõ sai "borrox" →
+  "Đáp án: BORROW | mượn". Nghĩa hiện đúng cả 2, dùng dòng "Nghĩa:" không lộ phiên âm. Lint: 3 CÓ SẴN.
+
+## Phiên làm việc (2026-07-24) — v1.9.3: fix "Ong Chính Tả" nuốt ký tự khi gõ (caret/IME)
 
 User báo bug: trong Ong Chính Tả, "gõ ký tự mà sai là nó tự động xóa rồi không cho gõ tiếp". Code
 `onInputChange` cũ KHÔNG hề có logic xóa → thủ phạm là vùng đệm/caret của input ẩn (`sr-only`,

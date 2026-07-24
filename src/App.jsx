@@ -1971,6 +1971,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
 
   // phase playing
   const meaningHint = (current?.meaning || "").split("\n").find((l) => l.trim()) || "";
+  const wordMeaning = pickMeaning(current?.meaning || ""); // nghĩa tiếng Việt (bỏ dòng phiên âm)
   const boxColor =
     status === "correct" ? "#22c55e" : status === "wrong" ? "#f43f5e" : "#fbbf24";
 
@@ -2046,9 +2047,19 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
         </div>
 
         {/* gợi ý nghĩa */}
-        <div className="h-12 flex flex-col items-center justify-center text-center">
-          {status === "correct" && <p className="text-green-400 font-bold text-lg" style={{ animation: "flPopIn .3s ease-out" }}>Chính xác! 🎉</p>}
-          {status === "wrong" && <p className="text-rose-400 font-bold">Đáp án: <span className="uppercase">{word}</span></p>}
+        <div className="min-h-16 flex flex-col items-center justify-center text-center gap-1">
+          {status === "correct" && (
+            <>
+              <p className="text-green-400 font-bold text-lg" style={{ animation: "flPopIn .3s ease-out" }}>Chính xác! 🎉</p>
+              {wordMeaning && <p className="text-amber-100/90 text-sm px-4">{wordMeaning}</p>}
+            </>
+          )}
+          {status === "wrong" && (
+            <>
+              <p className="text-rose-400 font-bold">Đáp án: <span className="uppercase">{word}</span></p>
+              {wordMeaning && <p className="text-amber-100/90 text-sm px-4">{wordMeaning}</p>}
+            </>
+          )}
           {status === "typing" && showMeaning && meaningHint && (
             <p className="text-amber-200/80 text-sm px-4">{meaningHint}</p>
           )}
