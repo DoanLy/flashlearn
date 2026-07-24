@@ -21,7 +21,24 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.9.2: "Luyện Gõ" tự xóa khi từ đang gõ bị mất lượt
+## Phiên làm việc gần nhất (2026-07-24) — v1.9.3: fix "Ong Chính Tả" nuốt ký tự khi gõ (caret/IME)
+
+User báo bug: trong Ong Chính Tả, "gõ ký tự mà sai là nó tự động xóa rồi không cho gõ tiếp". Code
+`onInputChange` cũ KHÔNG hề có logic xóa → thủ phạm là vùng đệm/caret của input ẩn (`sr-only`,
+controlled `value={typed}`) bị lệch khi gõ nhanh, và/hoặc tổ hợp IME tiếng Việt (Telex/Unikey) chèn
+Backspace + ký tự có dấu rồi bị regex `[^a-zA-Z...]` lọc mất → mất ký tự, kẹt không gõ tiếp.
+- Fix: thêm `handleKey` (onKeyDown) tự quản chuỗi `typed` bằng `e.key` + `preventDefault` cho phím
+  chữ/Backspace/Enter → KHÔNG dùng tới caret của input, KHÔNG cho IME tổ hợp chèn (guard
+  `e.nativeEvent.isComposing`). `onInputChange` giữ lại làm dự phòng cho bàn phím ảo (mobile), có
+  thêm guard isComposing. Input `onKeyDown={(e)=>Enter&&submit}` cũ đổi thành `onKeyDown={handleKey}`.
+- **Đã test** (vite 5199, real DOM keydown qua dispatchEvent vì `computer key` của pane không đáng
+  tin): gõ chữ nối `abc`→`abcde`; Backspace xóa từng ký tự `abcde`→`abcd`→`abc`; gõ `x`→`abcx`
+  (không double-input vì letter bị preventDefault nên onChange không bắn). Lint: 3 lỗi CÓ SẴN.
+- **LƯU Ý còn lại:** nếu user dùng Unikey/EVKey kiểu "gửi Backspace" ở tầng OS thì trình duyệt nhận
+  Backspace thật → vẫn có thể xóa; cách này fix trọn IME tầng trình duyệt + lỗi caret, còn Unikey
+  OS-level cực đoan thì khuyên gõ ở chế độ English. `computer key BackSpace` của pane KHÔNG tới React.
+
+## Phiên làm việc (2026-07-24) — v1.9.2: "Luyện Gõ" tự xóa khi từ đang gõ bị mất lượt
 
 Nối tiếp v1.9.1 (chặn ký tự sai): nếu từ user đang gõ dở bị rơi qua vạch (mất lượt) trước khi kịp
 bắn, chuỗi đang gõ trở nên "kẹt" (không khớp từ nào còn lại → gõ tiếp không ăn vì bị chặn). Fix:

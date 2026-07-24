@@ -1871,8 +1871,33 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
     }
   };
 
+  // Gõ điều khiển trực tiếp bằng onKeyDown + preventDefault: bỏ qua hoàn toàn
+  // vùng đệm/caret của input ẩn và tổ hợp IME (Telex/Unikey) — thứ gây lỗi
+  // "gõ ký tự là bị xóa / không gõ tiếp được". Chuỗi `typed` do ta tự quản.
+  const handleKey = (e) => {
+    if (status !== "typing") return;
+    if (e.nativeEvent?.isComposing) return; // đang tổ hợp IME → để yên, không chèn
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submit();
+      return;
+    }
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      setTyped((t) => t.slice(0, -1));
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // chừa phím tắt
+    if (e.key.length === 1 && /^[A-Za-z' -]$/.test(e.key)) {
+      e.preventDefault();
+      setTyped((t) => (t.length < word.length ? t + e.key : t));
+    }
+  };
+
+  // Dự phòng cho bàn phím ảo/di động (keydown không cho e.key): lọc & giới hạn độ dài.
   const onInputChange = (e) => {
     if (status !== "typing") return;
+    if (e.nativeEvent?.isComposing) return;
     const clean = e.target.value.replace(/[^a-zA-Z' -]/g, "").slice(0, word.length);
     setTyped(clean);
   };
@@ -2041,7 +2066,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
           ref={inputRef}
           value={typed}
           onChange={onInputChange}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
+          onKeyDown={handleKey}
           onBlur={() => status === "typing" && setTimeout(() => inputRef.current?.focus(), 10)}
           autoFocus
           autoCapitalize="none"
