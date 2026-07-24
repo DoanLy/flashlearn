@@ -21,7 +21,17 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.6.0: 2 game mới "Luyện Gõ" + "Ong Chính Tả" (kiểu Parroto)
+## Phiên làm việc gần nhất (2026-07-24) — v1.6.1: fix layout 2 game bị co nhỏ
+
+User báo lỗi UI: game hiện ra như một hộp tí hon (~500×230px) giữa trang trắng, các từ rơi
+chồng đè lên nhau. **Nguyên nhân:** `<main className="max-w-md mx-auto px-4">` (App.jsx ~3899)
+giới hạn rộng 448px và KHÔNG có chiều cao → `h-full` của game collapse về chiều cao nội dung,
+vùng `flex-1` (nơi từ rơi) gần như bằng 0 nên từ dồn cục. **Cách sửa:** đổi root của cả 6 màn
+(intro/over/playing × 2 game) từ `relative … h-full` sang `fixed inset-0 z-50` để thoát khung
+`max-w-md` và phủ kín viewport (đã đo: game 720px, vùng chơi flex-1 = 551px trên viewport 720).
+z-50 để đè lên bottom nav (nav z-20) — game có nút back riêng nên không sao.
+
+## v1.6.0 — 2 game mới "Luyện Gõ" + "Ong Chính Tả" (kiểu Parroto)
 
 Thêm 2 trò chơi vào tab GAME (`src/App.jsx`), đặt ngay TRƯỚC component `GameTab`:
 

@@ -1314,7 +1314,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
 
   if (phase === "intro") {
     return (
-      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
         {styleTag}
         <StarField />
         <div className="relative z-10 flex flex-col items-center gap-5 text-center">
@@ -1346,7 +1346,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   if (phase === "over" || phase === "win") {
     const win = phase === "win";
     return (
-      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
         {styleTag}
         <StarField />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
@@ -1371,7 +1371,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   // phase playing
   return (
     <div
-      className="relative flex flex-col h-full overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white select-none"
+      className="fixed inset-0 z-50 flex flex-col overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white select-none"
       style={shake ? { animation: "flShakeX .35s ease" } : undefined}
       onClick={() => inputRef.current?.focus()}
     >
@@ -1571,7 +1571,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
 
   if (phase === "intro") {
     return (
-      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
         {styleTag}
         <StarField color="253,224,71" count={38} />
         <div className="relative z-10 flex flex-col items-center gap-5 text-center">
@@ -1603,7 +1603,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
   if (phase === "over" || phase === "win") {
     const win = phase === "win";
     return (
-      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
         {styleTag}
         <StarField color="253,224,71" count={38} />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
@@ -1632,7 +1632,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
 
   return (
     <div
-      className="relative flex flex-col h-full overflow-hidden text-white select-none"
+      className="fixed inset-0 z-50 flex flex-col overflow-hidden text-white select-none"
       style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}
       onClick={() => status === "typing" && inputRef.current?.focus()}
     >
