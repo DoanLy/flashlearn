@@ -21,7 +21,20 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.9.0: 2 tinh chỉnh "Luyện Gõ" (TypingGame)
+## Phiên làm việc gần nhất (2026-07-24) — v1.9.1: "Luyện Gõ" chỉ nhận ký tự ĐÚNG
+
+User đổi ý so với v1.9.0 (khi đó giữ lại ký tự sai): giờ muốn ký tự sai **không được nhập vào**
+luôn — ô nhập chỉ chấp nhận ký tự nào nối tiếp đúng tiền tố của MỘT từ đang rơi. Sửa `processTyped`:
+- Nếu `clean.length < typed.length` → là Backspace/xóa → LUÔN cho phép (để user sửa hoặc đổi từ).
+- Nếu chuỗi mới khớp đúng cả 1 từ → bắn hạ (như cũ).
+- Nếu vẫn là tiền tố hợp lệ (`arr.some(startsWith)`) → nhận.
+- Ngược lại (ký tự sai) → **KHÔNG gọi `setTyped`** → React tự khôi phục ô nhập (controlled input)
+  về giá trị hợp lệ trước đó. Không clear, không shake — chỉ đơn giản là gõ không ăn.
+- **Đã test end-to-end** (vite 5199 + ép `requestAnimationFrame`→`setTimeout` để loop chạy dù pane ẩn):
+  từ "phrase" → gõ `p,h,r` nhận `phr`; gõ `z`,`q` (sai) bị bỏ qua giữ `phr`; gõ `a` → `phra`;
+  Backspace → `phr`; gõ đủ `phrase` → bắn hạ, ô nhập về rỗng, toast hiện `phrase 🔊 · cụm từ`. OK.
+
+## Phiên làm việc (2026-07-24) — v1.9.0: 2 tinh chỉnh "Luyện Gõ" (TypingGame)
 
 - **Không tự xóa khi gõ sai:** trước đây `processTyped` khi chuỗi gõ KHÔNG khớp tiền tố từ nào thì
   `setTyped("")` + shake → mất hết ký tự vừa gõ. Giờ luôn `setTyped(clean)` (giữ nguyên chuỗi, bỏ

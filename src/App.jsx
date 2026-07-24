@@ -1554,6 +1554,11 @@ const TypingGame = ({ cards, deckName, onClose }) => {
 
   const processTyped = (raw) => {
     const clean = raw.replace(/[^a-zA-Z' -]/g, "");
+    // Xóa bớt ký tự (Backspace) luôn được phép — để user sửa hoặc đổi sang từ khác.
+    if (clean.length < typed.length) {
+      setTyped(clean);
+      return;
+    }
     if (!clean) {
       setTyped("");
       return;
@@ -1567,9 +1572,11 @@ const TypingGame = ({ cards, deckName, onClose }) => {
       setTyped("");
       return;
     }
-    // Giữ nguyên ký tự user vừa gõ dù khớp hay chưa khớp — KHÔNG tự xóa khi gõ sai.
-    // (User tự dùng Backspace để sửa; ô nhập bên dưới luôn hiển thị chuỗi đang gõ.)
-    setTyped(clean);
+    if (arr.some((w) => w.text.toLowerCase().startsWith(lower))) {
+      setTyped(clean); // vẫn là tiền tố hợp lệ của 1 từ đang rơi → nhận
+    }
+    // else: ký tự gõ vào KHÔNG khớp tiền tố từ nào → bỏ qua, không nhận.
+    // Không gọi setTyped nên React tự khôi phục ô nhập về giá trị hợp lệ trước đó.
   };
 
   // từ đang được nhắm (highlight ký tự đã gõ)
