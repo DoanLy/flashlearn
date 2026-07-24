@@ -1040,6 +1040,709 @@ const MatchGame = ({ cards, onClose }) => {
 };
 
 // ============================================================================
+// HELPER: phát âm 1 từ tiếng Anh qua Web Speech (dùng chung cho các game nghe)
+// ============================================================================
+const speakEnglish = (text, { rate = 0.95 } = {}) => {
+  if (!("speechSynthesis" in window) || !text) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = rate;
+    const voices = window.speechSynthesis.getVoices?.() || [];
+    const en = voices.find((v) => /en[-_]US/i.test(v.lang)) || voices.find((v) => /^en/i.test(v.lang));
+    if (en) u.voice = en;
+    window.speechSynthesis.speak(u);
+  } catch {
+    /* ignore */
+  }
+};
+
+// Từ hợp lệ cho game gõ/chính tả: một TỪ ĐƠN gồm chữ cái (cho phép ' và - ở giữa), dài 2-18.
+// Loại bỏ cụm nhiều từ, dấu "/", ngoặc, chữ số... vì không thể gõ/đọc chính tả gọn gàng
+// (vd "Have/Finish classes", "New York (city)").
+const isPlayableWord = (raw) => {
+  const w = (raw || "").trim();
+  return w.length >= 2 && w.length <= 18 && /^[A-Za-z][A-Za-z'-]*$/.test(w);
+};
+
+// Nền sao lấp lánh dùng chung cho 2 game (tạo 1 lần, không đổi giữa các render)
+const StarField = ({ count = 46, color = "255,255,255" }) => {
+  const [stars] = useState(() =>
+    Array.from({ length: count }, () => ({
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      size: Math.random() * 2 + 1,
+      delay: Math.random() * 3,
+      dur: Math.random() * 2.5 + 1.8,
+    })),
+  );
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((s, i) => (
+        <span
+          key={i}
+          className="absolute rounded-full"
+          style={{
+            left: `${s.left}%`,
+            top: `${s.top}%`,
+            width: `${s.size}px`,
+            height: `${s.size}px`,
+            background: `rgba(${color},0.9)`,
+            boxShadow: `0 0 ${s.size * 2}px rgba(${color},0.7)`,
+            animation: `flStarTwinkle ${s.dur}s ease-in-out ${s.delay}s infinite`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+const HeartRow = ({ lives, total = 3, color = "#f43f5e" }) => (
+  <div className="flex items-center gap-1">
+    {Array.from({ length: total }).map((_, i) => (
+      <span
+        key={i}
+        className="text-lg leading-none transition-all duration-300"
+        style={{
+          filter: i < lives ? "none" : "grayscale(1)",
+          opacity: i < lives ? 1 : 0.3,
+          transform: i < lives ? "scale(1)" : "scale(0.85)",
+          color,
+          textShadow: i < lives ? `0 0 8px ${color}` : "none",
+        }}
+      >
+        {i < lives ? "❤" : "🤍"}
+      </span>
+    ))}
+  </div>
+);
+
+// ============================================================================
+// COMPONENT: TypingGame (Luyện Gõ — gõ từ tiếng Anh đang rơi để bắn hạ)
+// ============================================================================
+const TYPING_MILESTONES = 20;
+const TYPING_WORDS_PER_MILESTONE = 3;
+const TYPING_TOTAL = TYPING_MILESTONES * TYPING_WORDS_PER_MILESTONE;
+const TYPING_MAX_ON_SCREEN = 4;
+const TYPING_MISS_LINE = 88; // % — chạm mốc này coi như để lọt
+
+const TypingGame = ({ cards, deckName, onClose }) => {
+  const [phase, setPhase] = useState("intro"); // intro | playing | over | win
+  const [words, setWords] = useState([]); // {id, text, x, y, speed}
+  const [typed, setTyped] = useState("");
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [destroyed, setDestroyed] = useState(0);
+  const [blasts, setBlasts] = useState([]); // {id, x, y}
+  const [shots, setShots] = useState([]); // {id, x, y}
+  const [shake, setShake] = useState(false);
+
+  const wordsRef = useRef([]);
+  const livesRef = useRef(3);
+  const destroyedRef = useRef(0);
+  const rafRef = useRef(null);
+  const lastTsRef = useRef(0);
+  const spawnAccRef = useRef(0);
+  const poolRef = useRef([]);
+  const poolIdxRef = useRef(0);
+  const idRef = useRef(0);
+  const inputRef = useRef(null);
+
+  const buildPool = () =>
+    shuffleArr(
+      cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).map((c) => c.word.trim()),
+    );
+
+  const availableCount = cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).length;
+  const milestone = Math.min(
+    TYPING_MILESTONES,
+    Math.floor(destroyed / TYPING_WORDS_PER_MILESTONE) + 1,
+  );
+  const speedFor = (m) => 5 + m * 0.55; // %/giây
+  const spawnIntervalFor = (m) => Math.max(900, 2200 - m * 65); // ms
+
+  const stopLoop = () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+  };
+
+  useEffect(() => () => stopLoop(), []);
+
+  const spawnWord = () => {
+    const pool = poolRef.current;
+    if (!pool.length) return;
+    const text = pool[poolIdxRef.current % pool.length];
+    poolIdxRef.current += 1;
+    const m = Math.min(
+      TYPING_MILESTONES,
+      Math.floor(destroyedRef.current / TYPING_WORDS_PER_MILESTONE) + 1,
+    );
+    const id = ++idRef.current;
+    const word = { id, text, x: 10 + Math.random() * 74, y: -4, speed: speedFor(m) * (0.85 + Math.random() * 0.3) };
+    wordsRef.current = [...wordsRef.current, word];
+  };
+
+  const loop = (ts) => {
+    if (!lastTsRef.current) lastTsRef.current = ts;
+    let dt = (ts - lastTsRef.current) / 1000;
+    lastTsRef.current = ts;
+    if (dt > 0.1) dt = 0.1; // chống nhảy cóc khi tab bị throttle
+
+    let arr = wordsRef.current.map((w) => ({ ...w, y: w.y + w.speed * dt }));
+    const missed = arr.filter((w) => w.y >= TYPING_MISS_LINE);
+    if (missed.length) {
+      livesRef.current = Math.max(0, livesRef.current - missed.length);
+      setLives(livesRef.current);
+      arr = arr.filter((w) => w.y < TYPING_MISS_LINE);
+      setShake(true);
+      setTimeout(() => setShake(false), 350);
+    }
+
+    const m = Math.min(
+      TYPING_MILESTONES,
+      Math.floor(destroyedRef.current / TYPING_WORDS_PER_MILESTONE) + 1,
+    );
+    spawnAccRef.current += dt * 1000;
+    const canSpawnMore = destroyedRef.current + arr.length < TYPING_TOTAL;
+    if (canSpawnMore && arr.length < TYPING_MAX_ON_SCREEN && spawnAccRef.current >= spawnIntervalFor(m)) {
+      spawnAccRef.current = 0;
+      wordsRef.current = arr;
+      spawnWord();
+      arr = wordsRef.current;
+    }
+
+    wordsRef.current = arr;
+    setWords(arr);
+
+    if (livesRef.current <= 0) {
+      stopLoop();
+      setPhase("over");
+      return;
+    }
+    rafRef.current = requestAnimationFrame(loop);
+  };
+
+  const start = () => {
+    poolRef.current = buildPool();
+    poolIdxRef.current = 0;
+    idRef.current = 0;
+    wordsRef.current = [];
+    livesRef.current = 3;
+    destroyedRef.current = 0;
+    spawnAccRef.current = 9999; // spawn ngay từ đầu
+    lastTsRef.current = 0;
+    setWords([]);
+    setTyped("");
+    setScore(0);
+    setLives(3);
+    setDestroyed(0);
+    setBlasts([]);
+    setShots([]);
+    setPhase("playing");
+    stopLoop();
+    rafRef.current = requestAnimationFrame(loop);
+    setTimeout(() => inputRef.current?.focus(), 60);
+  };
+
+  const destroyWord = (target) => {
+    wordsRef.current = wordsRef.current.filter((w) => w.id !== target.id);
+    setWords(wordsRef.current);
+    const fxId = ++idRef.current;
+    setBlasts((b) => [...b, { id: fxId, x: target.x, y: target.y }]);
+    setShots((s) => [...s, { id: fxId, x: target.x, y: target.y }]);
+    setTimeout(() => {
+      setBlasts((b) => b.filter((x) => x.id !== fxId));
+      setShots((s) => s.filter((x) => x.id !== fxId));
+    }, 520);
+    setScore((s) => s + 1);
+    destroyedRef.current += 1;
+    setDestroyed(destroyedRef.current);
+    if (destroyedRef.current >= TYPING_TOTAL) {
+      stopLoop();
+      setTimeout(() => setPhase("win"), 300);
+    }
+  };
+
+  const processTyped = (raw) => {
+    const clean = raw.replace(/[^a-zA-Z' -]/g, "");
+    if (!clean) {
+      setTyped("");
+      return;
+    }
+    const lower = clean.toLowerCase();
+    const arr = wordsRef.current;
+    const exact = arr.filter((w) => w.text.toLowerCase() === lower);
+    if (exact.length) {
+      const target = exact.reduce((a, b) => (b.y > a.y ? b : a));
+      destroyWord(target);
+      setTyped("");
+      return;
+    }
+    if (arr.some((w) => w.text.toLowerCase().startsWith(lower))) {
+      setTyped(clean);
+    } else {
+      setTyped("");
+      setShake(true);
+      setTimeout(() => setShake(false), 350);
+    }
+  };
+
+  // từ đang được nhắm (highlight ký tự đã gõ)
+  const typedLower = typed.toLowerCase();
+  const targetId = (() => {
+    if (!typedLower) return null;
+    const matches = words.filter((w) => w.text.toLowerCase().startsWith(typedLower));
+    if (!matches.length) return null;
+    return matches.reduce((a, b) => (b.y > a.y ? b : a)).id;
+  })();
+
+  const styleTag = (
+    <style>{`
+      @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+      @keyframes flBlastRing {0%{transform:translate(-50%,-50%) scale(.2);opacity:.9}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+      @keyframes flSpark {0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-50%) scale(1.4);opacity:0}}
+      @keyframes flLaser {0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+      @keyframes flShakeX {0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+      @keyframes flRocketFloat {0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
+      @keyframes flFallIn {0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+      @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+      @keyframes flBeeFloat {0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+      @keyframes flGlowPulse {0%,100%{box-shadow:0 0 18px rgba(56,189,248,.5)}50%{box-shadow:0 0 34px rgba(56,189,248,.85)}}
+    `}</style>
+  );
+
+  if (phase === "intro") {
+    return (
+      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+        {styleTag}
+        <StarField />
+        <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+          <div className="text-6xl" style={{ animation: "flRocketFloat 2.2s ease-in-out infinite" }}>🚀</div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Luyện Gõ</h2>
+            <p className="text-indigo-200/80 text-sm mt-1">Gõ các từ tiếng Anh đang rơi để bắn hạ chúng</p>
+          </div>
+          <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-indigo-100">
+            Chủ đề: <span className="font-semibold text-cyan-300">{deckName}</span> · {availableCount} từ đã thuộc
+          </div>
+          {availableCount < 3 ? (
+            <p className="text-amber-300 text-sm">Cần ít nhất 3 từ đã thuộc để chơi.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-600 text-white shadow-lg active:scale-95 transition-transform"
+              style={{ animation: "flGlowPulse 2.4s ease-in-out infinite" }}
+            >
+              Bắt đầu
+            </button>
+          )}
+          <button onClick={onClose} className="text-indigo-300/70 text-sm underline">Quay lại</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "over" || phase === "win") {
+    const win = phase === "win";
+    return (
+      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+        {styleTag}
+        <StarField />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
+          <div className="text-6xl">{win ? "🏆" : "💥"}</div>
+          <h2 className="text-2xl font-extrabold">{win ? "Chinh phục vũ trụ!" : "Tàu rơi rồi!"}</h2>
+          <div className="bg-white/10 border border-white/15 rounded-3xl px-10 py-5">
+            <p className="text-5xl font-extrabold text-cyan-300">{score}</p>
+            <p className="text-indigo-200 text-sm mt-1">từ đã bắn hạ · mốc {milestone}/{TYPING_MILESTONES}</p>
+          </div>
+          <button
+            onClick={start}
+            className="px-10 py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-cyan-400 to-blue-600 shadow-lg active:scale-95 transition-transform"
+          >
+            Chơi lại
+          </button>
+          <button onClick={onClose} className="text-indigo-300/70 text-sm underline">Quay lại</button>
+        </div>
+      </div>
+    );
+  }
+
+  // phase playing
+  return (
+    <div
+      className="relative flex flex-col h-full overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white select-none"
+      style={shake ? { animation: "flShakeX .35s ease" } : undefined}
+      onClick={() => inputRef.current?.focus()}
+    >
+      {styleTag}
+      <StarField />
+
+      {/* Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-4 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm font-semibold">
+          Mốc <span className="text-cyan-300">{milestone}/{TYPING_MILESTONES}</span>
+          <span className="text-indigo-300/60"> · {deckName}</span>
+        </div>
+        <HeartRow lives={lives} />
+      </div>
+      <div className="relative z-20 px-4">
+        <div className="flex items-center justify-between text-xs text-indigo-200/70 mb-1">
+          <span className="inline-flex items-center gap-1">🏆 {score}</span>
+          <span>{destroyed}/{TYPING_TOTAL}</span>
+        </div>
+        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transition-all duration-300" style={{ width: `${(destroyed / TYPING_TOTAL) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* Vùng chơi */}
+      <div className="relative flex-1 mt-2">
+        {/* laser + nổ */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {shots.map((s) => (
+            <line key={s.id} x1="50" y1="100" x2={s.x} y2={s.y} stroke="#67e8f9" strokeWidth="0.5" style={{ animation: "flLaser .5s ease-out forwards" }} />
+          ))}
+        </svg>
+        {blasts.map((b) => (
+          <div key={b.id} className="absolute z-10 pointer-events-none" style={{ left: `${b.x}%`, top: `${b.y}%` }}>
+            <div className="absolute w-10 h-10 rounded-full border-2 border-cyan-300" style={{ animation: "flBlastRing .5s ease-out forwards" }} />
+            <div className="absolute w-8 h-8 rounded-full bg-cyan-400/60" style={{ animation: "flSpark .45s ease-out forwards" }} />
+          </div>
+        ))}
+
+        {/* từ rơi */}
+        {words.map((w) => {
+          const isTarget = w.id === targetId;
+          const matchLen = isTarget ? typed.length : 0;
+          const danger = w.y > TYPING_MISS_LINE - 18;
+          return (
+            <div
+              key={w.id}
+              className="absolute z-10 px-3 py-1.5 rounded-xl font-mono font-bold text-base whitespace-nowrap"
+              style={{
+                left: `${w.x}%`,
+                top: `${w.y}%`,
+                transform: "translate(-50%,-50%)",
+                animation: "flFallIn .3s ease-out",
+                background: isTarget ? "rgba(8,145,178,.35)" : danger ? "rgba(190,18,60,.3)" : "rgba(255,255,255,.08)",
+                border: `1px solid ${isTarget ? "rgba(103,232,249,.8)" : danger ? "rgba(244,63,94,.6)" : "rgba(255,255,255,.15)"}`,
+                boxShadow: isTarget ? "0 0 16px rgba(103,232,249,.5)" : "none",
+                color: danger ? "#fecdd3" : "#fff",
+              }}
+            >
+              {matchLen > 0 ? (
+                <>
+                  <span className="text-cyan-300">{w.text.slice(0, matchLen)}</span>
+                  <span>{w.text.slice(matchLen)}</span>
+                </>
+              ) : (
+                w.text
+              )}
+            </div>
+          );
+        })}
+
+        {/* tàu */}
+        <div className="absolute left-1/2 bottom-1 text-4xl z-10" style={{ animation: "flRocketFloat 2s ease-in-out infinite" }}>🚀</div>
+      </div>
+
+      {/* ô nhập */}
+      <div className="relative z-20 px-4 pb-4 pt-2">
+        <input
+          ref={inputRef}
+          value={typed}
+          onChange={(e) => processTyped(e.target.value)}
+          onBlur={() => phase === "playing" && setTimeout(() => inputRef.current?.focus(), 10)}
+          autoFocus
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="Gõ từ đang rơi rồi Enter/khớp là bắn…"
+          className="w-full text-center font-mono text-lg tracking-wide py-3 rounded-2xl bg-white/10 border border-cyan-400/40 text-cyan-200 placeholder:text-indigo-300/40 focus:outline-none focus:border-cyan-300"
+          style={{ animation: "flGlowPulse 2.6s ease-in-out infinite" }}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
+// COMPONENT: SpellingBee (Ong Chính Tả — nghe phát âm và gõ lại từ)
+// ============================================================================
+const SPELLING_ROUND = 20;
+
+const SpellingBee = ({ cards, deckName, onClose }) => {
+  const [phase, setPhase] = useState("intro"); // intro | playing | over | win
+  const [idx, setIdx] = useState(0);
+  const [typed, setTyped] = useState("");
+  const [status, setStatus] = useState("typing"); // typing | correct | wrong
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [showMeaning, setShowMeaning] = useState(false);
+  const [queue, setQueue] = useState([]);
+  const livesRef = useRef(3);
+  const inputRef = useRef(null);
+  const advanceRef = useRef(null);
+
+  const current = queue[idx];
+  const word = (current?.word || "").trim();
+  const total = queue.length;
+  const availableCount = cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).length;
+
+  useEffect(() => () => advanceRef.current && clearTimeout(advanceRef.current), []);
+
+  const buildQueue = () =>
+    shuffleArr(cards.filter((c) => c.status === "known" && isPlayableWord(c.word))).slice(
+      0,
+      SPELLING_ROUND,
+    );
+
+  const speakCurrent = (w) => speakEnglish(w, { rate: 0.85 });
+
+  const goToWord = (nextIdx, q) => {
+    const list = q || queue;
+    const w = (list[nextIdx]?.word || "").trim();
+    setIdx(nextIdx);
+    setTyped(w ? w[0] : "");
+    setStatus("typing");
+    setShowMeaning(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      speakCurrent(w);
+    }, 200);
+  };
+
+  const start = () => {
+    const q = buildQueue();
+    setQueue(q);
+    livesRef.current = 3;
+    setLives(3);
+    setScore(0);
+    setPhase("playing");
+    goToWord(0, q);
+  };
+
+  const advance = () => {
+    if (idx + 1 >= total) {
+      setPhase("win");
+      return;
+    }
+    goToWord(idx + 1);
+  };
+
+  const submit = () => {
+    if (status !== "typing" || !word) return;
+    if (typed.trim().toLowerCase() === word.toLowerCase()) {
+      setStatus("correct");
+      setScore((s) => s + 1);
+      advanceRef.current = setTimeout(advance, 950);
+    } else {
+      setStatus("wrong");
+      livesRef.current -= 1;
+      setLives(livesRef.current);
+      setTyped(word); // lộ đáp án đúng
+      advanceRef.current = setTimeout(() => {
+        if (livesRef.current <= 0) setPhase("over");
+        else advance();
+      }, 1500);
+    }
+  };
+
+  const onInputChange = (e) => {
+    if (status !== "typing") return;
+    const clean = e.target.value.replace(/[^a-zA-Z' -]/g, "").slice(0, word.length);
+    setTyped(clean);
+  };
+
+  const styleTag = (
+    <style>{`
+      @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+      @keyframes flBeeFloat {0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
+      @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+      @keyframes flShakeX {0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+      @keyframes flBoxFlip {0%{transform:rotateX(90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
+      @keyframes flGlowGold {0%,100%{box-shadow:0 0 18px rgba(251,191,36,.4)}50%{box-shadow:0 0 34px rgba(251,191,36,.8)}}
+    `}</style>
+  );
+
+  if (phase === "intro") {
+    return (
+      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
+        {styleTag}
+        <StarField color="253,224,71" count={38} />
+        <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+          <div className="text-6xl" style={{ animation: "flBeeFloat 2.4s ease-in-out infinite" }}>🐝</div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Ong Chính Tả</h2>
+            <p className="text-amber-200/80 text-sm mt-1">Nghe phát âm và gõ lại từ với chính tả chuẩn xác</p>
+          </div>
+          <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-amber-100">
+            Chủ đề: <span className="font-semibold text-amber-300">{deckName}</span> · {availableCount} từ đã thuộc
+          </div>
+          {availableCount < 3 ? (
+            <p className="text-amber-300 text-sm">Cần ít nhất 3 từ đã thuộc để chơi.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg active:scale-95 transition-transform"
+              style={{ animation: "flGlowGold 2.4s ease-in-out infinite" }}
+            >
+              Bắt đầu
+            </button>
+          )}
+          <button onClick={onClose} className="text-amber-200/70 text-sm underline">Quay lại</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (phase === "over" || phase === "win") {
+    const win = phase === "win";
+    return (
+      <div className="relative flex flex-col items-center justify-center h-full gap-6 px-6 overflow-hidden text-white" style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}>
+        {styleTag}
+        <StarField color="253,224,71" count={38} />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
+          <div className="text-6xl">{win ? "🏆" : "🐝"}</div>
+          <h2 className="text-2xl font-extrabold">{win ? "Ong quán quân!" : "Hết lượt rồi!"}</h2>
+          <div className="bg-white/10 border border-white/15 rounded-3xl px-10 py-5">
+            <p className="text-5xl font-extrabold text-amber-300">{score}/{total}</p>
+            <p className="text-amber-200 text-sm mt-1">từ đúng chính tả</p>
+          </div>
+          <button
+            onClick={start}
+            className="px-10 py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg active:scale-95 transition-transform"
+          >
+            Chơi lại
+          </button>
+          <button onClick={onClose} className="text-amber-200/70 text-sm underline">Quay lại</button>
+        </div>
+      </div>
+    );
+  }
+
+  // phase playing
+  const meaningHint = (current?.meaning || "").split("\n").find((l) => l.trim()) || "";
+  const boxColor =
+    status === "correct" ? "#22c55e" : status === "wrong" ? "#f43f5e" : "#fbbf24";
+
+  return (
+    <div
+      className="relative flex flex-col h-full overflow-hidden text-white select-none"
+      style={{ background: "radial-gradient(120% 90% at 50% 0%, #3b2f10 0%, #1c1608 45%, #0b0a06 100%)" }}
+      onClick={() => status === "typing" && inputRef.current?.focus()}
+    >
+      {styleTag}
+      <StarField color="253,224,71" count={38} />
+
+      {/* Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-4 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <div className="px-4 py-1.5 rounded-full bg-white/10 border border-white/10 text-sm font-semibold">
+          Mốc <span className="text-amber-300">{idx + 1}/{total}</span>
+          <span className="text-amber-300/60"> · {deckName}</span>
+        </div>
+        <HeartRow lives={lives} />
+      </div>
+      <div className="relative z-20 px-4">
+        <div className="flex items-center justify-between text-xs text-amber-200/70 mb-1">
+          <span className="inline-flex items-center gap-1">🏆 {score}</span>
+          <span>{idx + 1}/{total}</span>
+        </div>
+        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full transition-all duration-300" style={{ width: `${((idx + (status !== "typing" ? 1 : 0)) / total) * 100}%` }} />
+        </div>
+      </div>
+
+      {/* Khu vực chính */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center gap-7 px-5">
+        {/* nút nghe */}
+        <button
+          onClick={() => speakCurrent(word)}
+          className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+          style={{ animation: "flGlowGold 2.4s ease-in-out infinite" }}
+          title="Nghe lại"
+        >
+          <Volume2 className="w-11 h-11 text-white" />
+        </button>
+        <p className="text-amber-200/60 text-xs -mt-3">Chạm để nghe lại phát âm</p>
+
+        {/* các ô chữ */}
+        <div
+          className="flex flex-wrap items-center justify-center gap-2 max-w-full"
+          style={status === "wrong" ? { animation: "flShakeX .4s ease" } : undefined}
+        >
+          {word.split("").map((ch, i) => {
+            if (ch === " ") return <div key={i} className="w-3" />;
+            const typedCh = typed[i];
+            const filled = typedCh !== undefined && typedCh !== "";
+            const isCursor = status === "typing" && i === typed.length;
+            return (
+              <div
+                key={i}
+                className="w-9 h-12 sm:w-10 sm:h-14 rounded-lg flex items-center justify-center font-mono text-2xl font-bold uppercase"
+                style={{
+                  background: filled ? "rgba(251,191,36,.15)" : "rgba(255,255,255,.05)",
+                  border: `2px solid ${isCursor ? boxColor : filled ? boxColor : "rgba(255,255,255,.15)"}`,
+                  color: boxColor,
+                  boxShadow: isCursor ? `0 0 12px ${boxColor}` : "none",
+                  animation: filled ? "flBoxFlip .25s ease-out" : undefined,
+                }}
+              >
+                {filled ? typedCh : i === 0 ? <span className="opacity-30">{ch}</span> : ""}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* gợi ý nghĩa */}
+        <div className="h-12 flex flex-col items-center justify-center text-center">
+          {status === "correct" && <p className="text-green-400 font-bold text-lg" style={{ animation: "flPopIn .3s ease-out" }}>Chính xác! 🎉</p>}
+          {status === "wrong" && <p className="text-rose-400 font-bold">Đáp án: <span className="uppercase">{word}</span></p>}
+          {status === "typing" && showMeaning && meaningHint && (
+            <p className="text-amber-200/80 text-sm px-4">{meaningHint}</p>
+          )}
+          {status === "typing" && !showMeaning && (
+            <button onClick={() => setShowMeaning(true)} className="text-amber-300/70 text-sm underline">
+              Gợi ý nghĩa
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ong + nhập ẩn + nút xác nhận */}
+      <div className="relative z-20 px-4 pb-5 flex flex-col items-center gap-3">
+        <input
+          ref={inputRef}
+          value={typed}
+          onChange={onInputChange}
+          onKeyDown={(e) => e.key === "Enter" && submit()}
+          onBlur={() => status === "typing" && setTimeout(() => inputRef.current?.focus(), 10)}
+          autoFocus
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          className="sr-only"
+        />
+        <button
+          onClick={submit}
+          disabled={status !== "typing"}
+          className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg active:scale-95 transition-transform disabled:opacity-40"
+        >
+          Kiểm tra
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================================
 // COMPONENT: GameTab (màn hình chọn trò chơi)
 // ============================================================================
 const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
@@ -1056,6 +1759,10 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
     return <QuizGame cards={knownCards} onClose={() => setActiveGame(null)} />;
   if (activeGame === "match")
     return <MatchGame cards={knownCards} onClose={() => setActiveGame(null)} />;
+  if (activeGame === "typing")
+    return <TypingGame cards={knownCards} deckName={deckInput} onClose={() => setActiveGame(null)} />;
+  if (activeGame === "spelling")
+    return <SpellingBee cards={knownCards} deckName={deckInput} onClose={() => setActiveGame(null)} />;
 
   return (
     <div className="p-4 flex flex-col gap-5">
@@ -1111,6 +1818,36 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           </p>
           {knownCards.length < 2 && (
             <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 2 từ đã thuộc</p>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveGame("typing")}
+          disabled={knownCards.length < 3}
+          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-cyan-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+        >
+          <div className="text-3xl mb-2">🚀</div>
+          <p className="text-lg font-bold">Luyện Gõ</p>
+          <p className="text-cyan-100 text-sm mt-0.5">
+            Gõ các từ tiếng Anh đang rơi để bắn hạ chúng
+          </p>
+          {knownCards.length < 3 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 3 từ đã thuộc</p>
+          )}
+        </button>
+
+        <button
+          onClick={() => setActiveGame("spelling")}
+          disabled={knownCards.length < 3}
+          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+        >
+          <div className="text-3xl mb-2">🐝</div>
+          <p className="text-lg font-bold">Ong Chính Tả</p>
+          <p className="text-amber-100 text-sm mt-0.5">
+            Nghe phát âm và gõ lại từ với chính tả chuẩn xác
+          </p>
+          {knownCards.length < 3 && (
+            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 3 từ đã thuộc</p>
           )}
         </button>
       </div>

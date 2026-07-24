@@ -21,7 +21,37 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-23) — v1.5.0: che hình video khi luyện Chép chính tả
+## Phiên làm việc gần nhất (2026-07-24) — v1.6.0: 2 game mới "Luyện Gõ" + "Ong Chính Tả" (kiểu Parroto)
+
+Thêm 2 trò chơi vào tab GAME (`src/App.jsx`), đặt ngay TRƯỚC component `GameTab`:
+
+- **`TypingGame` (Luyện Gõ, 🚀):** từ tiếng Anh rơi từ trên xuống trên nền vũ trụ (StarField),
+  người chơi gõ đúng để "bắn hạ" (laser SVG + hiệu ứng nổ). 3 tim, mất 1 khi để từ rơi chạm mốc
+  `TYPING_MISS_LINE`=88%. Mốc 1→20, mỗi mốc 3 từ (`TYPING_TOTAL`=60) → thắng. Tốc độ rơi & nhịp
+  spawn tăng dần theo mốc. Vòng lặp chạy bằng `requestAnimationFrame` (state `words` mirror từ
+  `wordsRef`); khớp từ trong `processTyped` (event handler, đọc `wordsRef.current`), gõ trùng
+  1 từ (không phân biệt hoa/thường) là bắn.
+- **`SpellingBee` (Ong Chính Tả, 🐝):** phát âm từ qua Web Speech (`speakEnglish`, rate 0.85),
+  hiện ô trống + gợi ý chữ cái đầu; gõ lại rồi Enter/nút Kiểm tra. Đúng → +điểm, sang từ; sai →
+  mất tim + lộ đáp án. 20 từ/lượt. Dùng `queue` STATE (không phải ref — lint `react-hooks/refs`
+  cấm đọc ref khi render). Có nút "Gợi ý nghĩa" (lấy dòng đầu của `meaning`).
+- **Chọn từ:** cả 2 chỉ dùng thẻ `status === "known"` của chủ đề đang chọn (`knownCards` truyền
+  từ `GameTab`), và LỌC tiếp qua `isPlayableWord` (từ ĐƠN, chỉ chữ cái + `'`/`-`, dài 2-18). Lọc
+  này QUAN TRỌNG: nhiều thẻ là cụm có "/" như "Have/Finish classes" — nếu không lọc, ô nhập strip
+  "/" nên không bao giờ khớp được. `availableCount` (điều kiện ≥3 từ để chơi) dùng ĐÚNG bộ lọc này.
+- Helper dùng chung mới (module-level, trước `GameTab`): `speakEnglish`, `StarField`, `HeartRow`,
+  `isPlayableWord`. Keyframes animation nhúng trong `<style>` của mỗi game (tiền tố `fl…`).
+- Menu GAME (`GameTab`) thêm 2 nút (cyan cho Luyện Gõ, amber cho Ong Chính Tả) + 2 nhánh
+  `activeGame === "typing" | "spelling"`.
+- **Đã test** (vite riêng port 5199, đọc DB thật — game CHỈ ĐỌC thẻ, không ghi): menu hiện đủ 4
+  game; SpellingBee test cả luồng đúng (điểm +1, sang từ) lẫn sai (mất tim, lộ đáp án, tiến vòng),
+  onChange điền ô chuẩn. TypingGame render intro/gameplay OK. **Lưu ý test:** Browser pane ẩn nên
+  `requestAnimationFrame` bị ĐÓNG BĂNG hoàn toàn → không xem được từ rơi chạy trong pane; ở tab
+  hiển thị của user thật thì chạy bình thường 60fps. `setTimeout` vẫn chạy (bị clamp ~1s).
+- Lint: vẫn 3 lỗi CÓ SẴN (emoji regex ~1880, setState-in-effect ~2454) — không thuộc thay đổi này.
+  Build production OK.
+
+## Phiên trước (2026-07-23) — v1.5.0: che hình video khi luyện Chép chính tả
 
 User không muốn nhìn thấy hình video (chỉ muốn nghe) trong màn hình luyện tập. Thêm một lớp
 phủ `absolute inset-0` đè lên khung player YouTube (`App.jsx`, quanh dòng ~2394): nền
