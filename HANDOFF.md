@@ -21,7 +21,21 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.8.0: chậm "Luyện Gõ" + fix bug gõ "Ong Chính Tả"
+## Phiên làm việc gần nhất (2026-07-24) — v1.9.0: 2 tinh chỉnh "Luyện Gõ" (TypingGame)
+
+- **Không tự xóa khi gõ sai:** trước đây `processTyped` khi chuỗi gõ KHÔNG khớp tiền tố từ nào thì
+  `setTyped("")` + shake → mất hết ký tự vừa gõ. Giờ luôn `setTyped(clean)` (giữ nguyên chuỗi, bỏ
+  auto-clear + bỏ shake ở nhánh này); user tự Backspace để sửa. Shake khi để lọt từ vẫn còn.
+- **Bắn hạ từ → phát âm + hiện nghĩa:** trong `destroyWord` thêm `speakEnglish(target.text)` và set
+  state `hit={id,word,meaning}`; render toast pill (cyan, `flPopIn`) ở đáy vùng chơi (bottom-16) hiện
+  `word 🔊` + nghĩa tiếng Việt, tự ẩn sau 1.7s (`hitTimerRef`). Nghĩa lấy từ `meaningMapRef` — map
+  `từ(thường) -> pickMeaning(c.meaning)` dựng 1 lần trong `start()`. Cleanup timer ở unmount + `start`.
+- **Đã test** (vite 5199, chỉ đọc thẻ): #1 gõ `z,x,q,w` → input giữ `zxqw` không bị clear, Backspace ra
+  `zxq` OK. #2 KHÔNG test live được vì rAF của pane bị pause khi ẩn (từ không spawn) — xác nhận bằng
+  đọc code: helper `speakEnglish`/`pickMeaning` ở module-level trước TypingGame, key map khớp
+  `target.text.toLowerCase()`. Lint: vẫn 3 lỗi CÓ SẴN (2183/2757) không liên quan.
+
+## Phiên làm việc (2026-07-24) — v1.8.0: chậm "Luyện Gõ" + fix bug gõ "Ong Chính Tả"
 
 Hai chỉnh sửa nhỏ theo yêu cầu user (đều nằm trong `src/App.jsx`):
 

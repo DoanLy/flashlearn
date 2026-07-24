@@ -1404,7 +1404,10 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   const [blasts, setBlasts] = useState([]); // {id, x, y}
   const [shots, setShots] = useState([]); // {id, x, y}
   const [shake, setShake] = useState(false);
+  const [hit, setHit] = useState(null); // {id, word, meaning} — hiện sau khi bắn hạ 1 từ
 
+  const meaningMapRef = useRef({}); // từ (thường) -> nghĩa tiếng Việt
+  const hitTimerRef = useRef(null);
   const wordsRef = useRef([]);
   const livesRef = useRef(3);
   const destroyedRef = useRef(0);
@@ -1434,7 +1437,10 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     rafRef.current = null;
   };
 
-  useEffect(() => () => stopLoop(), []);
+  useEffect(() => () => {
+    stopLoop();
+    if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
+  }, []);
 
   const spawnWord = () => {
     const pool = poolRef.current;
@@ -1492,6 +1498,16 @@ const TypingGame = ({ cards, deckName, onClose }) => {
 
   const start = () => {
     poolRef.current = buildPool();
+    const map = {};
+    cards
+      .filter((c) => c.status === "known" && isPlayableWord(c.word))
+      .forEach((c) => {
+        const k = c.word.trim().toLowerCase();
+        if (!(k in map)) map[k] = pickMeaning(c.meaning || "");
+      });
+    meaningMapRef.current = map;
+    if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
+    setHit(null);
     poolIdxRef.current = 0;
     idRef.current = 0;
     wordsRef.current = [];
@@ -1525,6 +1541,11 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     setScore((s) => s + 1);
     destroyedRef.current += 1;
     setDestroyed(destroyedRef.current);
+    // phát âm từ vừa bắn hạ + hiện nghĩa tiếng Việt
+    speakEnglish(target.text, { rate: 0.95 });
+    setHit({ id: fxId, word: target.text, meaning: meaningMapRef.current[target.text.toLowerCase()] || "" });
+    if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
+    hitTimerRef.current = setTimeout(() => setHit(null), 1700);
     if (destroyedRef.current >= TYPING_TOTAL) {
       stopLoop();
       setTimeout(() => setPhase("win"), 300);
@@ -1546,13 +1567,9 @@ const TypingGame = ({ cards, deckName, onClose }) => {
       setTyped("");
       return;
     }
-    if (arr.some((w) => w.text.toLowerCase().startsWith(lower))) {
-      setTyped(clean);
-    } else {
-      setTyped("");
-      setShake(true);
-      setTimeout(() => setShake(false), 350);
-    }
+    // Giữ nguyên ký tự user vừa gõ dù khớp hay chưa khớp — KHÔNG tự xóa khi gõ sai.
+    // (User tự dùng Backspace để sửa; ô nhập bên dưới luôn hiển thị chuỗi đang gõ.)
+    setTyped(clean);
   };
 
   // từ đang được nhắm (highlight ký tự đã gõ)
@@ -1715,6 +1732,20 @@ const TypingGame = ({ cards, deckName, onClose }) => {
 
         {/* tàu */}
         <div className="absolute left-1/2 bottom-1 text-4xl z-10" style={{ animation: "flRocketFloat 2s ease-in-out infinite" }}>🚀</div>
+
+        {/* nghĩa từ vừa bắn hạ */}
+        {hit && (
+          <div
+            key={hit.id}
+            className="absolute left-1/2 bottom-16 -translate-x-1/2 z-20 pointer-events-none max-w-[88%] text-center"
+            style={{ animation: "flPopIn .3s ease-out" }}
+          >
+            <div className="inline-flex flex-col items-center gap-0.5 px-4 py-2 rounded-2xl bg-cyan-500/15 border border-cyan-300/40 shadow-lg backdrop-blur-sm">
+              <span className="font-mono font-bold text-cyan-200 text-base">{hit.word} 🔊</span>
+              {hit.meaning && <span className="text-white/90 text-sm">{hit.meaning}</span>}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ô nhập */}
