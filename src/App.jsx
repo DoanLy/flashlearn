@@ -1426,8 +1426,8 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     TYPING_MILESTONES,
     Math.floor(destroyed / TYPING_WORDS_PER_MILESTONE) + 1,
   );
-  const speedFor = (m) => 5 + m * 0.55; // %/giây
-  const spawnIntervalFor = (m) => Math.max(900, 2200 - m * 65); // ms
+  const speedFor = (m) => 3.2 + m * 0.3; // %/giây — chậm lại để kịp gõ
+  const spawnIntervalFor = (m) => Math.max(1100, 2600 - m * 60); // ms
 
   const stopLoop = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -1774,7 +1774,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
     const list = q || queue;
     const w = (list[nextIdx]?.word || "").trim();
     setIdx(nextIdx);
-    setTyped(w ? w[0] : "");
+    setTyped(""); // KHÔNG điền sẵn ký tự đầu — gây lỗi con trỏ input ẩn khiến ký tự vừa gõ bị mất
     setStatus("typing");
     setShowMeaning(false);
     setTimeout(() => {

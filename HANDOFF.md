@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.7.0: thiết kế lại UI 2 game "Kiểm tra" + "Ghép thẻ"
+## Phiên làm việc gần nhất (2026-07-24) — v1.8.0: chậm "Luyện Gõ" + fix bug gõ "Ong Chính Tả"
+
+Hai chỉnh sửa nhỏ theo yêu cầu user (đều nằm trong `src/App.jsx`):
+
+- **Luyện Gõ rơi chậm lại:** `speedFor(m)` từ `5 + m*0.55` → `3.2 + m*0.3` (%/giây); nới `spawnIntervalFor`
+  từ `max(900, 2200 - m*65)` → `max(1100, 2600 - m*60)` ms. Mốc 1 rơi ~25s thay vì ~16s (chậm ~37%).
+- **Fix bug "Ong Chính Tả" nuốt ký tự vừa gõ:** `goToWord` trước đây điền sẵn ký tự đầu vào state
+  `typed` (`setTyped(w ? w[0] : "")`). Input ẩn `sr-only` mang sẵn giá trị đó → khi focus tự động,
+  vị trí con trỏ/vùng chọn không ổn định, ký tự user gõ bị chèn sai chỗ / thay thế → trông như bị xóa.
+  Đổi thành `setTyped("")` (bắt đầu rỗng, gõ cả từ từ đầu). Ký tự đầu vẫn hiện MỜ làm gợi ý ở ô đầu
+  (nhánh `i === 0` sẵn có). Submit so `typed` với cả từ — không cần chỉnh vì typed giờ là cả từ.
+- **Đã test** (vite 5199, chỉ đọc thẻ): mở Ong Chính Tả, input value khởi tạo `""` (không còn prefill);
+  gõ từng ký tự qua native setter + `input` event → boxes tích lũy đúng `T`→`TE`→`TES`, không mất ký tự.
+  Speed chỉ đổi hằng số, không test rAF trong pane (bị throttle). Lint: vẫn 3 lỗi CÓ SẴN không liên quan.
+
+## Phiên làm việc (2026-07-24) — v1.7.0: thiết kế lại UI 2 game "Kiểm tra" + "Ghép thẻ"
 
 User muốn 2 game CŨ (QuizGame/MatchGame) đẹp và đồng bộ style Parroto như 2 game mới. Viết lại
 hoàn toàn cả 2 (splice bằng Node vì file CRLF — xem lịch sử nếu cần lặp lại):
