@@ -1418,6 +1418,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   const poolIdxRef = useRef(0);
   const idRef = useRef(0);
   const inputRef = useRef(null);
+  const typedRef = useRef(""); // giữ chuỗi đang gõ để loop (rAF) đọc được giá trị mới nhất
 
   const buildPool = () =>
     shuffleArr(
@@ -1470,6 +1471,13 @@ const TypingGame = ({ cards, deckName, onClose }) => {
       arr = arr.filter((w) => w.y < TYPING_MISS_LINE);
       setShake(true);
       setTimeout(() => setShake(false), 350);
+      // Nếu từ đang gõ dở vừa bị mất lượt (chuỗi gõ không còn khớp từ nào còn lại)
+      // → tự xóa để user gõ ngay từ mới, không bị kẹt ký tự cũ.
+      const t = typedRef.current.toLowerCase();
+      if (t && !arr.some((w) => w.text.toLowerCase().startsWith(t))) {
+        typedRef.current = "";
+        setTyped("");
+      }
     }
 
     const m = Math.min(
@@ -1516,6 +1524,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     spawnAccRef.current = 9999; // spawn ngay từ đầu
     lastTsRef.current = 0;
     setWords([]);
+    typedRef.current = "";
     setTyped("");
     setScore(0);
     setLives(3);
@@ -1552,15 +1561,20 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     }
   };
 
+  const applyTyped = (v) => {
+    typedRef.current = v;
+    setTyped(v);
+  };
+
   const processTyped = (raw) => {
     const clean = raw.replace(/[^a-zA-Z' -]/g, "");
     // Xóa bớt ký tự (Backspace) luôn được phép — để user sửa hoặc đổi sang từ khác.
     if (clean.length < typed.length) {
-      setTyped(clean);
+      applyTyped(clean);
       return;
     }
     if (!clean) {
-      setTyped("");
+      applyTyped("");
       return;
     }
     const lower = clean.toLowerCase();
@@ -1569,11 +1583,11 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     if (exact.length) {
       const target = exact.reduce((a, b) => (b.y > a.y ? b : a));
       destroyWord(target);
-      setTyped("");
+      applyTyped("");
       return;
     }
     if (arr.some((w) => w.text.toLowerCase().startsWith(lower))) {
-      setTyped(clean); // vẫn là tiền tố hợp lệ của 1 từ đang rơi → nhận
+      applyTyped(clean); // vẫn là tiền tố hợp lệ của 1 từ đang rơi → nhận
     }
     // else: ký tự gõ vào KHÔNG khớp tiền tố từ nào → bỏ qua, không nhận.
     // Không gọi setTyped nên React tự khôi phục ô nhập về giá trị hợp lệ trước đó.

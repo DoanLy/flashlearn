@@ -21,7 +21,24 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.9.1: "Luyện Gõ" chỉ nhận ký tự ĐÚNG
+## Phiên làm việc gần nhất (2026-07-24) — v1.9.2: "Luyện Gõ" tự xóa khi từ đang gõ bị mất lượt
+
+Nối tiếp v1.9.1 (chặn ký tự sai): nếu từ user đang gõ dở bị rơi qua vạch (mất lượt) trước khi kịp
+bắn, chuỗi đang gõ trở nên "kẹt" (không khớp từ nào còn lại → gõ tiếp không ăn vì bị chặn). Fix:
+- Thêm `typedRef` (mirror của `typed`) + helper `applyTyped(v)` cập nhật cả ref lẫn state; dùng
+  `applyTyped` trong `processTyped` để loop (rAF) đọc được chuỗi mới nhất (loop là closure, không
+  thấy state mới).
+- Trong `loop`, ngay sau khi lọc bỏ các từ mất lượt: nếu `typedRef.current` khác rỗng và KHÔNG còn
+  là tiền tố của bất kỳ từ nào còn lại (`!arr.some(startsWith)`) → `setTyped("")` + reset ref. Nếu
+  vẫn còn từ khác khớp tiền tố thì GIỮ (không xóa nhầm).
+- `start()` reset `typedRef.current=""`.
+- **Đã test end-to-end** (vite 5199): không dùng được setTimeout/rAF thường vì pane ẩn bị clamp ~1s;
+  dựng "manual-pump" (patch `requestAnimationFrame` chỉ lưu callback, tự gọi loop N lần, yield giữa
+  batch bằng MessageChannel để React commit). Kết quả: đang gõ `Gra` cho từ "Grade", khi "Grade" mất
+  lượt, các từ còn lại [disadvantage, collect, Milestone, locate] không bắt đầu bằng "gra" → ô nhập
+  tự về `""`. **Mẹo test game rơi khi pane ẩn:** setTimeout bị clamp ~1s, dùng manual-pump + MessageChannel.
+
+## Phiên làm việc (2026-07-24) — v1.9.1: "Luyện Gõ" chỉ nhận ký tự ĐÚNG
 
 User đổi ý so với v1.9.0 (khi đó giữ lại ký tự sai): giờ muốn ký tự sai **không được nhập vào**
 luôn — ô nhập chỉ chấp nhận ký tự nào nối tiếp đúng tiền tố của MỘT từ đang rơi. Sửa `processTyped`:
