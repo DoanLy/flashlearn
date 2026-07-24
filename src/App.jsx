@@ -617,220 +617,387 @@ const shuffleArr = (arr) => {
 };
 
 // ============================================================================
-// COMPONENT: QuizGame
+// COMPONENT: QuizGame (Kiểm tra — nghĩa rơi như thiên thạch, chọn đúng từ)
 // ============================================================================
+const QUIZ_TOTAL = 15;
+const QUIZ_MISS_LINE = 80; // %
+const QUIZ_OPT_COLORS = [
+  { ring: "56,189,248", badge: "#0891b2" }, // cyan
+  { ring: "167,139,250", badge: "#7c3aed" }, // violet
+  { ring: "251,191,36", badge: "#d97706" }, // amber
+  { ring: "244,114,182", badge: "#db2777" }, // pink
+];
+
 const QuizGame = ({ cards, onClose }) => {
-  const maxWords = Math.min(cards.length, 50);
-  const minWords = Math.min(5, cards.length);
-
-  const [phase, setPhase] = useState("setup");
-  const [wordCount, setWordCount] = useState(Math.min(10, cards.length));
-  const [questions, setQuestions] = useState([]);
-  const [currentIdx, setCurrentIdx] = useState(0);
+  const [phase, setPhase] = useState("intro"); // intro | playing | over | win
+  const [q, setQ] = useState(null); // {meaning, word, correct, options}
+  const [y, setY] = useState(-12);
   const [score, setScore] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [answered, setAnswered] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [reveal, setReveal] = useState(false);
+  const [blast, setBlast] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [muted, setMuted] = useState(false);
 
-  const startGame = () => {
-    const pool = shuffleArr(cards.filter((c) => c.status === "known")).slice(0, wordCount);
+  const poolRef = useRef([]);
+  const poolIdxRef = useRef(0);
+  const yRef = useRef(-12);
+  const pausedRef = useRef(true);
+  const rafRef = useRef(null);
+  const lastTsRef = useRef(0);
+  const livesRef = useRef(3);
+  const answeredRef = useRef(0);
+  const mutedRef = useRef(false);
 
-    const qs = pool.map((card) => {
-      const distractors = shuffleArr(cards.filter((c) => c.id !== card.id))
-        .slice(0, 3)
-        .map((c) => c.word);
-      return {
-        meaning: card.meaning,
-        correct: card.word,
-        options: shuffleArr([card.word, ...distractors]),
-      };
-    });
+  const knownPool = cards.filter((c) => c.status === "known" && c.word && c.meaning);
+  const available = knownPool.length;
 
-    setQuestions(qs);
-    setCurrentIdx(0);
-    setScore(0);
-    setSelected(null);
-    setShowFeedback(false);
-    setPhase("playing");
+  const stopLoop = () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = null;
+  };
+  useEffect(() => () => stopLoop(), []);
+
+  const makeQuestion = () => {
+    const pool = poolRef.current;
+    const card = pool[poolIdxRef.current % pool.length];
+    poolIdxRef.current += 1;
+    const distractors = shuffleArr(
+      knownPool.filter((c) => c.id !== card.id && c.word !== card.word),
+    )
+      .slice(0, 3)
+      .map((c) => c.word);
+    return {
+      meaning: pickMeaning(card.meaning),
+      word: card.word,
+      correct: card.word,
+      options: shuffleArr([card.word, ...distractors]),
+    };
   };
 
-  const handleSelect = (option) => {
-    if (showFeedback) return;
-    setSelected(option);
-    setShowFeedback(true);
-    if (option === questions[currentIdx].correct) setScore((s) => s + 1);
-    setTimeout(() => {
-      if (currentIdx + 1 >= questions.length) {
-        setPhase("result");
+  const speedFor = () => 4.5 + answeredRef.current * 0.4;
+
+  const loop = (ts) => {
+    if (!lastTsRef.current) lastTsRef.current = ts;
+    let dt = (ts - lastTsRef.current) / 1000;
+    lastTsRef.current = ts;
+    if (dt > 0.1) dt = 0.1;
+    if (!pausedRef.current) {
+      yRef.current += speedFor() * dt;
+      if (yRef.current >= QUIZ_MISS_LINE) {
+        pausedRef.current = true;
+        handleMiss();
       } else {
-        setCurrentIdx((i) => i + 1);
-        setSelected(null);
-        setShowFeedback(false);
+        setY(yRef.current);
       }
-    }, 1200);
+    }
+    rafRef.current = requestAnimationFrame(loop);
   };
 
-  if (phase === "setup") {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-6 px-6">
-        <div className="text-5xl">❓</div>
-        <h2 className="text-2xl font-bold text-slate-800">Kiểm tra</h2>
-        <p className="text-slate-500 text-sm text-center">
-          Xem nghĩa tiếng Việt, chọn từ tiếng Anh đúng
-        </p>
+  const nextQuestion = () => {
+    if (livesRef.current <= 0) {
+      stopLoop();
+      setPhase("over");
+      return;
+    }
+    if (answeredRef.current >= QUIZ_TOTAL) {
+      stopLoop();
+      setPhase("win");
+      return;
+    }
+    setQ(makeQuestion());
+    yRef.current = -12;
+    setY(-12);
+    setPicked(null);
+    setReveal(false);
+    pausedRef.current = false;
+  };
 
-        <div className="w-full max-w-xs">
-          <label className="text-sm font-medium text-slate-600 mb-2 block">
-            Số từ mỗi lượt:{" "}
-            <span className="text-blue-600 font-bold">{wordCount}</span>
-          </label>
-          <input
-            type="range"
-            min={minWords}
-            max={maxWords}
-            value={wordCount}
-            onChange={(e) => setWordCount(+e.target.value)}
-            className="w-full accent-blue-600"
-          />
-          <div className="flex justify-between text-xs text-slate-400 mt-1">
-            <span>{minWords}</span>
-            <span>{maxWords}</span>
+  const handleMiss = () => {
+    livesRef.current -= 1;
+    setLives(livesRef.current);
+    setStreak(0);
+    answeredRef.current += 1;
+    setAnswered(answeredRef.current);
+    setShake(true);
+    setTimeout(() => setShake(false), 350);
+    setTimeout(nextQuestion, 550);
+  };
+
+  const answer = (opt) => {
+    if (reveal || pausedRef.current || !q) return;
+    pausedRef.current = true;
+    setPicked(opt);
+    setReveal(true);
+    answeredRef.current += 1;
+    setAnswered(answeredRef.current);
+    if (opt === q.correct) {
+      setBlast(true);
+      setTimeout(() => setBlast(false), 500);
+      setScore((sc) => sc + 10 * (streak + 1));
+      setStreak((s) => s + 1);
+      if (!mutedRef.current) speakEnglish(q.word);
+      setTimeout(nextQuestion, 700);
+    } else {
+      livesRef.current -= 1;
+      setLives(livesRef.current);
+      setStreak(0);
+      setShake(true);
+      setTimeout(() => setShake(false), 350);
+      setTimeout(nextQuestion, 1150);
+    }
+  };
+
+  const start = () => {
+    poolRef.current = shuffleArr(knownPool);
+    poolIdxRef.current = 0;
+    livesRef.current = 3;
+    answeredRef.current = 0;
+    setLives(3);
+    setScore(0);
+    setStreak(0);
+    setAnswered(0);
+    setPicked(null);
+    setReveal(false);
+    setBlast(false);
+    setPhase("playing");
+    const first = makeQuestion();
+    setQ(first);
+    yRef.current = -12;
+    setY(-12);
+    pausedRef.current = false;
+    lastTsRef.current = 0;
+    stopLoop();
+    rafRef.current = requestAnimationFrame(loop);
+  };
+
+  // phím 1-4 để chọn đáp án
+  useEffect(() => {
+    if (phase !== "playing") return undefined;
+    const onKey = (e) => {
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4 && q && !reveal && !pausedRef.current) answer(q.options[n - 1]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, q, reveal]);
+
+  const toggleMute = () => {
+    mutedRef.current = !mutedRef.current;
+    setMuted(mutedRef.current);
+  };
+
+  const styleTag = (
+    <style>{`
+      @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+      @keyframes flBlastRing {0%{transform:translate(-50%,-50%) scale(.2);opacity:.9}100%{transform:translate(-50%,-50%) scale(2.6);opacity:0}}
+      @keyframes flSpark {0%{transform:translate(-50%,-50%) scale(.4);opacity:1}100%{transform:translate(-50%,-50%) scale(1.5);opacity:0}}
+      @keyframes flShakeX {0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+      @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+      @keyframes flMeteorFloat {0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+      @keyframes flGlowOrange {0%,100%{box-shadow:0 0 20px rgba(249,115,22,.5)}50%{box-shadow:0 0 40px rgba(249,115,22,.85)}}
+      @keyframes flTrail {0%,100%{opacity:.5;transform:translateX(-50%) scaleY(1)}50%{opacity:1;transform:translateX(-50%) scaleY(1.4)}}
+    `}</style>
+  );
+
+  const wrapBg = "bg-gradient-to-b from-slate-950 via-[#1a1330] to-slate-950";
+
+  if (phase === "intro") {
+    return (
+      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden text-white ${wrapBg}`}>
+        {styleTag}
+        <StarField color="255,255,255" count={40} />
+        <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+          <div className="text-6xl" style={{ animation: "flMeteorFloat .6s ease-out" }}>⚡</div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Kiểm tra</h2>
+            <p className="text-indigo-200/80 text-sm mt-1">Bắn hạ nghĩa đang rơi bằng đúng từ tiếng Anh</p>
           </div>
+          <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-indigo-100">
+            {available} từ đã thuộc · {QUIZ_TOTAL} câu/lượt
+          </div>
+          {available < 4 ? (
+            <p className="text-amber-300 text-sm">Cần ít nhất 4 từ đã thuộc để chơi.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-orange-400 to-red-500 text-white shadow-lg active:scale-95 transition-transform"
+              style={{ animation: "flGlowOrange 2.4s ease-in-out infinite" }}
+            >
+              Bắt đầu
+            </button>
+          )}
+          <button onClick={onClose} className="text-indigo-300/70 text-sm underline">Quay lại</button>
         </div>
-
-        {cards.length < 4 ? (
-          <p className="text-sm text-red-500">Cần ít nhất 4 từ để chơi.</p>
-        ) : (
-          <button
-            onClick={startGame}
-            className="w-full max-w-xs py-3 bg-blue-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
-          >
-            Bắt đầu
-          </button>
-        )}
-        <button onClick={onClose} className="text-slate-400 text-sm underline">
-          Quay lại
-        </button>
       </div>
     );
   }
 
-  if (phase === "result") {
-    const pct = Math.round((score / questions.length) * 100);
+  if (phase === "over" || phase === "win") {
+    const win = phase === "win";
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
-        <div className="text-6xl">{pct >= 80 ? "🎉" : pct >= 50 ? "👍" : "💪"}</div>
-        <h2 className="text-2xl font-bold text-slate-800">Kết quả</h2>
-        <div className="bg-blue-50 rounded-3xl px-10 py-6 text-center">
-          <p className="text-5xl font-bold text-blue-600">
-            {score}/{questions.length}
-          </p>
-          <p className="text-slate-500 mt-1">{pct}% chính xác</p>
+      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden text-white ${wrapBg}`}>
+        {styleTag}
+        <StarField color="255,255,255" count={40} />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
+          <div className="text-6xl">{win ? "🏆" : "💥"}</div>
+          <h2 className="text-2xl font-extrabold">{win ? "Xuất sắc!" : "Hết mạng rồi!"}</h2>
+          <div className="bg-white/10 border border-white/15 rounded-3xl px-10 py-5">
+            <p className="text-5xl font-extrabold text-orange-300">{score}</p>
+            <p className="text-indigo-200 text-sm mt-1">điểm · {answered}/{QUIZ_TOTAL} câu</p>
+          </div>
+          <button
+            onClick={start}
+            className="px-10 py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-orange-400 to-red-500 shadow-lg active:scale-95 transition-transform"
+          >
+            Chơi lại
+          </button>
+          <button onClick={onClose} className="text-indigo-300/70 text-sm underline">Quay lại</button>
         </div>
-        <button
-          onClick={startGame}
-          className="w-full max-w-xs py-3 bg-blue-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
-        >
-          Chơi lại
-        </button>
-        <button onClick={onClose} className="text-slate-400 text-sm underline">
-          Quay lại
-        </button>
       </div>
     );
   }
 
-  const q = questions[currentIdx];
+  // phase playing
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-2">
-        <div className="flex justify-between items-center text-sm mb-2">
-          <button
-            onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-600"
-          >
-            <ArrowLeft className="w-4 h-4" />
+    <div
+      className={`fixed inset-0 z-50 flex flex-col overflow-hidden text-white select-none ${wrapBg}`}
+      style={shake ? { animation: "flShakeX .35s ease" } : undefined}
+    >
+      {styleTag}
+      <StarField color="255,255,255" count={40} />
+
+      {/* Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-4 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+        <HeartRow lives={lives} />
+        <div className="flex items-center gap-2">
+          {streak >= 2 && (
+            <div className="px-2.5 py-1 rounded-full bg-orange-500/20 border border-orange-400/40 text-orange-300 text-sm font-bold">
+              🔥 x{streak}
+            </div>
+          )}
+          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-sm font-semibold inline-flex items-center gap-1">
+            🏆 {score}
+          </div>
+          <button onClick={toggleMute} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80">
+            {muted ? <span className="text-sm px-1">🔇</span> : <Volume2 className="w-4 h-4" />}
           </button>
-          <span className="text-slate-500">
-            Câu {currentIdx + 1}/{questions.length}
-          </span>
-          <span className="text-blue-600 font-bold">{score} đúng</span>
         </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-300"
-            style={{ width: `${(currentIdx / questions.length) * 100}%` }}
-          />
+      </div>
+      <div className="relative z-20 px-4">
+        <div className="flex items-center justify-between text-xs text-indigo-200/70 mb-1">
+          <span>Câu {Math.min(answered + 1, QUIZ_TOTAL)}/{QUIZ_TOTAL}</span>
+        </div>
+        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-orange-400 to-red-500 rounded-full transition-all duration-300" style={{ width: `${(answered / QUIZ_TOTAL) * 100}%` }} />
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6">
-        <div className="bg-slate-50 rounded-3xl p-7 text-center shadow-sm min-h-[120px] flex items-center justify-center">
-          <p className="text-xl font-bold text-slate-800 leading-relaxed">
-            {q.meaning}
-          </p>
+      {/* Vùng rơi */}
+      <div className="relative flex-1 mt-2 overflow-hidden">
+        {/* vạch đáy */}
+        <div className="absolute left-0 right-0 pointer-events-none" style={{ top: `${QUIZ_MISS_LINE}%` }}>
+          <div className="h-px bg-gradient-to-r from-transparent via-red-500/70 to-transparent" />
         </div>
 
-        <div>
-          <p className="text-xs uppercase tracking-widest text-slate-400 mb-3 text-center">
-            Chọn đáp án đúng
-          </p>
-          <div className="grid grid-cols-2 gap-3">
-            {q.options.map((opt, i) => {
-              let cls =
-                "p-4 rounded-2xl border-2 text-sm font-medium text-center transition-all active:scale-95 min-h-[72px] flex items-center justify-center ";
-              if (!showFeedback) {
-                cls +=
-                  "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50";
-              } else if (opt === q.correct) {
-                cls += "border-green-500 bg-green-50 text-green-700";
-              } else if (opt === selected) {
-                cls += "border-red-400 bg-red-50 text-red-600";
-              } else {
-                cls += "border-slate-100 bg-slate-50 text-slate-400";
-              }
-              return (
-                <button key={i} onClick={() => handleSelect(opt)} className={cls}>
-                  <span className="line-clamp-2 leading-snug">{opt}</span>
-                </button>
-              );
-            })}
+        {/* nổ khi đúng */}
+        {blast && q && (
+          <div className="absolute z-10 pointer-events-none" style={{ left: "50%", top: `${Math.min(y, QUIZ_MISS_LINE)}%` }}>
+            <div className="absolute w-16 h-16 rounded-full border-2 border-orange-300" style={{ transform: "translate(-50%,-50%)", animation: "flBlastRing .5s ease-out forwards" }} />
+            <div className="absolute w-12 h-12 rounded-full bg-orange-400/60" style={{ transform: "translate(-50%,-50%)", animation: "flSpark .45s ease-out forwards" }} />
           </div>
-        </div>
-
-        {!showFeedback && (
-          <button
-            onClick={() => handleSelect("__skip__")}
-            className="text-slate-400 text-sm underline self-center"
-          >
-            Bạn không biết?
-          </button>
         )}
+
+        {/* thiên thạch (nghĩa rơi) */}
+        {q && !blast && (
+          <div
+            className="absolute z-10 max-w-[80%]"
+            style={{ left: "50%", top: `${y}%`, transform: "translate(-50%,-50%)", animation: "flMeteorFloat .3s ease-out" }}
+          >
+            {/* đuôi lửa */}
+            <div className="absolute left-1/2 -top-6 w-2 h-8 rounded-full bg-gradient-to-t from-orange-500 to-transparent blur-[2px]" style={{ animation: "flTrail .5s ease-in-out infinite" }} />
+            <div
+              className="relative px-6 py-4 rounded-2xl font-bold text-lg sm:text-xl text-center text-white bg-gradient-to-br from-orange-400 to-red-500 border border-orange-300/60"
+              style={{ animation: "flGlowOrange 2s ease-in-out infinite", boxShadow: "0 0 24px rgba(249,115,22,.6)" }}
+            >
+              {q.meaning}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Đáp án */}
+      <div className="relative z-20 px-3 pb-4 pt-2">
+        <div className="grid grid-cols-2 gap-2.5 max-w-3xl mx-auto">
+          {(q?.options || []).map((opt, i) => {
+            const c = QUIZ_OPT_COLORS[i];
+            let border = `rgba(${c.ring},.5)`;
+            let bg = `rgba(${c.ring},.08)`;
+            if (reveal) {
+              if (opt === q.correct) {
+                border = "#22c55e";
+                bg = "rgba(34,197,94,.18)";
+              } else if (opt === picked) {
+                border = "#f43f5e";
+                bg = "rgba(244,63,94,.18)";
+              }
+            }
+            return (
+              <button
+                key={i}
+                onClick={() => answer(opt)}
+                disabled={reveal}
+                className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left font-semibold transition-all active:scale-[0.97] disabled:cursor-default"
+                style={{ border: `2px solid ${border}`, background: bg }}
+              >
+                <span
+                  className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold text-white"
+                  style={{ background: c.badge }}
+                >
+                  {i + 1}
+                </span>
+                <span className="truncate">{opt}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 };
 
 // ============================================================================
-// COMPONENT: MatchGame
+// COMPONENT: MatchGame (Ghép thẻ — chạm từ và nghĩa của nó để nối)
 // ============================================================================
 const MatchGame = ({ cards, onClose }) => {
   const PAIRS = Math.min(5, cards.length);
-  const COUNTDOWN = 15;
+  const COUNTDOWN = 20;
   const sessionQueueRef = useRef(null);
   const timerRef = useRef(null);
 
+  const [phase, setPhase] = useState("intro"); // intro | playing | timeUp | roundEnd
   const [tiles, setTiles] = useState([]);
   const [selected, setSelected] = useState(null);
   const [wrongPair, setWrongPair] = useState(null);
   const [matchedIds, setMatchedIds] = useState(new Set());
   const [time, setTime] = useState(COUNTDOWN);
   const [roundsPlayed, setRoundsPlayed] = useState(0);
-  const [phase, setPhase] = useState("playing");
   const [timeLeft, setTimeLeft] = useState(COUNTDOWN);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [remainingCount, setRemainingCount] = useState(0);
+  const mutedRef = useRef(false);
+  const timeRef = useRef(COUNTDOWN);
 
-  const buildQueue = () => {
-    return shuffleArr(cards.filter((c) => c.status === "known"));
-  };
+  const buildQueue = () => shuffleArr(cards.filter((c) => c.status === "known"));
 
   const startRound = (queue) => {
     const pairsCount = Math.min(PAIRS, queue.length);
@@ -838,7 +1005,7 @@ const MatchGame = ({ cards, onClose }) => {
     const newTiles = shuffleArr(
       batch.flatMap((card, i) => [
         { id: `w${i}`, type: "word", text: card.word, pairId: i },
-        { id: `m${i}`, type: "meaning", text: card.meaning, pairId: i },
+        { id: `m${i}`, type: "meaning", text: pickMeaning(card.meaning), pairId: i },
       ]),
     );
     setTiles(newTiles);
@@ -846,26 +1013,39 @@ const MatchGame = ({ cards, onClose }) => {
     setSelected(null);
     setWrongPair(null);
     setTime(COUNTDOWN);
+    timeRef.current = COUNTDOWN;
     setPhase("playing");
     clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setTime((t) => t - 1), 1000);
+    timerRef.current = setInterval(() => {
+      timeRef.current -= 1;
+      if (timeRef.current <= 0) {
+        clearInterval(timerRef.current);
+        setTime(0);
+        setStreak(0);
+        setPhase("timeUp");
+      } else {
+        setTime(timeRef.current);
+      }
+    }, 1000);
     return queue.slice(pairsCount);
   };
 
-  useEffect(() => {
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const start = () => {
+    setScore(0);
+    setStreak(0);
+    setRoundsPlayed(0);
     const q = buildQueue();
     const remaining = startRound(q);
     sessionQueueRef.current = remaining;
-    return () => clearInterval(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setRemainingCount(remaining.length);
+  };
 
-  useEffect(() => {
-    if (time <= 0 && phase === "playing") {
-      clearInterval(timerRef.current);
-      setPhase("timeUp");
-    }
-  }, [time, phase]);
+  const toggleMute = () => {
+    mutedRef.current = !mutedRef.current;
+    setMuted(mutedRef.current);
+  };
 
   const handleTile = (idx) => {
     if (wrongPair || phase !== "playing") return;
@@ -886,6 +1066,10 @@ const MatchGame = ({ cards, onClose }) => {
       newMatched.add(tile.pairId);
       setMatchedIds(newMatched);
       setSelected(null);
+      const wordText = selTile.type === "word" ? selTile.text : tile.text;
+      if (!mutedRef.current) speakEnglish(wordText);
+      setScore((sc) => sc + 10 * (streak + 1));
+      setStreak((s) => s + 1);
 
       const totalPairs = tiles.length / 2;
       if (newMatched.size >= totalPairs) {
@@ -895,6 +1079,7 @@ const MatchGame = ({ cards, onClose }) => {
         setTimeout(() => setPhase("roundEnd"), 500);
       }
     } else {
+      setStreak(0);
       setWrongPair([selected, idx]);
       setTimeout(() => {
         setWrongPair(null);
@@ -905,135 +1090,202 @@ const MatchGame = ({ cards, onClose }) => {
 
   const nextRound = () => {
     let q = sessionQueueRef.current;
-    if (!q || q.length === 0) {
-      q = buildQueue();
-    }
+    if (!q || q.length === 0) q = buildQueue();
     const remaining = startRound(q);
     sessionQueueRef.current = remaining;
+    setRemainingCount(remaining.length);
   };
 
-  if (cards.length < 2) {
+  const wrapBg = "bg-gradient-to-b from-[#04140f] via-[#06201a] to-[#04140f]";
+  const styleTag = (
+    <style>{`
+      @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+      @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+      @keyframes flTileMatch {0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(.6);opacity:0}}
+      @keyframes flGlowTeal {0%,100%{box-shadow:0 0 16px rgba(20,184,166,.4)}50%{box-shadow:0 0 32px rgba(20,184,166,.8)}}
+    `}</style>
+  );
+
+  if (phase === "intro") {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-4 p-6">
-        <p className="text-slate-500">Cần ít nhất 2 từ để chơi.</p>
-        <button onClick={onClose} className="text-slate-400 text-sm underline">
-          Quay lại
-        </button>
+      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 px-6 overflow-hidden text-white ${wrapBg}`}>
+        {styleTag}
+        <StarField color="94,234,212" count={38} />
+        <div className="relative z-10 flex flex-col items-center gap-5 text-center">
+          <div className="text-6xl" style={{ animation: "flPopIn .5s ease-out" }}>🧩</div>
+          <div>
+            <h2 className="text-2xl font-extrabold tracking-tight">Ghép thẻ</h2>
+            <p className="text-emerald-200/80 text-sm mt-1">Chạm từ và nghĩa của nó để nối · Đua thời gian</p>
+          </div>
+          <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-emerald-100">
+            {cards.length} từ đã thuộc · {PAIRS} cặp/vòng
+          </div>
+          {cards.length < 2 ? (
+            <p className="text-amber-300 text-sm">Cần ít nhất 2 từ đã thuộc để chơi.</p>
+          ) : (
+            <button
+              onClick={start}
+              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-teal-400 to-emerald-600 text-white shadow-lg active:scale-95 transition-transform"
+              style={{ animation: "flGlowTeal 2.4s ease-in-out infinite" }}
+            >
+              Bắt đầu
+            </button>
+          )}
+          <button onClick={onClose} className="text-emerald-200/70 text-sm underline">Quay lại</button>
+        </div>
       </div>
     );
   }
 
   if (phase === "timeUp") {
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
-        <div className="text-6xl">⏰</div>
-        <h2 className="text-2xl font-bold text-red-600">Hết giờ!</h2>
-        <p className="text-slate-500 text-center text-sm">
-          Bạn chưa ghép xong {tiles.length / 2 - matchedIds.size} cặp còn lại
-        </p>
-        <button
-          onClick={nextRound}
-          className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
-        >
-          Thử lại vòng này
-        </button>
-        <button onClick={onClose} className="text-slate-400 text-sm underline">
-          Quay lại
-        </button>
+      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 px-6 overflow-hidden text-white ${wrapBg}`}>
+        {styleTag}
+        <StarField color="94,234,212" count={38} />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
+          <div className="text-6xl">⏰</div>
+          <h2 className="text-2xl font-extrabold text-red-400">Hết giờ!</h2>
+          <p className="text-emerald-200/70 text-center text-sm">
+            Còn {tiles.length / 2 - matchedIds.size} cặp chưa ghép · 🏆 {score} điểm
+          </p>
+          <button
+            onClick={nextRound}
+            className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-teal-400 to-emerald-600 shadow-lg active:scale-95 transition-transform"
+          >
+            Thử lại vòng này
+          </button>
+          <button onClick={onClose} className="text-emerald-200/70 text-sm underline">Quay lại</button>
+        </div>
       </div>
     );
   }
 
   if (phase === "roundEnd") {
-    const hasMore = (sessionQueueRef.current?.length ?? 0) > 0;
+    const hasMore = remainingCount > 0;
     const timeTaken = COUNTDOWN - timeLeft;
     return (
-      <div className="flex flex-col items-center justify-center h-full gap-5 px-6">
-        <div className="text-6xl">🎯</div>
-        <h2 className="text-xl font-bold text-slate-800">
-          Hoàn thành vòng {roundsPlayed}!
-        </h2>
-        <div className="bg-purple-50 rounded-3xl px-10 py-5 text-center">
-          <p className="text-4xl font-bold text-purple-600">{timeTaken}s</p>
-          <p className="text-slate-500 text-sm mt-1">hoàn thành · còn {timeLeft}s</p>
-        </div>
-
-        {hasMore ? (
-          <button
-            onClick={nextRound}
-            className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
-          >
-            Vòng tiếp theo →
-          </button>
-        ) : (
-          <>
-            <p className="text-slate-400 text-sm text-center">
-              Đã ôn hết tất cả từ! Bắt đầu lại?
-            </p>
+      <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 px-6 overflow-hidden text-white ${wrapBg}`}>
+        {styleTag}
+        <StarField color="94,234,212" count={38} />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center" style={{ animation: "flPopIn .5s ease-out" }}>
+          <div className="text-6xl">🎯</div>
+          <h2 className="text-xl font-extrabold">Xong vòng {roundsPlayed}!</h2>
+          <div className="bg-white/10 border border-white/15 rounded-3xl px-10 py-5 text-center">
+            <p className="text-4xl font-extrabold text-teal-300">🏆 {score}</p>
+            <p className="text-emerald-200/70 text-sm mt-1">{timeTaken}s · còn {timeLeft}s</p>
+          </div>
+          {hasMore ? (
             <button
-              onClick={() => {
-                setRoundsPlayed(0);
-                const q = buildQueue();
-                const remaining = startRound(q);
-                sessionQueueRef.current = remaining;
-              }}
-              className="w-full max-w-xs py-3 bg-purple-600 text-white font-bold rounded-2xl text-lg active:scale-95 transition-transform"
+              onClick={nextRound}
+              className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-teal-400 to-emerald-600 shadow-lg active:scale-95 transition-transform"
             >
-              Chơi lại
+              Vòng tiếp theo →
             </button>
-          </>
-        )}
-        <button onClick={onClose} className="text-slate-400 text-sm underline">
-          Quay lại
-        </button>
+          ) : (
+            <>
+              <p className="text-emerald-200/60 text-sm text-center">Đã ôn hết tất cả từ! Bắt đầu lại?</p>
+              <button
+                onClick={start}
+                className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-teal-400 to-emerald-600 shadow-lg active:scale-95 transition-transform"
+              >
+                Chơi lại
+              </button>
+            </>
+          )}
+          <button onClick={onClose} className="text-emerald-200/70 text-sm underline">Quay lại</button>
+        </div>
       </div>
     );
   }
 
+  // phase playing
   return (
-    <div className="flex flex-col h-full">
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-        <button
-          onClick={onClose}
-          className="p-1 text-slate-400 hover:text-slate-600"
-        >
-          <ArrowLeft className="w-5 h-5" />
+    <div className={`fixed inset-0 z-50 flex flex-col overflow-hidden text-white select-none ${wrapBg}`}>
+      {styleTag}
+      <StarField color="94,234,212" count={38} />
+
+      {/* Header */}
+      <div className="relative z-20 flex items-center justify-between px-4 pt-4 pb-2">
+        <button onClick={onClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className={`font-mono text-xl font-bold transition-colors ${time <= 5 ? "text-red-500 animate-pulse" : "text-slate-700"}`}>
-          {time}s
+        <div className="text-sm font-semibold text-emerald-200/80">Vòng {roundsPlayed + 1}</div>
+        <div className="flex items-center gap-2">
+          {streak >= 2 && (
+            <div className="px-2.5 py-1 rounded-full bg-orange-500/20 border border-orange-400/40 text-orange-300 text-sm font-bold">
+              🔥 x{streak}
+            </div>
+          )}
+          <div className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-sm font-semibold inline-flex items-center gap-1">
+            🏆 {score}
+          </div>
+          <button onClick={toggleMute} className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/80">
+            {muted ? <span className="text-sm px-1">🔇</span> : <Volume2 className="w-4 h-4" />}
+          </button>
         </div>
-        <div className="text-sm text-slate-400">Vòng {roundsPlayed + 1}</div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 p-4 flex-1 content-start">
-        {tiles.map((tile, idx) => {
-          const isMatched = matchedIds.has(tile.pairId);
-          const isSelected = selected === idx;
-          const isWrong = wrongPair?.includes(idx);
+      {/* Thanh thời gian */}
+      <div className="relative z-20 px-4 flex items-center gap-3">
+        <div className="flex-1 h-2.5 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-1000 ease-linear"
+            style={{
+              width: `${(time / COUNTDOWN) * 100}%`,
+              background: time <= 5 ? "linear-gradient(90deg,#f87171,#ef4444)" : "linear-gradient(90deg,#2dd4bf,#10b981)",
+            }}
+          />
+        </div>
+        <div className={`font-mono text-lg font-bold w-12 text-right ${time <= 5 ? "text-red-400 animate-pulse" : "text-teal-300"}`}>
+          {time}s
+        </div>
+      </div>
 
-          if (isMatched) {
-            return <div key={tile.id} className="aspect-[4/3] rounded-2xl" />;
-          }
-
-          let cls =
-            "aspect-[4/3] rounded-2xl border-2 flex items-center justify-center p-3 text-center text-sm font-medium cursor-pointer transition-all active:scale-95 ";
-          if (isWrong) cls += "border-red-400 bg-red-50 text-red-600";
-          else if (isSelected)
-            cls += "border-blue-500 bg-blue-50 text-blue-700 scale-[0.97]";
-          else
-            cls +=
-              "border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50";
-
-          return (
-            <button
-              key={tile.id}
-              onClick={() => handleTile(idx)}
-              className={cls}
-            >
-              <span className="line-clamp-3 leading-snug">{tile.text}</span>
-            </button>
-          );
-        })}
+      {/* Lưới thẻ */}
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-4xl mx-auto content-start">
+          {tiles.map((tile, idx) => {
+            const isMatched = matchedIds.has(tile.pairId);
+            const isSelected = selected === idx;
+            const isWrong = wrongPair?.includes(idx);
+            if (isMatched) {
+              return (
+                <div
+                  key={tile.id}
+                  className="min-h-[92px] rounded-2xl border border-emerald-500/20 bg-emerald-500/5"
+                  style={{ animation: "flTileMatch .5s ease-out forwards" }}
+                />
+              );
+            }
+            let border = "rgba(148,163,184,.25)";
+            let bg = "rgba(255,255,255,.04)";
+            let text = "#e2e8f0";
+            if (isWrong) {
+              border = "#f43f5e";
+              bg = "rgba(244,63,94,.15)";
+              text = "#fecdd3";
+            } else if (isSelected) {
+              border = "#2dd4bf";
+              bg = "rgba(45,212,191,.16)";
+              text = "#ccfbf1";
+            }
+            return (
+              <button
+                key={tile.id}
+                onClick={() => handleTile(idx)}
+                className="min-h-[92px] rounded-2xl border-2 flex items-center justify-center p-3 text-center text-sm sm:text-base font-semibold transition-all active:scale-95"
+                style={{
+                  borderColor: border,
+                  background: bg,
+                  color: text,
+                  boxShadow: isSelected ? "0 0 18px rgba(45,212,191,.4)" : "none",
+                }}
+              >
+                <span className="line-clamp-3 leading-snug">{tile.text}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1064,6 +1316,21 @@ const speakEnglish = (text, { rate = 0.95 } = {}) => {
 const isPlayableWord = (raw) => {
   const w = (raw || "").trim();
   return w.length >= 2 && w.length <= 18 && /^[A-Za-z][A-Za-z'-]*$/.test(w);
+};
+
+// Lấy phần NGHĨA tiếng Việt để hiển thị làm gợi ý trong game. Thẻ chuẩn có 3 dòng
+// "Phiên âm: … / Nghĩa: … / Ví dụ: …" — nếu chỉ lấy dòng đầu sẽ trúng dòng phiên âm (lộ đáp án).
+// Ưu tiên dòng "Nghĩa:", nếu không có thì bỏ các dòng phiên âm/ví dụ; thẻ đơn giản (chỉ 1 dòng
+// nghĩa) trả về nguyên văn.
+const pickMeaning = (raw) => {
+  const lines = (raw || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  if (!lines.length) return (raw || "").trim();
+  const ngh = lines.find((l) => /^nghĩa\s*[:：]/i.test(l));
+  if (ngh) return ngh.replace(/^nghĩa\s*[:：]\s*/i, "").trim();
+  const rest = lines.filter(
+    (l) => !/^(phiên âm|ipa|ví dụ|example|pron)\s*[:：]/i.test(l) && !/^\/[^/]*\/$/.test(l),
+  );
+  return (rest[0] || lines[0]).trim();
 };
 
 // Nền sao lấp lánh dùng chung cho 2 game (tạo 1 lần, không đổi giữa các render)

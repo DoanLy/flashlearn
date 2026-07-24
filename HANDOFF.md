@@ -21,7 +21,36 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.6.1: fix layout 2 game bị co nhỏ
+## Phiên làm việc gần nhất (2026-07-24) — v1.7.0: thiết kế lại UI 2 game "Kiểm tra" + "Ghép thẻ"
+
+User muốn 2 game CŨ (QuizGame/MatchGame) đẹp và đồng bộ style Parroto như 2 game mới. Viết lại
+hoàn toàn cả 2 (splice bằng Node vì file CRLF — xem lịch sử nếu cần lặp lại):
+
+- **QuizGame → "Thiên Thạch Trắc Nghiệm":** nghĩa tiếng Việt rơi như thiên thạch (cam) trên nền
+  vũ trụ tối; 4 đáp án (từ tiếng Anh) đánh số 1-4 màu khác nhau ở đáy; bấm hoặc nhấn phím 1-4 để
+  chọn. Đúng → nổ + điểm ×streak + phát âm từ; sai/để rơi chạm đáy (`QUIZ_MISS_LINE`=80%) → mất
+  1 tim. 3 tim, 15 câu/lượt. Vòng lặp rơi bằng `requestAnimationFrame` (giống TypingGame).
+- **MatchGame → "Nối Từ":** nền teal tối, thanh thời gian (20s/vòng) + badge 🔥 streak + 🏆 điểm
+  + nút tắt tiếng. Lưới thẻ (từ ↔ nghĩa) bo góc, chọn = glow teal, sai = đỏ, matched = fade. Ghép
+  đúng cộng điểm ×streak và phát âm từ. Giữ nguyên cơ chế gốc (đã chạy production) + thêm
+  score/streak/speak. Đồng hồ xử lý ngay trong `setInterval` (dùng `timeRef`, KHÔNG dùng effect
+  theo dõi `time<=0` để tránh lỗi lint set-state-in-effect).
+- **Bug đã fix khi làm:** `firstLine(meaning)` lấy nhầm DÒNG ĐẦU của thẻ = dòng "Phiên âm: …"
+  → lộ phát âm/đáp án. Thêm helper module-level `pickMeaning(raw)`: ưu tiên dòng "Nghĩa: …",
+  nếu không có thì bỏ dòng phiên âm/ví dụ; thẻ 1 dòng trả nguyên văn. Dùng cho CẢ 2 game.
+- Cả 2 game giờ cũng `fixed inset-0 z-50` (fullscreen như 3 game kia). Helper dùng chung
+  (`speakEnglish`, `StarField`, `HeartRow`, `isPlayableWord`, `pickMeaning`) nằm ở block HELPER
+  NGAY SAU MatchGame nhưng TRƯỚC TypingGame — QuizGame/MatchGame gọi chúng lúc render nên không
+  vướng TDZ.
+- **Đã test** (vite 5199, chỉ đọc thẻ): Kiểm tra — meteor hiện đúng nghĩa tiếng Việt ("Hiệu quả",
+  "sa mạc"), click đúng +10, click sai mất tim, streak reset. Ghép thẻ — lưới + nghĩa đúng, ghép
+  cặp đúng cộng điểm theo streak (10 → 30 với 🔥x2), thẻ matched biến mất, hết giờ → màn timeUp.
+  **Mẹo test:** đồng hồ MatchGame (`setInterval`, hidden-tab clamp ~1s) hết 20s khi thao tác chậm
+  qua MCP → đóng băng bằng `for(i)clearInterval(i)` trong console trước khi ghép. rAF của QuizGame
+  bị freeze khi pane ẩn (meteor không rơi) nhưng options render nên vẫn test được luồng chọn.
+- Lint: vẫn 3 lỗi CÓ SẴN (emoji regex, setState-in-effect ~dòng 2152/2726). Build OK.
+
+## v1.6.1 — fix layout 2 game mới bị co nhỏ
 
 User báo lỗi UI: game hiện ra như một hộp tí hon (~500×230px) giữa trang trắng, các từ rơi
 chồng đè lên nhau. **Nguyên nhân:** `<main className="max-w-md mx-auto px-4">` (App.jsx ~3899)
