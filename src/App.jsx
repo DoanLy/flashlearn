@@ -1310,13 +1310,39 @@ const speakEnglish = (text, { rate = 0.95 } = {}) => {
   }
 };
 
-// Từ hợp lệ cho game gõ/chính tả: một TỪ ĐƠN gồm chữ cái (cho phép ' và - ở giữa), dài 2-18.
-// Loại bỏ cụm nhiều từ, dấu "/", ngoặc, chữ số... vì không thể gõ/đọc chính tả gọn gàng
-// (vd "Have/Finish classes", "New York (city)").
-const isPlayableWord = (raw) => {
-  const w = (raw || "").trim();
-  return w.length >= 2 && w.length <= 18 && /^[A-Za-z][A-Za-z'-]*$/.test(w);
+// Ô "từ" của thẻ không phải lúc nào cũng sạch: nhiều deck lưu kèm phiên âm, chú thích,
+// biến thể hoặc cả câu ví dụ ngay trong đó — vd "Reserve (/rɪˈzɜːv/)", "Upload / download",
+// "tenants - The tenants pay the rent every month.". Hàm này bóc lấy đúng phần tiếng Anh
+// cần gõ để game dùng (KHÔNG sửa dữ liệu gốc trong DB).
+const cleanWordForGame = (raw) => {
+  let w = (raw || "")
+    .replace(/\([^)]*\)/g, " ") // (…) — phiên âm, chú thích loại từ
+    .replace(/\[[^\]]*\]/g, " ") // […]
+    .replace(/\/[^/]*\//g, " ") // phiên âm /…/ không có ngoặc
+    .replace(/[’‘]/g, "'"); // nháy cong → nháy thẳng (bàn phím gõ được)
+  w = w.split(/\s+[-–—]\s+/)[0]; // "từ - câu ví dụ" → lấy vế đầu
+  w = w.split(/\s*\/\s*/)[0]; // "Upload / download" → lấy biến thể đầu
+  return w
+    .replace(/^\s*\d+[.)]\s*/, "") // "12. word" → "word"
+    .replace(/[.,;:!?]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
 };
+
+// Từ/cụm hợp lệ cho game gõ & chính tả: sau khi làm sạch chỉ còn chữ cái ASCII
+// (cho phép ' - và khoảng trắng giữa các từ), dài 2-22 ký tự. Cụm ngắn kiểu
+// "take care of", "South Korea" vẫn gõ được nên được chấp nhận; câu dài, chữ có
+// dấu (São Paulo) thì loại vì không gõ nổi bằng bàn phím tiếng Anh.
+const isPlayableWord = (raw) => {
+  const w = cleanWordForGame(raw);
+  return w.length >= 2 && w.length <= 22 && /^[A-Za-z][A-Za-z' -]*$/.test(w);
+};
+
+// Danh sách thẻ dùng được cho game gõ/chính tả, với `word` đã được làm sạch.
+const playableCards = (cards) =>
+  (cards || [])
+    .filter((c) => c.status === "known" && isPlayableWord(c.word))
+    .map((c) => ({ ...c, word: cleanWordForGame(c.word) }));
 
 // Lấy phần NGHĨA tiếng Việt để hiển thị làm gợi ý trong game. Thẻ chuẩn có 3 dòng
 // "Phiên âm: … / Nghĩa: … / Ví dụ: …" — nếu chỉ lấy dòng đầu sẽ trúng dòng phiên âm (lộ đáp án).
@@ -1420,12 +1446,10 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   const inputRef = useRef(null);
   const typedRef = useRef(""); // giữ chuỗi đang gõ để loop (rAF) đọc được giá trị mới nhất
 
-  const buildPool = () =>
-    shuffleArr(
-      cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).map((c) => c.word.trim()),
-    );
+  const playable = playableCards(cards);
+  const buildPool = () => shuffleArr(playable.map((c) => c.word));
 
-  const availableCount = cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).length;
+  const availableCount = playable.length;
   const milestone = Math.min(
     TYPING_MILESTONES,
     Math.floor(destroyed / TYPING_WORDS_PER_MILESTONE) + 1,
@@ -1507,12 +1531,10 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   const start = () => {
     poolRef.current = buildPool();
     const map = {};
-    cards
-      .filter((c) => c.status === "known" && isPlayableWord(c.word))
-      .forEach((c) => {
-        const k = c.word.trim().toLowerCase();
-        if (!(k in map)) map[k] = pickMeaning(c.meaning || "");
-      });
+    playable.forEach((c) => {
+      const k = c.word.toLowerCase();
+      if (!(k in map)) map[k] = pickMeaning(c.meaning || "");
+    });
     meaningMapRef.current = map;
     if (hitTimerRef.current) clearTimeout(hitTimerRef.current);
     setHit(null);
@@ -1629,10 +1651,12 @@ const TypingGame = ({ cards, deckName, onClose }) => {
             <p className="text-indigo-200/80 text-sm mt-1">Gõ các từ tiếng Anh đang rơi để bắn hạ chúng</p>
           </div>
           <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-indigo-100">
-            Chủ đề: <span className="font-semibold text-cyan-300">{deckName}</span> · {availableCount} từ đã thuộc
+            Chủ đề: <span className="font-semibold text-cyan-300">{deckName}</span> · {availableCount} từ gõ được
           </div>
           {availableCount < 3 ? (
-            <p className="text-amber-300 text-sm">Cần ít nhất 3 từ đã thuộc để chơi.</p>
+            <p className="text-amber-300 text-sm">
+              Cần ít nhất 3 từ gõ được để chơi. Hãy đánh dấu thêm từ "đã thuộc" ở chủ đề này.
+            </p>
           ) : (
             <button
               onClick={start}
@@ -1810,15 +1834,12 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
   const current = queue[idx];
   const word = (current?.word || "").trim();
   const total = queue.length;
-  const availableCount = cards.filter((c) => c.status === "known" && isPlayableWord(c.word)).length;
+  const playable = playableCards(cards);
+  const availableCount = playable.length;
 
   useEffect(() => () => advanceRef.current && clearTimeout(advanceRef.current), []);
 
-  const buildQueue = () =>
-    shuffleArr(cards.filter((c) => c.status === "known" && isPlayableWord(c.word))).slice(
-      0,
-      SPELLING_ROUND,
-    );
+  const buildQueue = () => shuffleArr(playable).slice(0, SPELLING_ROUND);
 
   const speakCurrent = (w) => speakEnglish(w, { rate: 0.85 });
 
@@ -1925,10 +1946,12 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
             <p className="text-amber-200/80 text-sm mt-1">Nghe phát âm và gõ lại từ với chính tả chuẩn xác</p>
           </div>
           <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-amber-100">
-            Chủ đề: <span className="font-semibold text-amber-300">{deckName}</span> · {availableCount} từ đã thuộc
+            Chủ đề: <span className="font-semibold text-amber-300">{deckName}</span> · {availableCount} từ gõ được
           </div>
           {availableCount < 3 ? (
-            <p className="text-amber-300 text-sm">Cần ít nhất 3 từ đã thuộc để chơi.</p>
+            <p className="text-amber-300 text-sm">
+              Cần ít nhất 3 từ gõ được để chơi. Hãy đánh dấu thêm từ "đã thuộc" ở chủ đề này.
+            </p>
           ) : (
             <button
               onClick={start}
@@ -2109,6 +2132,12 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
       : cards.filter((c) => (c.deck || "Chung") === deckInput);
 
   const knownCards = deckCards.filter((c) => c.status === "known");
+  // Game gõ & chính tả chỉ dùng được những từ gõ được bằng bàn phím tiếng Anh, nên
+  // số lượng có thể ít hơn số từ đã thuộc. Cổng vào phải đếm đúng con số này, nếu
+  // không nút sẽ bật nhưng vào trong game lại báo "cần ít nhất N từ".
+  const typableCount = playableCards(knownCards).length;
+  // Kiểm tra cần cả từ lẫn nghĩa (đếm giống bên trong QuizGame).
+  const quizCount = knownCards.filter((c) => c.word && c.meaning).length;
 
   if (activeGame === "quiz")
     return <QuizGame cards={knownCards} onClose={() => setActiveGame(null)} />;
@@ -2148,7 +2177,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
       <div className="flex flex-col gap-4">
         <button
           onClick={() => setActiveGame("quiz")}
-          disabled={knownCards.length < 4}
+          disabled={quizCount < 4}
           className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">❓</div>
@@ -2156,7 +2185,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           <p className="text-blue-100 text-sm mt-0.5">
             Xem nghĩa → Chọn từ đúng trong 4 đáp án
           </p>
-          {knownCards.length < 4 && (
+          {quizCount < 4 && (
             <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 4 từ đã thuộc</p>
           )}
         </button>
@@ -2178,7 +2207,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
 
         <button
           onClick={() => setActiveGame("typing")}
-          disabled={knownCards.length < 3}
+          disabled={typableCount < 3}
           className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-cyan-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🚀</div>
@@ -2186,14 +2215,16 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           <p className="text-cyan-100 text-sm mt-0.5">
             Gõ các từ tiếng Anh đang rơi để bắn hạ chúng
           </p>
-          {knownCards.length < 3 && (
-            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 3 từ đã thuộc</p>
+          {typableCount < 3 && (
+            <p className="text-yellow-200 text-xs mt-2">
+              Cần ít nhất 3 từ gõ được (chủ đề này có {typableCount})
+            </p>
           )}
         </button>
 
         <button
           onClick={() => setActiveGame("spelling")}
-          disabled={knownCards.length < 3}
+          disabled={typableCount < 3}
           className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🐝</div>
@@ -2201,8 +2232,10 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
           <p className="text-amber-100 text-sm mt-0.5">
             Nghe phát âm và gõ lại từ với chính tả chuẩn xác
           </p>
-          {knownCards.length < 3 && (
-            <p className="text-yellow-200 text-xs mt-2">Cần ít nhất 3 từ đã thuộc</p>
+          {typableCount < 3 && (
+            <p className="text-yellow-200 text-xs mt-2">
+              Cần ít nhất 3 từ gõ được (chủ đề này có {typableCount})
+            </p>
           )}
         </button>
       </div>

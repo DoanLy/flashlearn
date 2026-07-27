@@ -21,7 +21,41 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-24) — v1.9.4: "Ong Chính Tả" hiện nghĩa sau mỗi từ (đúng/sai)
+## Phiên làm việc gần nhất (2026-07-27) — v1.10.0: fix "có từ đã thuộc mà không chơi được Luyện Gõ / Ong Chính Tả"
+
+User báo: deck "PreIE từ vựng" có nhiều từ đã thuộc nhưng vào Luyện Gõ thì hiện
+`0 từ đã thuộc · Cần ít nhất 3 từ đã thuộc để chơi`, không bấm Bắt đầu được.
+
+- **Nguyên nhân:** hai cổng vào đếm theo hai kiểu khác nhau. `GameTab` bật/tắt nút theo
+  `knownCards.length` (số thẻ đã thuộc), còn bên trong `TypingGame`/`SpellingBee` lại đếm theo
+  `isPlayableWord(c.word)`. Hàm cũ chỉ chấp nhận **một từ đơn ASCII, 2-18 ký tự** → cả deck
+  "PreIE từ vựng" lưu phiên âm ngay trong ô từ (`"Reserve (/rɪˈzɜːv/)"`) nên bị loại sạch, và mọi
+  cụm nhiều từ (`"Take care of"`, deck P Verb, Tên quốc gia) cũng bị loại. Nút bật nhưng vào trong
+  game thì báo thiếu từ.
+- **Fix (`src/App.jsx`):**
+  - Thêm `cleanWordForGame(raw)`: bóc `(…)`/`[…]`/phiên âm `/…/`, cắt phần sau `" - "` (nhiều thẻ
+    lưu cả câu ví dụ: `"tenants - The tenants pay the rent…"`), lấy vế đầu của `"A / B"`, bỏ số thứ
+    tự đầu dòng, chuẩn hóa nháy cong `’` → `'`. **Chỉ dùng cho game, KHÔNG sửa dữ liệu trong DB.**
+  - `isPlayableWord` chạy trên chuỗi đã làm sạch, cho phép khoảng trắng (cụm ngắn vẫn gõ được), giới
+    hạn 2-22 ký tự.
+  - Thêm helper `playableCards(cards)` trả về thẻ đã lọc + `word` đã làm sạch; `TypingGame`,
+    `SpellingBee` dùng chung → từ rơi/từ đọc chính tả không còn dính phiên âm.
+  - `GameTab` đếm bằng chính bộ lọc đó (`typableCount`) cho 2 game gõ, và bằng `word && meaning`
+    cho Kiểm tra (đúng như QuizGame lọc bên trong) → nút và màn intro không còn nói khác nhau.
+    Thông báo đổi thành "Cần ít nhất 3 từ gõ được (chủ đề này có N)".
+- **Số liệu thật sau fix** (đếm trên toàn bộ thẻ đã thuộc): PreIE 0→6/6, P Verb 0→7/7,
+  Tên quốc gia 0→12/12, testing 3→9/9, IELT LỚP 2 173→318/326, IELTS 35→73/74. Chỉ còn 11 thẻ bị
+  loại, đều là câu dài >22 ký tự hoặc chữ có dấu ("São Paulo") — không gõ nổi bằng bàn phím tiếng Anh.
+- **Đã test** (`vite preview` cổng 5175, dữ liệu thật): deck PreIE hiện `12 từ gõ được` (13 từ đã
+  thuộc, 1 từ quá dài), nút Luyện Gõ/Ong Chính Tả bật, vào Ong Chính Tả đọc queue từ React fiber ra
+  `["Alcoholic drink","Free snacks","Bounce","Strong","Benefit","Reserve","Harmless","Comedy",
+  "Become more common","Tenants","Bird","Get married"]` — sạch phiên âm. Lint: 3 lỗi CÓ SẴN
+  (emoji trong character class + set-state-in-effect), không phát sinh lỗi mới.
+- **Chưa làm:** ô `word` của 158 thẻ deck "PreIE từ vựng" trong DB vẫn còn chứa phiên âm
+  `"Từ (/ipa/)"` — các màn khác (danh sách thẻ, Kiểm tra, Ghép thẻ) vẫn hiển thị nguyên như vậy.
+  Muốn dọn hẳn thì viết script kiểu `scripts/fix-*.mjs` để tách phiên âm xuống ô `meaning`.
+
+## Phiên làm việc (2026-07-24) — v1.9.4: "Ong Chính Tả" hiện nghĩa sau mỗi từ (đúng/sai)
 
 User muốn: gõ xong 1 từ, dù ĐÚNG hay SAI, đều hiện nghĩa tiếng Việt. Trước đó chỉ báo
 "Chính xác! 🎉" hoặc "Đáp án: WORD". Thêm biến `wordMeaning = pickMeaning(current?.meaning)`
