@@ -335,7 +335,7 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   if (mode === "input") {
     return (
-      <div className="animate-in fade-in duration-300 pb-24">
+      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-3xl">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
@@ -369,7 +369,7 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   }
 
   return (
-    <div className="animate-in slide-in-from-right-8 duration-300 pb-36 flex flex-col pt-2">
+    <div className="animate-in slide-in-from-right-8 duration-300 pb-36 flex flex-col pt-2 mx-auto w-full max-w-3xl">
       <div className="flex items-center justify-between mb-4 w-full">
         <button
           onClick={() => setMode("input")}
@@ -2232,7 +2232,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
     return <SpellingBee cards={knownCards} deckName={deckInput} onClose={() => setActiveGame(null)} />;
 
   return (
-    <div className="p-4 flex flex-col gap-5">
+    <div className="p-4 flex flex-col gap-5 mx-auto w-full max-w-4xl">
       <h2 className="text-xl font-extrabold text-slate-900">
         <span className="fl-mark">Trò chơi</span>
       </h2>
@@ -2259,7 +2259,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <strong className="text-slate-700">{deckInput}</strong>
       </p>
 
-      <div className="flex flex-col gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <button
           onClick={() => setActiveGame("quiz")}
           disabled={quizCount < 4}
@@ -3465,7 +3465,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   // --- MÀN HÌNH: THÊM VIDEO ---
   if (mode === "add") {
     return (
-      <div className="animate-in fade-in duration-300 pb-24">
+      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-4xl">
         <div className="flex items-center gap-2 mb-4">
           <button
             onClick={() => setMode("list")}
@@ -3584,7 +3584,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     const isFirst = currentIndex === 0;
 
     return (
-      <div className="animate-in fade-in duration-300 pb-24">
+      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-4xl">
         <div className="flex items-center gap-2 mb-3">
           <button
             onClick={backToList}
@@ -3786,7 +3786,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   // --- MÀN HÌNH: DANH SÁCH VIDEO ---
   return (
-    <div className="animate-in fade-in duration-300 pb-24">
+    <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-4xl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold text-slate-900">
           <span className="fl-mark">Chép chính tả</span>
@@ -3809,7 +3809,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           (cột Time / Subtitle) để bắt đầu luyện chép chính tả.
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="grid gap-3 md:grid-cols-2">
           {videos.map((v) => (
             <div
               key={v.id}
@@ -4405,11 +4405,11 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4">
+      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-6">
         {/* --- TAB: QUẢN LÝ TỪ (INPUT) --- */}
         {activeTab === "input" && (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 lg:grid lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6 lg:mb-0 lg:sticky lg:top-24">
               <h2 className="text-lg font-extrabold mb-4">
                 <span className="fl-mark">Thêm Flashcard</span>
               </h2>
@@ -4602,7 +4602,7 @@ export default function App() {
               )}
             </div>
 
-            <div className="space-y-3">
+            <div className="min-w-0">
               <div className="flex justify-between items-end px-1 mb-2">
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider">
                   Danh sách: {deckInput}
@@ -4635,8 +4635,9 @@ export default function App() {
                 )}
               </div>
 
+              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-3 md:items-start">
               {visibleCards.length === 0 ? (
-                <div className="text-center py-10 text-slate-400 bg-white rounded-xl shadow-sm border border-slate-100">
+                <div className="md:col-span-2 text-center py-10 text-slate-400 bg-white rounded-xl shadow-sm border border-slate-100">
                   <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-20" />
                   <p>
                     {normalizedSearchInput
@@ -4747,6 +4748,7 @@ export default function App() {
                     </div>
                   ))
               )}
+              </div>
             </div>
           </div>
         )}
@@ -4802,7 +4804,7 @@ export default function App() {
               <div className="w-full flex flex-col items-center">
                 {/* Flashcard Component */}
                 <div
-                  className="relative w-full aspect-[4/3] max-w-sm cursor-pointer select-none [perspective:1000px] mb-8 touch-pan-y"
+                  className="relative w-full aspect-[4/3] max-w-sm md:max-w-md lg:max-w-lg cursor-pointer select-none [perspective:1000px] mb-8 touch-pan-y"
                   onMouseDown={(e) => handleDragStart(e.clientX)}
                   onMouseMove={(e) => handleDragMove(e.clientX)}
                   onMouseUp={handleDragEnd}
@@ -4910,7 +4912,7 @@ export default function App() {
                 </div>
 
                 {/* Các nút bấm hành động */}
-                <div className="flex justify-center gap-6 w-full max-w-sm px-4">
+                <div className="flex justify-center gap-6 w-full max-w-sm md:max-w-md lg:max-w-lg px-4">
                   <button
                     onClick={() => handleSwipeAction("unknown")}
                     disabled={isAdvancingCard}
@@ -4975,11 +4977,11 @@ export default function App() {
               )}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:items-start">
               {cards.filter(
                 (c) => c.status === "unknown" && isCardInCurrentDeck(c),
               ).length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
+                <div className="md:col-span-2 xl:col-span-3 text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
                   <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
                     <List className="w-8 h-8" />
                   </div>
@@ -5083,11 +5085,11 @@ export default function App() {
               )}
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:items-start">
               {cards.filter(
                 (c) => c.status === "known" && isCardInCurrentDeck(c),
               ).length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
+                <div className="md:col-span-2 xl:col-span-3 text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-100">
                   <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-3">
                     <CheckCircle className="w-8 h-8" />
                   </div>

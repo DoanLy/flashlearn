@@ -21,7 +21,38 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-28) — v1.13.0: đổi toàn bộ UI sang theme "sticker" teal/vàng/coral
+## Phiên làm việc gần nhất (2026-07-28) — v1.14.0: responsive cho iPad/laptop
+
+Ngay sau v1.13.0, user gửi ảnh chụp trên laptop: app chỉ là **một cột 448px giữa màn hình
+trống trơn** — vì `<main>` bị khoá cứng `max-w-md`. Đã mở rộng bố cục theo khổ màn hình
+(chỉ đổi class layout, **không đụng logic/tính năng**):
+
+- **`<main>`** (`App.jsx`): `max-w-md` → `max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl
+  2xl:max-w-7xl`, thêm `md:px-6`.
+  **Lưu ý về đơn vị:** root font-size đổi theo breakpoint (16/15/14px — xem `index.css`),
+  nên `max-w-5xl` (64rem) ở lg thực tế = 896px chứ không phải 1024px. Muốn chỉnh độ rộng
+  nhớ tính theo rem × font gốc của breakpoint đó.
+- **Tab "Thêm từ"**: từ `lg` trở lên chia **2 cột** —
+  `lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)]`, form bên trái `lg:sticky lg:top-24`
+  (cuộn danh sách vẫn thấy form), danh sách bên phải. Dưới `lg` thì xếp dọc như cũ.
+- **Các danh sách thẻ** (trong tab Thêm từ, tab Chưa thuộc, tab Đã thuộc): đổi từ
+  `space-y-3` sang lưới `md:grid-cols-2` (+ `xl:grid-cols-3` cho 2 tab Chưa/Đã thuộc).
+  **Cách làm:** bọc thêm 1 `div` lưới quanh cụm `{empty ? … : cards.map(…)}`, khối rỗng
+  thì `md:col-span-2`/`xl:col-span-3` để vẫn nằm giữa. Giữ `space-y-3 md:space-y-0` để
+  mobile không đổi.
+- **Thẻ học (Study)**: `max-w-sm` → `max-w-sm md:max-w-md lg:max-w-lg` (áp cho cả thẻ lẫn
+  cụm 2 nút Chưa/Đã thuộc bên dưới để 2 khối luôn bằng nhau).
+- **Menu GAME**: 4 thẻ từ `flex flex-col` → `grid md:grid-cols-2`; root thêm `max-w-4xl mx-auto`.
+- **Phát âm / Chép chính tả**: bọc `max-w-3xl` / `max-w-4xl` + `mx-auto` để chữ và khung
+  video không bị kéo dài quá khổ; danh sách video thành `grid md:grid-cols-2`.
+- Bottom nav vẫn là thanh nổi ở giữa (`max-w-xl`), chạy tốt ở mọi khổ — chưa đổi sang
+  sidebar dọc trên desktop; nếu sau này user muốn thì đó là việc kế tiếp.
+- **Đã đo bằng `getBoundingClientRect`/`getComputedStyle`** ở 375 / 768 / 1024 / 1440px:
+  không có tràn ngang (`body.scrollWidth` ≤ viewport) ở khổ nào; 375px giữ nguyên 1 cột
+  y như trước; 768px danh sách 2 cột, form full width; 1024px+ tab Thêm từ ra 2 cột
+  (322px + 623px), thẻ học rộng 448px, menu game 2 cột. Build OK, eslint vẫn 3 lỗi CÓ SẴN.
+
+## Phiên trước (2026-07-28) — v1.13.0: đổi toàn bộ UI sang theme "sticker" teal/vàng/coral
 
 User gửi ảnh mẫu (app học tiếng Anh kiểu sticker: teal đậm + vàng chanh + hồng coral,
 thẻ bo góc lớn viền đen mảnh + bóng cứng lệch, nút pill, chữ bôi highlight vàng) và yêu
