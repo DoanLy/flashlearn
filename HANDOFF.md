@@ -21,7 +21,74 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-27) — v1.10.0: fix "có từ đã thuộc mà không chơi được Luyện Gõ / Ong Chính Tả"
+## Phiên làm việc gần nhất (2026-07-28) — v1.11.0: chuẩn hoá 4 trường (Từ vựng/Phiên âm/Nghĩa/Ví dụ) + fix bug Luyện Gõ
+
+User yêu cầu 8 việc trong 1 phiên: (1) fix Luyện Gõ bị clear ký tự khi gõ cụm nhiều
+từ, (2) form Thêm từ (Từng từ một) tách 4 ô, (3) format nhập hàng loạt đổi theo 4
+nhãn + `&`, (4) game chỉ dùng Từ vựng+Nghĩa, (5)(6) mặt trước/sau thẻ học theo 4
+trường + UI mặt sau dễ đọc hơn, (7) chuẩn hoá lại dữ liệu cũ, (8) push. **Không đổi
+schema Supabase** — bảng `cards` vẫn 2 cột `word`/`meaning`; `meaning` tiếp tục là
+chuỗi 3 dòng `Phiên âm: …\nNghĩa: …\nVí dụ: …` (đúng format đã chuẩn hoá trước đó,
+xem phiên chuẩn hoá deck cũ), chỉ thêm 1 lớp parse/format 2 chiều.
+
+- **Fix bug Luyện Gõ (`TypingGame`, App.jsx):** nguyên nhân là input controlled kiểu
+  cũ (`value={typed}` + `onChange` đọc `e.target.value`) trong khi component
+  re-render 60 lần/giây do `requestAnimationFrame` — CÙNG lớp lỗi đã gặp và fix ở
+  `SpellingBee` v1.9.3. Áp lại đúng pattern đó: `handleKey` (onKeyDown) tự quản
+  chuỗi gõ qua `typedRef` bằng `e.key` + `preventDefault` (không đụng caret/value
+  của input nữa), `onChange` cũ giữ làm dự phòng bàn phím ảo/mobile. Logic khớp
+  tiền tố/exact-match gộp vào `tryApply()` dùng chung cho cả 2 đường.
+  - **Đã verify bằng simulation Node độc lập** (logic so khớp đúng, bug nằm ở tầng
+    DOM/React) **và test trực tiếp trong app thật** (vite riêng cổng 5183, dữ liệu
+    thật): patch `requestAnimationFrame` (tab preview bị coi là "ẩn" nên rAF thật
+    bị đóng băng, đã gặp nhiều lần trước đây) để tự "pump" vòng lặp game, dispatch
+    `KeyboardEvent('keydown', {key})` thật lên input để gõ cụm "Become more common"
+    — bắn hạ thành công, không rơi rớt ký tự giữa chừng, không mất tim.
+- **Helper mới `parseCardFields`/`formatCardMeaning`** (App.jsx, cạnh `pickMeaning`):
+  tách/gộp `meaning` thành `{phonetic, meaning, example}`. `pickMeaning` cũ GIỮ
+  NGUYÊN không đổi (4 game đang dùng, tránh vỡ).
+- **Form Thêm từ — Từng từ một:** 4 ô input Từ vựng*/Phiên âm/Nghĩa của từ*/Ví dụ
+  (Phiên âm, Ví dụ không bắt buộc).
+- **Form Thêm từ — Hàng loạt:** đổi hẳn parser, mỗi thẻ 4 dòng nhãn
+  `Từ vựng:`/`Phiên âm:`/`Nghĩa của từ:`/`Ví dụ:`, các thẻ cách nhau 1 dòng chỉ có
+  `&` (`parseBulkBlock`, dùng chung regex với `parseCardFields`).
+- **Form Sửa thẻ trong danh sách:** cũng đổi sang 4 ô (`editWord/editPhonetic/
+  editMeaning/editExample`), prefill qua `parseCardFields(card.meaning)`.
+- **Danh sách thẻ (preview trong tab Thêm từ):** đổi từ in nguyên `card.meaning`
+  (lộ cả 3 dòng nhãn) sang `pickMeaning(card.meaning)` cho gọn.
+- **Game (Kiểm tra/Ghép thẻ/Luyện Gõ/Ong Chính Tả):** đã dùng `pickMeaning` từ
+  trước (chỉ lấy dòng Nghĩa) — không cần sửa gì thêm, chỉ hưởng lợi từ dữ liệu
+  được chuẩn hoá đồng bộ hơn.
+- **Mặt trước/sau thẻ học (Study tab):** mặt sau đổi từ in nguyên blob
+  (`whitespace-pre-wrap`) sang 3 khối có kiểu chữ riêng (Phiên âm — mono nhạt,
+  Nghĩa — to đậm, Ví dụ — nhỏ nghiêng có gạch ngăn phía trên), khối nào rỗng thì ẩn
+  hẳn. Chế độ đảo chiều (`isReverseStudy`): mặt trước giờ chỉ hiện
+  `pickMeaning()` (trước đây lộ nguyên 3 dòng — cũng là 1 bug ăn theo được sửa
+  luôn), mặt sau hiện `word` + cùng layout Phiên âm/Ví dụ.
+- **Migration dữ liệu (`scripts/normalize-card-fields.mjs`, dry-run mặc định,
+  `--apply` mới ghi thật, tự backup JSON trước khi ghi):**
+  - Audit thật trên DB: 3332 thẻ, 3107 đã đúng format 3 dòng (không đụng), 225 thẻ
+    lệch → tự nhận diện 2 dạng lồng nhau: phiên âm dạng `(/…/)` ở đầu `word` HOẶC
+    đầu `meaning` (bóc bằng regex ưu tiên cặp `/…/)` CUỐI để không bị cắt cụt khi
+    phiên âm có `/` nội bộ, vd "Low salary / income"), và ví dụ dạng `word - câu ví
+    dụ` (bóc từ `word`) hoặc `Nghĩa. Câu ví dụ tiếng Anh (dịch).` (bóc từ `meaning`
+    tại dấu `". "` đầu tiên nếu vế sau đủ dài để là 1 câu). Không rule nào khớp thì
+    giữ nguyên làm Nghĩa (không mất dữ liệu).
+  - **Đã chạy `--apply` thật:** 225/225 thẻ ghi lại thành công, backup lưu
+    `scripts/_backup_cards_<ts>.json` (đã gitignore, KHÔNG commit). Audit lại sau
+    khi apply: 3332/3332 thẻ đúng format.
+- **Đã test trên app thật** (vite riêng 5183): danh sách 158 thẻ "PreIE từ vựng"
+  hiện đúng preview Nghĩa (không còn lộ "Phiên âm:..."); mặt sau thẻ học hiện đủ 3
+  khối (test từ "Evolve" → `/iˈvɒlv/` / "Tiến hóa" / câu ví dụ); đảo chiều học đúng
+  (mặt trước chỉ "Tiến hóa", mặt sau "Evolve" + phiên âm + ví dụ); thêm hàng loạt 2
+  thẻ test (1 đủ 4 trường, 1 chỉ có Từ vựng+Nghĩa) → parse đúng, form Sửa prefill
+  đúng cả 4 ô → đã xoá 2 thẻ test này khỏi DB thật sau khi xác nhận (không để lại
+  rác). Tiện tay sửa luôn 1 lỗi mojibake có sẵn (`title="PhÃ¡t Ã¢m"` → "Phát âm" ở
+  nút loa mặt sau thẻ đảo chiều — không liên quan yêu cầu chính nhưng thấy tiện sửa).
+- Lint: vẫn 3 lỗi CÓ SẴN (emoji regex + set-state-in-effect, xem các phiên trước)
+  — không phát sinh lỗi mới. Build production OK.
+
+## Phiên làm việc (2026-07-27) — v1.10.0: fix "có từ đã thuộc mà không chơi được Luyện Gõ / Ong Chính Tả"
 
 User báo: deck "PreIE từ vựng" có nhiều từ đã thuộc nhưng vào Luyện Gõ thì hiện
 `0 từ đã thuộc · Cần ít nhất 3 từ đã thuộc để chơi`, không bấm Bắt đầu được.

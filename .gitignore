@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backup snapshot của bảng cards, tạo bởi scripts/normalize-card-fields.mjs --apply
+scripts/_backup_cards_*.json

@@ -1359,6 +1359,45 @@ const pickMeaning = (raw) => {
   return (rest[0] || lines[0]).trim();
 };
 
+// Tách cột `meaning` (format chuẩn 3 dòng "Phiên âm: … / Nghĩa: … / Ví dụ: …")
+// thành 3 trường riêng cho form Thêm/Sửa từ và mặt sau thẻ học. Chấp nhận cả
+// biến thể nhãn (IPA/Pron, "Nghĩa của từ", Example) và thứ tự dòng bất kỳ.
+// Thẻ cũ không có nhãn (chỉ 1 dòng nghĩa thuần) vẫn parse ra đúng { meaning }.
+const parseCardFields = (raw) => {
+  const lines = (raw || "").split("\n").map((s) => s.trim()).filter(Boolean);
+  let phonetic = "";
+  let meaning = "";
+  let example = "";
+  const rest = [];
+  lines.forEach((l) => {
+    let m;
+    if (!phonetic && (m = l.match(/^(phiên âm|ipa|pron)\s*[:：]\s*(.*)$/i))) {
+      phonetic = m[2].trim();
+    } else if (!meaning && (m = l.match(/^nghĩa(\s*của\s*từ)?\s*[:：]\s*(.*)$/i))) {
+      meaning = m[2].trim();
+    } else if (!example && (m = l.match(/^(ví dụ|example)\s*[:：]\s*(.*)$/i))) {
+      example = m[2].trim();
+    } else if (!phonetic && /^\/[^/]*\/$/.test(l)) {
+      phonetic = l;
+    } else {
+      rest.push(l);
+    }
+  });
+  if (!meaning) meaning = rest.shift() || "";
+  if (!example && rest.length) example = rest.join(" ");
+  return { phonetic, meaning, example };
+};
+
+// Ngược lại parseCardFields: gộp 3 trường thành đúng format 3 dòng chuẩn để
+// lưu vào cột `meaning`. Bỏ qua dòng nào rỗng (Phiên âm/Ví dụ không bắt buộc).
+const formatCardMeaning = ({ phonetic, meaning, example }) => {
+  const lines = [];
+  if ((phonetic || "").trim()) lines.push(`Phiên âm: ${phonetic.trim()}`);
+  lines.push(`Nghĩa: ${(meaning || "").trim()}`);
+  if ((example || "").trim()) lines.push(`Ví dụ: ${example.trim()}`);
+  return lines.join("\n");
+};
+
 // Nền sao lấp lánh dùng chung cho 2 game (tạo 1 lần, không đổi giữa các render)
 const StarField = ({ count = 46, color = "255,255,255" }) => {
   const [stars] = useState(() =>
@@ -1588,18 +1627,15 @@ const TypingGame = ({ cards, deckName, onClose }) => {
     setTyped(v);
   };
 
-  const processTyped = (raw) => {
-    const clean = raw.replace(/[^a-zA-Z' -]/g, "");
-    // Xóa bớt ký tự (Backspace) luôn được phép — để user sửa hoặc đổi sang từ khác.
-    if (clean.length < typed.length) {
-      applyTyped(clean);
-      return;
-    }
-    if (!clean) {
+  // Nhận 1 ứng viên chuỗi đã gõ (đã cộng/trừ ký tự) và kiểm tra khớp từ đang rơi.
+  // Rỗng hoặc là tiền tố hợp lệ của ít nhất 1 từ → nhận; khớp trọn 1 từ → bắn hạ;
+  // ngược lại (ký tự sai) → bỏ qua, giữ nguyên chuỗi cũ.
+  const tryApply = (candidate) => {
+    if (!candidate) {
       applyTyped("");
       return;
     }
-    const lower = clean.toLowerCase();
+    const lower = candidate.toLowerCase();
     const arr = wordsRef.current;
     const exact = arr.filter((w) => w.text.toLowerCase() === lower);
     if (exact.length) {
@@ -1609,10 +1645,39 @@ const TypingGame = ({ cards, deckName, onClose }) => {
       return;
     }
     if (arr.some((w) => w.text.toLowerCase().startsWith(lower))) {
-      applyTyped(clean); // vẫn là tiền tố hợp lệ của 1 từ đang rơi → nhận
+      applyTyped(candidate);
     }
-    // else: ký tự gõ vào KHÔNG khớp tiền tố từ nào → bỏ qua, không nhận.
-    // Không gọi setTyped nên React tự khôi phục ô nhập về giá trị hợp lệ trước đó.
+  };
+
+  // Gõ điều khiển trực tiếp bằng onKeyDown + preventDefault: bỏ qua hoàn toàn
+  // vùng đệm/caret của input controlled (dễ lệch vì component re-render 60
+  // lần/giây do vòng lặp requestAnimationFrame) — cùng nguyên nhân/cách sửa
+  // đã dùng cho SpellingBee (v1.9.3). Chuỗi `typed` do ta tự quản qua ref.
+  const handleKey = (e) => {
+    if (phase !== "playing") return;
+    if (e.nativeEvent?.isComposing) return; // đang tổ hợp IME → để yên
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      applyTyped(typedRef.current.slice(0, -1)); // xoá luôn được phép
+      return;
+    }
+    if (e.ctrlKey || e.metaKey || e.altKey) return; // chừa phím tắt
+    if (e.key.length === 1 && /^[A-Za-z' -]$/.test(e.key)) {
+      e.preventDefault();
+      tryApply(typedRef.current + e.key);
+    }
+  };
+
+  // Dự phòng cho bàn phím ảo/di động (keydown không cho e.key đáng tin).
+  const onInputChange = (e) => {
+    if (phase !== "playing") return;
+    if (e.nativeEvent?.isComposing) return;
+    const clean = e.target.value.replace(/[^a-zA-Z' -]/g, "");
+    if (clean.length < typedRef.current.length) {
+      applyTyped(clean); // xoá bớt ký tự
+      return;
+    }
+    tryApply(clean);
   };
 
   // từ đang được nhắm (highlight ký tự đã gõ)
@@ -1798,13 +1863,14 @@ const TypingGame = ({ cards, deckName, onClose }) => {
         <input
           ref={inputRef}
           value={typed}
-          onChange={(e) => processTyped(e.target.value)}
+          onChange={onInputChange}
+          onKeyDown={handleKey}
           onBlur={() => phase === "playing" && setTimeout(() => inputRef.current?.focus(), 10)}
           autoFocus
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
-          placeholder="Gõ từ đang rơi rồi Enter/khớp là bắn…"
+          placeholder="Gõ từ đang rơi, khớp là bắn…"
           className="w-full text-center font-mono text-lg tracking-wide py-3 rounded-2xl bg-white/10 border border-cyan-400/40 text-cyan-200 placeholder:text-indigo-300/40 focus:outline-none focus:border-cyan-300"
           style={{ animation: "flGlowPulse 2.6s ease-in-out infinite" }}
         />
@@ -3772,7 +3838,9 @@ export default function App() {
   const [deckInput, setDeckInput] = useState("Tất cả");
   const [deckMode, setDeckMode] = useState("select");
   const [wordInput, setWordInput] = useState("");
+  const [phoneticInput, setPhoneticInput] = useState("");
   const [meaningInput, setMeaningInput] = useState("");
+  const [exampleInput, setExampleInput] = useState("");
   const [inputMode, setInputMode] = useState("single");
   const [bulkInput, setBulkInput] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -3781,7 +3849,9 @@ export default function App() {
   const [editingId, setEditingId] = useState(null);
   const [editDeck, setEditDeck] = useState("");
   const [editWord, setEditWord] = useState("");
+  const [editPhonetic, setEditPhonetic] = useState("");
   const [editMeaning, setEditMeaning] = useState("");
+  const [editExample, setEditExample] = useState("");
 
   const [syncStatus, setSyncStatus] = useState("idle"); // 'idle', 'syncing', 'success', 'error'
 
@@ -3974,7 +4044,11 @@ export default function App() {
     const newCard = {
       id: Date.now().toString(),
       word: wordInput.trim(),
-      meaning: meaningInput.trim(),
+      meaning: formatCardMeaning({
+        phonetic: phoneticInput,
+        meaning: meaningInput,
+        example: exampleInput,
+      }),
       status: "new",
       deck: targetDeck,
     };
@@ -3984,33 +4058,46 @@ export default function App() {
     syncDataToSupabase(updatedCards); // Lưu lên Supabase ngay lập tức
 
     setWordInput("");
+    setPhoneticInput("");
     setMeaningInput("");
+    setExampleInput("");
+  };
+
+  // Parse 1 khối "Từ vựng:/Phiên âm:/Nghĩa của từ:/Ví dụ:" (bulk add).
+  const parseBulkBlock = (block) => {
+    const wordLine = block
+      .split("\n")
+      .map((l) => l.trim())
+      .find((l) => /^từ\s*vựng\s*[:：]/i.test(l));
+    const word = wordLine
+      ? wordLine.replace(/^từ\s*vựng\s*[:：]\s*/i, "").trim()
+      : "";
+    const { phonetic, meaning, example } = parseCardFields(
+      block.replace(/^từ\s*vựng\s*[:：].*$/im, ""),
+    );
+    return { word, phonetic, meaning, example };
   };
 
   const handleBulkAddCard = (e) => {
     e.preventDefault();
     if (!bulkInput.trim()) return;
 
-    const lines = bulkInput.split("\n");
+    const blocks = bulkInput.split(/^\s*&\s*$/m);
     const newCards = [];
     const targetDeck =
       deckInput === "Tất cả" ? "Chung" : deckInput.trim() || "Chung";
 
-    lines.forEach((line, index) => {
-      const parts = line.split(":");
-      if (parts.length >= 2) {
-        const word = parts[0].trim();
-        const meaning = parts.slice(1).join(":").trim();
-
-        if (word && meaning) {
-          newCards.push({
-            id: Date.now().toString() + "-" + index,
-            word: word,
-            meaning: meaning,
-            status: "new",
-            deck: targetDeck,
-          });
-        }
+    blocks.forEach((block, index) => {
+      if (!block.trim()) return;
+      const { word, phonetic, meaning, example } = parseBulkBlock(block);
+      if (word && meaning) {
+        newCards.push({
+          id: Date.now().toString() + "-" + index,
+          word,
+          meaning: formatCardMeaning({ phonetic, meaning, example }),
+          status: "new",
+          deck: targetDeck,
+        });
       }
     });
 
@@ -4027,7 +4114,7 @@ export default function App() {
     const newCard = {
       id: Date.now().toString(),
       word: word.trim(),
-      meaning: meaning.trim(),
+      meaning: formatCardMeaning({ phonetic: "", meaning, example: "" }),
       status: "new",
       deck: deck || "Chung",
     };
@@ -4046,7 +4133,10 @@ export default function App() {
     setEditingId(card.id);
     setEditDeck(card.deck || "Chung");
     setEditWord(card.word);
-    setEditMeaning(card.meaning);
+    const { phonetic, meaning, example } = parseCardFields(card.meaning);
+    setEditPhonetic(phonetic);
+    setEditMeaning(meaning);
+    setEditExample(example);
   };
 
   const handleSaveEdit = (id) => {
@@ -4060,7 +4150,11 @@ export default function App() {
             ...c,
             deck: newDeck,
             word: editWord.trim(),
-            meaning: editMeaning.trim(),
+            meaning: formatCardMeaning({
+              phonetic: editPhonetic,
+              meaning: editMeaning,
+              example: editExample,
+            }),
           }
         : c,
     );
@@ -4117,8 +4211,11 @@ export default function App() {
   }, [activeTab, deckInput]);
 
   const currentCard = studyQueue[0];
-  const frontText = isReverseStudy ? currentCard?.meaning : currentCard?.word;
-  const backText = isReverseStudy ? currentCard?.word : currentCard?.meaning;
+  const currentCardFields = parseCardFields(currentCard?.meaning || "");
+  const frontText = isReverseStudy
+    ? pickMeaning(currentCard?.meaning || "")
+    : currentCard?.word;
+  const backText = isReverseStudy ? currentCard?.word : currentCardFields.meaning;
   const frontIsMeaning = isReverseStudy;
   const backIsWord = isReverseStudy;
 
@@ -4387,9 +4484,24 @@ export default function App() {
                       type="text"
                       value={wordInput}
                       onChange={(e) => setWordInput(e.target.value)}
-                      placeholder="VD: Apple"
+                      placeholder="VD: peak"
                       className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-1">
+                      Phiên âm{" "}
+                      <span className="text-slate-300 font-normal">
+                        (không bắt buộc)
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={phoneticInput}
+                      onChange={(e) => setPhoneticInput(e.target.value)}
+                      placeholder="VD: /piːk/"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none font-mono"
                     />
                   </div>
                   <div>
@@ -4399,10 +4511,25 @@ export default function App() {
                     <textarea
                       value={meaningInput}
                       onChange={(e) => setMeaningInput(e.target.value)}
-                      placeholder="VD: Quả táo"
+                      placeholder="VD: đỉnh cao"
                       rows={2}
                       className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-none"
                       required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-500 mb-1">
+                      Ví dụ{" "}
+                      <span className="text-slate-300 font-normal">
+                        (không bắt buộc)
+                      </span>
+                    </label>
+                    <textarea
+                      value={exampleInput}
+                      onChange={(e) => setExampleInput(e.target.value)}
+                      placeholder="VD: Traffic reaches its peak between 8 and 9 in the morning."
+                      rows={2}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-none"
                     />
                   </div>
                   <button
@@ -4418,18 +4545,24 @@ export default function App() {
                     <label className="block text-sm font-medium text-slate-500 mb-1">
                       Nhập danh sách từ
                     </label>
-                    <p className="text-xs text-slate-400 mb-2">
-                      Định dạng:{" "}
+                    <p className="text-xs text-slate-400 mb-2 leading-relaxed">
+                      Mỗi từ 4 dòng{" "}
                       <code className="bg-slate-100 px-1 rounded text-blue-500">
-                        từ vựng : nghĩa
-                      </code>{" "}
-                      (mỗi từ 1 dòng)
+                        Từ vựng: / Phiên âm: / Nghĩa của từ: / Ví dụ:
+                      </code>
+                      , các từ cách nhau bởi 1 dòng chỉ có{" "}
+                      <code className="bg-slate-100 px-1 rounded text-blue-500">
+                        &amp;
+                      </code>
+                      . Phiên âm/Ví dụ để trống được.
                     </p>
                     <textarea
                       value={bulkInput}
                       onChange={(e) => setBulkInput(e.target.value)}
-                      placeholder="Apple : Quả táo&#10;Banana : Quả chuối&#10;Cat : Con mèo"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none min-h-[150px] resize-y leading-relaxed"
+                      placeholder={
+                        "Từ vựng: peak\nPhiên âm: /piːk/\nNghĩa của từ: đỉnh cao\nVí dụ: Traffic reaches its peak between 8 and 9 in the morning.\n&\nTừ vựng: peak\nPhiên âm: /piːk/\nNghĩa của từ: đỉnh cao\nVí dụ: Traffic reaches its peak between 8 and 9 in the morning."
+                      }
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none min-h-[220px] resize-y leading-relaxed font-mono text-sm"
                       required
                     />
                   </div>
@@ -4508,12 +4641,26 @@ export default function App() {
                               className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                               placeholder="Từ vựng"
                             />
+                            <input
+                              type="text"
+                              value={editPhonetic}
+                              onChange={(e) => setEditPhonetic(e.target.value)}
+                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-mono"
+                              placeholder="Phiên âm (không bắt buộc)"
+                            />
                             <textarea
                               value={editMeaning}
                               onChange={(e) => setEditMeaning(e.target.value)}
                               rows={2}
                               className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
-                              placeholder="Nghĩa"
+                              placeholder="Nghĩa của từ"
+                            />
+                            <textarea
+                              value={editExample}
+                              onChange={(e) => setEditExample(e.target.value)}
+                              rows={2}
+                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
+                              placeholder="Ví dụ (không bắt buộc)"
                             />
                           </div>
                           <div className="flex flex-col gap-2">
@@ -4544,7 +4691,7 @@ export default function App() {
                               {card.word}
                             </p>
                             <p className="text-slate-500 line-clamp-2">
-                              {card.meaning}
+                              {pickMeaning(card.meaning)}
                             </p>
                           </div>
                           <div className="flex gap-1 shrink-0">
@@ -4689,16 +4836,27 @@ export default function App() {
                     </div>
 
                     <div className="absolute inset-0 w-full h-full bg-blue-600 rounded-3xl shadow-lg border border-blue-500 flex flex-col items-center p-6 pb-5 [transform:rotateY(180deg)_translateZ(1px)] [-webkit-transform:rotateY(180deg)_translateZ(1px)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
-                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center min-h-0 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
-                        <p
-                          className={`my-auto text-white text-center select-none w-full break-words whitespace-pre-wrap ${
-                            backIsWord
-                              ? "text-3xl font-bold"
-                              : "text-2xl font-medium"
-                          }`}
-                        >
-                          {backText}
-                        </p>
+                      <div className="flex-1 w-full overflow-y-auto flex flex-col items-center justify-center gap-3 min-h-0 px-2 py-4 [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]">
+                        {backIsWord && (
+                          <p className="text-white text-center select-none w-full break-words text-3xl font-bold">
+                            {backText}
+                          </p>
+                        )}
+                        {currentCardFields.phonetic && (
+                          <p className="text-blue-100 text-center select-none w-full break-words font-mono text-lg tracking-wide">
+                            {currentCardFields.phonetic}
+                          </p>
+                        )}
+                        {!backIsWord && (
+                          <p className="text-white text-center select-none w-full break-words text-2xl font-semibold">
+                            {backText}
+                          </p>
+                        )}
+                        {currentCardFields.example && (
+                          <p className="text-blue-100/85 text-center select-none w-full break-words text-sm italic leading-relaxed border-t border-white/15 pt-3 mt-1">
+                            {currentCardFields.example}
+                          </p>
+                        )}
                       </div>
                       {backIsWord && (
                         <button
@@ -4712,7 +4870,7 @@ export default function App() {
                           onMouseDown={(e) => e.stopPropagation()}
                           onMouseUp={(e) => e.stopPropagation()}
                           className="shrink-0 p-4 bg-white/15 hover:bg-white/25 active:bg-white/30 text-white rounded-full transition-all cursor-pointer flex items-center justify-center border border-white/20 shadow-sm [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:translateZ(0)] [-webkit-transform:translateZ(0)]"
-                          title="PhÃ¡t Ã¢m"
+                          title="Phát âm"
                         >
                           <Volume2 className="w-7 h-7 animate-pulse" />
                         </button>
