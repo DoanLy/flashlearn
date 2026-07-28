@@ -21,7 +21,41 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-28) — v1.14.0: responsive cho iPad/laptop
+## Phiên làm việc gần nhất (2026-07-28) — v1.14.1: fix 3 lỗi CHIỀU CAO sau khi responsive
+
+User báo 3 lỗi ngay sau v1.14.0, **cả 3 đều là chiều cao chứ không phải chiều ngang** —
+v1.14.0 mới chỉ lo chiều ngang. **Bài học chung: thanh nav là `fixed` cao ~72px + `pb-2`,
+nên mọi khối cao phải trừ đi khoảng đó, nếu không sẽ bị nav che mà không cuộn tới được.**
+
+1. **Cột form "Thêm từ" bị che, không cuộn xuống được.** Nguyên nhân: `lg:sticky lg:top-24`
+   nhưng form CAO HƠN viewport → phần dưới (nút "Thêm từ") nằm ngoài màn hình, mà sticky
+   thì ghim cứng nên cuộn trang cũng không tới. Fix: thêm
+   `lg:max-h-[calc(100vh-12.5rem)] lg:overflow-y-auto` → form tự cuộn BÊN TRONG.
+   (12.5rem = offset sticky 6rem + chiều cao nav ~6.5rem, tính theo rem nên tự co theo
+   root font-size của từng breakpoint.)
+2. **Màn "Học bài" quá to, không thấy hết nút ở zoom 100%.** Thẻ học vốn `aspect-[4/3]`
+   nên chiều cao suy ra từ CHIỀU RỘNG → màn thấp là tràn. Fix: giới hạn chiều rộng theo
+   chiều cao còn trống:
+   `md:max-w-[min(28rem,calc((100vh-29rem)*4/3))]` (lg dùng `32rem`).
+   29rem ≈ tổng chiều cao cố định phía trên/dưới thẻ (header + DeckFilter + nút đổi chiều +
+   dòng "Đang học" + 2 nút Chưa/Đã thuộc + nav). **Mobile giữ nguyên `min(24rem,58vh)`** để
+   không đổi gì trên điện thoại. Ngoài ra siết bớt khoảng cách dọc (`mb-6`→`mb-3`,
+   `mb-8`→`mb-5`) và root `pb-28`→`pb-24`.
+   - Đo thực tế: viewport 780px → thẻ 448×336, mọi thứ vừa đúng 1 màn (docHeight = 780);
+     viewport 620px → thẻ 285×214, đáy nút ở 538 < nav ở 549 (vẫn không bị che).
+3. **Khung video đen ở "Chép chính tả" quá to.** Fix: `w-full aspect-video` →
+   `mx-auto w-full max-w-[min(100%,44vh)] aspect-video`. Khung này **luôn bị lớp phủ
+   "Chỉ nghe, không xem hình" che kín** nên thu nhỏ không mất gì. Đo: viewport 780 → video
+   343×193, toàn bộ nút điều khiển + ô gõ nằm gọn trong 1 màn; viewport 620 → 273×153,
+   nút thấp nhất ở 538 < nav 549.
+
+**Mẹo test lại nếu đụng 3 chỗ này:** không chụp được màn hình trong môi trường này, nên đo
+bằng `getBoundingClientRect()` — so `nav.getBoundingClientRect().top` với `bottom` của phần
+tử thấp nhất, và so `document.documentElement.scrollHeight` với `innerHeight`. Đã test ở
+375×812 / 1366×620 / 1440×780. Để vào được màn luyện Chép chính tả khi máy test chưa có
+video: bơm 1 video giả vào `localStorage['flashlearn_dictation_videos']` rồi reload (nhớ xoá sau).
+
+## Phiên trước (2026-07-28) — v1.14.0: responsive cho iPad/laptop
 
 Ngay sau v1.13.0, user gửi ảnh chụp trên laptop: app chỉ là **một cột 448px giữa màn hình
 trống trơn** — vì `<main>` bị khoá cứng `max-w-md`. Đã mở rộng bố cục theo khổ màn hình

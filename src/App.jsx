@@ -3601,7 +3601,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           </div>
         </div>
 
-        <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
+        <div className="mx-auto w-full max-w-[min(100%,44vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
           <div ref={playerContainerRef} className="w-full h-full" />
           <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-2 text-slate-400 pointer-events-none">
             <Volume2 className="w-8 h-8" />
@@ -4365,7 +4365,7 @@ export default function App() {
   }
 
   return (
-    <div className="fl-app min-h-screen text-slate-800 font-sans pb-28">
+    <div className="fl-app min-h-screen text-slate-800 font-sans pb-24">
       {/* Header */}
       <header className="bg-white border-b-2 border-slate-900 px-4 py-3 mb-6 sticky top-0 z-10 flex justify-between items-center">
         <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
@@ -4409,7 +4409,7 @@ export default function App() {
         {/* --- TAB: QUẢN LÝ TỪ (INPUT) --- */}
         {activeTab === "input" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 lg:grid lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6 lg:mb-0 lg:sticky lg:top-24">
+            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6 lg:mb-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-12.5rem)] lg:overflow-y-auto">
               <h2 className="text-lg font-extrabold mb-4">
                 <span className="fl-mark">Thêm Flashcard</span>
               </h2>
@@ -4760,7 +4760,7 @@ export default function App() {
             <button
               type="button"
               onClick={handleToggleStudyDirection}
-              className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold shadow-sm transition-colors ${
+              className={`mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold shadow-sm transition-colors ${
                 isReverseStudy
                   ? "border-blue-200 bg-blue-600 text-white hover:bg-blue-700"
                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
@@ -4770,7 +4770,7 @@ export default function App() {
               <RotateCcw className="w-4 h-4" />
               {isReverseStudy ? "Nghĩa -> Từ" : "Từ -> Nghĩa"}
             </button>
-            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 text-center">
+            <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">
               <span className="text-xs font-normal">
                 Đang học: {studyQueue.length} từ
               </span>
@@ -4804,7 +4804,7 @@ export default function App() {
               <div className="w-full flex flex-col items-center">
                 {/* Flashcard Component */}
                 <div
-                  className="relative w-full aspect-[4/3] max-w-sm md:max-w-md lg:max-w-lg cursor-pointer select-none [perspective:1000px] mb-8 touch-pan-y"
+                  className="relative w-full aspect-[4/3] max-w-[min(24rem,58vh)] md:max-w-[min(28rem,calc((100vh-29rem)*4/3))] lg:max-w-[min(32rem,calc((100vh-29rem)*4/3))] cursor-pointer select-none [perspective:1000px] mb-5 md:mb-6 touch-pan-y"
                   onMouseDown={(e) => handleDragStart(e.clientX)}
                   onMouseMove={(e) => handleDragMove(e.clientX)}
                   onMouseUp={handleDragEnd}
@@ -4912,7 +4912,7 @@ export default function App() {
                 </div>
 
                 {/* Các nút bấm hành động */}
-                <div className="flex justify-center gap-6 w-full max-w-sm md:max-w-md lg:max-w-lg px-4">
+                <div className="flex justify-center gap-4 md:gap-6 w-full max-w-[min(24rem,58vh)] md:max-w-[min(28rem,calc((100vh-29rem)*4/3))] lg:max-w-[min(32rem,calc((100vh-29rem)*4/3))] px-4">
                   <button
                     onClick={() => handleSwipeAction("unknown")}
                     disabled={isAdvancingCard}
