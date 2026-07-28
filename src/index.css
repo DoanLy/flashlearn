@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Giao diện được thiết kế theo tỉ lệ cỡ chạm trên di động; trên màn hình
+   laptop/desktop rộng hơn, thu nhỏ đều toàn bộ rem (chữ + khoảng cách Tailwind)
+   để không bị to quá khổ so với khoảng cách nhìn thông thường của laptop. */
+@media (min-width: 641px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 14px;
+  }
+}

@@ -1495,6 +1495,11 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   );
   const speedFor = (m) => 3.2 + m * 0.3; // %/giây — chậm lại để kịp gõ
   const spawnIntervalFor = (m) => Math.max(1100, 2600 - m * 60); // ms
+  // Cụm nhiều từ ("more and more", "by means of"...) cần nhiều phím hơn 1 từ
+  // đơn nhưng trước đây rơi cùng tốc độ mốc như nhau → hay bị tính "để lọt"
+  // (mất mạng + xoá trắng ô đang gõ) dù vẫn còn thấy rõ trên màn hình, chỉ vì
+  // chưa gõ kịp. Cụm càng dài rơi càng chậm để tổng thời gian gõ được công bằng.
+  const lengthSlowdown = (text) => Math.min(1, 7 / text.length);
 
   const stopLoop = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -1509,14 +1514,26 @@ const TypingGame = ({ cards, deckName, onClose }) => {
   const spawnWord = () => {
     const pool = poolRef.current;
     if (!pool.length) return;
-    const text = pool[poolIdxRef.current % pool.length];
+    // Tránh gieo trùng 1 từ/cụm đang rơi sẵn trên màn hình: cụm nhiều từ gõ
+    // lâu hơn nên dễ còn nằm trên màn hình khi pool xoay vòng tới đúng nó lần
+    // nữa → nếu không né, gõ xong bắn 1 bản thì bản kia vẫn còn y nguyên,
+    // trông như vừa gõ xong lại bị xoá trắng.
+    const active = new Set(wordsRef.current.map((w) => w.text));
+    let text = pool[poolIdxRef.current % pool.length];
+    let tries = 0;
+    while (active.has(text) && tries < pool.length - 1) {
+      poolIdxRef.current += 1;
+      text = pool[poolIdxRef.current % pool.length];
+      tries += 1;
+    }
     poolIdxRef.current += 1;
     const m = Math.min(
       TYPING_MILESTONES,
       Math.floor(destroyedRef.current / TYPING_WORDS_PER_MILESTONE) + 1,
     );
     const id = ++idRef.current;
-    const word = { id, text, x: 10 + Math.random() * 74, y: -4, speed: speedFor(m) * (0.85 + Math.random() * 0.3) };
+    const speed = speedFor(m) * (0.85 + Math.random() * 0.3) * lengthSlowdown(text);
+    const word = { id, text, x: 10 + Math.random() * 74, y: -4, speed };
     wordsRef.current = [...wordsRef.current, word];
   };
 

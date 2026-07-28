@@ -21,7 +21,51 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-28) — v1.11.0: chuẩn hoá 4 trường (Từ vựng/Phiên âm/Nghĩa/Ví dụ) + fix bug Luyện Gõ
+## Phiên làm việc gần nhất (2026-07-28) — v1.12.0: thu nhỏ UI trên desktop + fix tiếp bug Luyện Gõ xoá cụm nhiều từ
+
+User báo 2 việc: (1) UI to quá so với màn hình laptop, (2) Luyện Gõ vẫn còn bug tự xoá ô
+đang gõ với cụm nhiều từ (đợt fix v1.11.0 không dứt điểm — xem lại bên dưới).
+
+- **UI thu nhỏ trên desktop (`src/index.css`):** app vốn thiết kế cỡ chạm di động
+  (`<main className="max-w-md mx-auto">` đã giới hạn 448px sẵn), nhưng font/khoảng cách
+  Tailwind (rem) vẫn to như trên phone → nhìn "quá khổ" trên laptop. Thêm 2 media query hạ
+  `font-size` gốc của `html`: 16px (mobile mặc định, giữ nguyên) → 15px từ 641px → 14px từ
+  1024px. Vì Tailwind dùng rem cho cả chữ lẫn spacing/rounded/kích thước icon, hạ root
+  font-size là cách rẻ nhất để thu nhỏ ĐỀU toàn bộ UI mà không phải sửa hàng nghìn class.
+  Chưa test được bằng mắt trong Browser pane (pane không compositing frame trong môi trường
+  này — `computer screenshot` báo lỗi "pane is not displayed"), chỉ verify qua build OK.
+  **Nếu user thấy vẫn to/nhỏ chưa vừa ý, chỉnh lại 2 con số 15px/14px này.**
+- **Luyện Gõ — fix tiếp cụm nhiều từ bị xoá dù còn hiện trên màn hình (`TypingGame`,
+  App.jsx ~1496-1533):** đợt v1.11.0 đã fix xong lỗi MẤT KÝ TỰ khi gõ nhanh (do input
+  controlled đọc value/caret lệch khi component re-render 60 lần/giây) — đó là lỗi tầng
+  DOM/React, KHÔNG phải lỗi này. Bug user báo lại lần này là lỗi **thiết kế game**: mọi từ
+  rơi cùng tốc độ theo mốc bất kể dài ngắn, nên cụm nhiều chữ như "more and more"/"by means
+  of" phải gõ nhiều phím hơn nhưng KHÔNG có thêm thời gian → dễ chạm `TYPING_MISS_LINE` (88%,
+  tức còn cách đáy màn hình/tàu vũ trụ khá xa, vẫn thấy rõ) trước khi gõ xong → bị tính "để
+  lọt" (mất tim + `loop()` tự `setTyped("")` xoá ô đang gõ, xem đoạn code v1.9.2) dù từ vẫn
+  đang hiện. Đã audit deck "IELT LỚP 2" thật (321 từ gõ được, KHÔNG có thẻ "more" đứng riêng
+  trùng tiền tố với "More and more") nên loại được giả thuyết trùng tiền tố/trùng thẻ — đúng
+  là do tốc độ rơi không tính theo độ dài.
+  - Fix: thêm `lengthSlowdown(text) = min(1, 7/text.length)` nhân vào `speed` lúc `spawnWord`
+    — từ ≤7 ký tự rơi tốc độ như cũ (không đổi hành vi với từ đơn), cụm càng dài rơi càng
+    chậm tỉ lệ nghịch với độ dài (vd "more and more" 13 ký tự → còn ~54% tốc độ, gần gấp đôi
+    thời gian rơi).
+  - Tiện tay thêm phòng vệ thứ 2 (không phải nguyên nhân chính nhưng vô hại, hữu ích nếu deck
+    khác có thẻ trùng chữ): `spawnWord` giờ né không gieo 1 chữ/cụm đang có sẵn trên màn hình
+    nếu pool còn lựa chọn khác (vòng `while` giới hạn `tries < pool.length - 1`, không đổi gì
+    khi pool chỉ có 1 từ).
+  - **Giới hạn khi test:** không verify được bằng mắt trong Browser pane — tab pane bị coi là
+    "ẩn" nên `requestAnimationFrame` ĐÓNG BĂNG HOÀN TOÀN, kể cả `spawnWord` đầu tiên cũng
+    không chạy (đọc DOM qua `javascript_tool` sau khi bấm Bắt đầu → không có từ nào được
+    render, `words` rỗng suốt). Đã verify bằng: `npm run build` OK, `npx eslint` không phát
+    sinh lỗi mới (vẫn 3 lỗi CÓ SẴN không liên quan), đọc lại code/công thức bằng tay. **Nếu
+    sửa tiếp tính năng này, ưu tiên test bằng cách patch `requestAnimationFrame` để tự "pump"
+    vòng lặp (xem mẹo test đã dùng ở v1.9.2) thay vì trông chờ Browser pane render thật.**
+  - Việc còn treo: chưa có cách test trực quan tốc độ rơi mới trong môi trường này — nếu vẫn
+    còn báo bug tương tự, cân nhắc tăng thêm hệ số chậm (đổi hằng số `7` lên) hoặc nâng hẳn
+    `TYPING_MISS_LINE` gần đáy hơn.
+
+## Phiên (2026-07-28) — v1.11.0: chuẩn hoá 4 trường (Từ vựng/Phiên âm/Nghĩa/Ví dụ) + fix bug Luyện Gõ
 
 User yêu cầu 8 việc trong 1 phiên: (1) fix Luyện Gõ bị clear ký tự khi gõ cụm nhiều
 từ, (2) form Thêm từ (Từng từ một) tách 4 ô, (3) format nhập hàng loạt đổi theo 4
