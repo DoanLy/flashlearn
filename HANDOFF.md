@@ -21,7 +21,72 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-28) — v1.12.0: thu nhỏ UI trên desktop + fix tiếp bug Luyện Gõ xoá cụm nhiều từ
+## Phiên làm việc gần nhất (2026-07-28) — v1.13.0: đổi toàn bộ UI sang theme "sticker" teal/vàng/coral
+
+User gửi ảnh mẫu (app học tiếng Anh kiểu sticker: teal đậm + vàng chanh + hồng coral,
+thẻ bo góc lớn viền đen mảnh + bóng cứng lệch, nút pill, chữ bôi highlight vàng) và yêu
+cầu **CHỈ đổi UI style, giữ nguyên 100% tính năng**. Đã chốt với user 2 điểm trước khi làm:
+(1) **5 màn game vẫn giữ nền tối**, chỉ đổi tông màu nút/thẻ/chữ; (2) **giữ nguyên** thiết
+lập thu nhỏ UI desktop của v1.12.0 (root font 15px/14px).
+
+**Không đụng bất kỳ logic/state/handler/schema nào** — chỉ đổi className, màu và thêm CSS.
+
+### Cách làm (quan trọng khi cần chỉnh tiếp)
+
+Kiến trúc theme gồm 3 tầng, cố tình tránh phải sửa hàng nghìn className trong `App.jsx` (5300 dòng):
+
+1. **`tailwind.config.js` — ánh xạ lại BẢNG MÀU.** Toàn bộ họ màu gốc của Tailwind được
+   trỏ sang bảng sticker: `blue/indigo/sky/teal → teal`, `violet/purple/red/rose/pink → coral`,
+   `amber/yellow → sun`, `orange → flame`, `cyan → aqua`, `green/emerald/lime → green`,
+   `slate/gray/zinc/neutral/stone → ink`. Nhờ vậy mọi class `bg-blue-600`, `text-slate-500`…
+   đang có sẵn tự đổi tông. **Muốn đổi tông toàn app về sau, sửa DUY NHẤT file này.**
+   (Có thêm bí danh `brand`/`sun`/`coral`/`ink` để viết class mới, và `shadow-sticker*`.)
+2. **`src/index.css` — tầng HÌNH DẠNG.** Các selector bám theo TOKEN class của Tailwind
+   (`[class~="bg-white"]` chỉ khớp đúng token `bg-white`, KHÔNG khớp `bg-white/10`) nên
+   **5 màn game nền tối không bị dính** (chúng dùng `bg-white/10`, `bg-slate-900`…). Gồm:
+   thẻ trắng bo góc → viền mực 2px + bóng cứng `3px 4px 0`; nút màu đặc (`bg-blue-600`,
+   `bg-red-500`…) → viền + bóng cứng; chip nền nhạt (`bg-blue-50`…) → viền mực 2px;
+   `input/textarea/select` → nền trắng, viền mực 2px, focus đổi viền teal + bóng teal;
+   nút sticker khi `:active` thì "lún xuống" (`translate(2px,3px)` + bỏ bóng).
+   - **Lối thoát:** thêm class `fl-flat` vào element để KHÔNG bị áp sticker (đang dùng cho
+     chấm badge trong nav, tab đang chọn của segmented control); thêm `fl-dark-input` cho ô
+     nhập nền tối (ô gõ của Luyện Gõ) để không bị ép nền trắng.
+   - **Tiện ích mới:** `.fl-mark` (chữ bôi bút dạ vàng), `.fl-sticker`/`.fl-sticker-sm`
+     (viền + bóng dựng tay, dùng cho khối gradient), `.fl-dashed`, `.fl-track`+`.fl-track-fill`,
+     `.fl-dot` (chấm trang trí), `.fl-app` (nền giấy chấm bi của toàn app).
+3. **`src/App.jsx` — sửa CÓ CHỌN LỌC** những chỗ CSS không với tới được:
+   - Header: nền trắng + viền đáy mực, logo trong ô vuông teal bo góc, chữ "FlashLearn" bôi vàng.
+   - **Bottom nav: đổi hẳn sang thanh teal bo tròn NỔI** (`fixed bottom-0` + `px-2 pb-2`, bên
+     trong là `div` `bg-blue-600 rounded-3xl` tự ăn viền+bóng sticker). Tab đang chọn = viên
+     vàng `bg-amber-300` chữ mực; tab thường = trắng 75%. Vì nav nổi lên nên root đổi
+     `pb-24 → pb-28` và badge version đổi `bottom-16 → bottom-24`.
+   - Thẻ học: thêm 3 chấm trang trí `.fl-dot` (vàng/coral/teal) quanh thẻ; 2 nút Chưa/Đã thuộc
+     đổi từ trắng-viền-màu sang **nền coral-100 / green-100** cho giống cặp nút trong ảnh mẫu.
+   - Nút CTA chính (`Thêm từ`, `Thêm danh sách`, `Bắt đầu luyện đọc`) đổi `rounded-xl → rounded-full`.
+   - Tiêu đề mục (`Thêm Flashcard`, `Trò chơi`, `Chép chính tả`) bọc `<span className="fl-mark">`.
+   - Menu GAME: 4 thẻ gradient thêm `fl-sticker` → teal / coral / aqua / vàng-cam (đúng 4 màu
+     trong ảnh mẫu). Thẻ "Ong Chính Tả" đổi sang nền vàng nhạt + **chữ mực** (chữ trắng trên
+     vàng không đọc được).
+   - **Đổi hết mã màu hardcode trong game** (`#f43f5e`, `rgba(249,115,22,…)`, ring rgb của
+     QuizGame…) sang bảng mới — nếu thêm màu hardcode mới, nhớ lấy từ bảng trong `tailwind.config.js`.
+   - Sửa 3 chỗ chữ trắng trên nền vàng (nút Bắt đầu/Kiểm tra của Ong Chính Tả, anchor bookmarklet)
+     thành chữ mực.
+
+### Đã kiểm chứng
+
+- `npm run build` OK. `npx eslint .` vẫn đúng **3 lỗi CÓ SẴN** (emoji regex ×2 + set-state-in-effect
+  ~dòng 2932), không phát sinh lỗi mới.
+- Chạy vite riêng cổng 5188, đọc `getComputedStyle` từng màn (không bấm nút ghi dữ liệu nào):
+  nền app `rgb(241,244,242)` + chấm bi 18px; header viền đáy 2px mực; `.fl-mark` ra dải vàng
+  `#FFE55C`; thẻ trắng viền 2px `#16211F` + bóng `3px 4px 0`; nút chính teal `#23847C` bo tròn
+  9999px; nav teal bo 21px, tab đang chọn nền `#FFE55C`; input nền trắng viền 2px; thẻ danh sách
+  giữ nguyên vạch coral bên trái + viền mực; 4 thẻ game ra đúng teal/coral/aqua/vàng-cam; game
+  QuizGame nền chuyển thành gradient mực-xanh đậm, nút flame→coral; SpellingBee nút vàng chữ mực.
+  Console không lỗi.
+- **KHÔNG chụp được ảnh màn hình** trong môi trường này (Browser pane không compositing —
+  `computer screenshot` báo "pane is not displayed"), nên phần "đẹp/xấu" cần user tự nhìn.
+
+## Phiên trước (2026-07-28) — v1.12.0: thu nhỏ UI trên desktop + fix tiếp bug Luyện Gõ xoá cụm nhiều từ
 
 User báo 2 việc: (1) UI to quá so với màn hình laptop, (2) Luyện Gõ vẫn còn bug tự xoá ô
 đang gõ với cụm nhiều từ (đợt fix v1.11.0 không dứt điểm — xem lại bên dưới).

@@ -359,7 +359,7 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           <button
             onClick={handleStartPractice}
             disabled={!fullText || !fullText.trim()}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold text-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+            className="w-full py-3.5 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
           >
             Bắt đầu luyện đọc <Play size={20} className="fill-current" />
           </button>
@@ -622,10 +622,10 @@ const shuffleArr = (arr) => {
 const QUIZ_TOTAL = 15;
 const QUIZ_MISS_LINE = 80; // %
 const QUIZ_OPT_COLORS = [
-  { ring: "56,189,248", badge: "#0891b2" }, // cyan
-  { ring: "167,139,250", badge: "#7c3aed" }, // violet
-  { ring: "251,191,36", badge: "#d97706" }, // amber
-  { ring: "244,114,182", badge: "#db2777" }, // pink
+  { ring: "74,220,200", badge: "#12A794" }, // cyan
+  { ring: "245,127,114", badge: "#CF4838" }, // violet
+  { ring: "255,217,46", badge: "#D9A400" }, // amber
+  { ring: "255,148,99", badge: "#B84A20" }, // pink
 ];
 
 const QuizGame = ({ cards, onClose }) => {
@@ -799,12 +799,12 @@ const QuizGame = ({ cards, onClose }) => {
       @keyframes flShakeX {0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
       @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
       @keyframes flMeteorFloat {0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-      @keyframes flGlowOrange {0%,100%{box-shadow:0 0 20px rgba(249,115,22,.5)}50%{box-shadow:0 0 40px rgba(249,115,22,.85)}}
+      @keyframes flGlowOrange {0%,100%{box-shadow:0 0 20px rgba(249,122,69,.5)}50%{box-shadow:0 0 40px rgba(249,122,69,.85)}}
       @keyframes flTrail {0%,100%{opacity:.5;transform:translateX(-50%) scaleY(1)}50%{opacity:1;transform:translateX(-50%) scaleY(1.4)}}
     `}</style>
   );
 
-  const wrapBg = "bg-gradient-to-b from-slate-950 via-[#1a1330] to-slate-950";
+  const wrapBg = "bg-gradient-to-b from-slate-950 via-[#123B3A] to-slate-950";
 
   if (phase === "intro") {
     return (
@@ -925,7 +925,7 @@ const QuizGame = ({ cards, onClose }) => {
             <div className="absolute left-1/2 -top-6 w-2 h-8 rounded-full bg-gradient-to-t from-orange-500 to-transparent blur-[2px]" style={{ animation: "flTrail .5s ease-in-out infinite" }} />
             <div
               className="relative px-6 py-4 rounded-2xl font-bold text-lg sm:text-xl text-center text-white bg-gradient-to-br from-orange-400 to-red-500 border border-orange-300/60"
-              style={{ animation: "flGlowOrange 2s ease-in-out infinite", boxShadow: "0 0 24px rgba(249,115,22,.6)" }}
+              style={{ animation: "flGlowOrange 2s ease-in-out infinite", boxShadow: "0 0 24px rgba(249,122,69,.6)" }}
             >
               {q.meaning}
             </div>
@@ -942,11 +942,11 @@ const QuizGame = ({ cards, onClose }) => {
             let bg = `rgba(${c.ring},.08)`;
             if (reveal) {
               if (opt === q.correct) {
-                border = "#22c55e";
-                bg = "rgba(34,197,94,.18)";
+                border = "#269E5C";
+                bg = "rgba(38,158,92,.18)";
               } else if (opt === picked) {
-                border = "#f43f5e";
-                bg = "rgba(244,63,94,.18)";
+                border = "#E8604F";
+                bg = "rgba(232,96,79,.18)";
               }
             }
             return (
@@ -1102,7 +1102,7 @@ const MatchGame = ({ cards, onClose }) => {
       @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
       @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
       @keyframes flTileMatch {0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(.6);opacity:0}}
-      @keyframes flGlowTeal {0%,100%{box-shadow:0 0 16px rgba(20,184,166,.4)}50%{box-shadow:0 0 32px rgba(20,184,166,.8)}}
+      @keyframes flGlowTeal {0%,100%{box-shadow:0 0 16px rgba(46,158,147,.4)}50%{box-shadow:0 0 32px rgba(46,158,147,.8)}}
     `}</style>
   );
 
@@ -1232,7 +1232,7 @@ const MatchGame = ({ cards, onClose }) => {
             className="h-full rounded-full transition-all duration-1000 ease-linear"
             style={{
               width: `${(time / COUNTDOWN) * 100}%`,
-              background: time <= 5 ? "linear-gradient(90deg,#f87171,#ef4444)" : "linear-gradient(90deg,#2dd4bf,#10b981)",
+              background: time <= 5 ? "linear-gradient(90deg,#F57F72,#CF4838)" : "linear-gradient(90deg,#4ADCC8,#1A8049)",
             }}
           />
         </div>
@@ -1257,17 +1257,17 @@ const MatchGame = ({ cards, onClose }) => {
                 />
               );
             }
-            let border = "rgba(148,163,184,.25)";
+            let border = "rgba(139,151,148,.25)";
             let bg = "rgba(255,255,255,.04)";
-            let text = "#e2e8f0";
+            let text = "#DBE0DE";
             if (isWrong) {
-              border = "#f43f5e";
-              bg = "rgba(244,63,94,.15)";
-              text = "#fecdd3";
+              border = "#E8604F";
+              bg = "rgba(232,96,79,.15)";
+              text = "#FFDFDB";
             } else if (isSelected) {
-              border = "#2dd4bf";
-              bg = "rgba(45,212,191,.16)";
-              text = "#ccfbf1";
+              border = "#4ADCC8";
+              bg = "rgba(74,220,200,.16)";
+              text = "#D2F6EF";
             }
             return (
               <button
@@ -1278,7 +1278,7 @@ const MatchGame = ({ cards, onClose }) => {
                   borderColor: border,
                   background: bg,
                   color: text,
-                  boxShadow: isSelected ? "0 0 18px rgba(45,212,191,.4)" : "none",
+                  boxShadow: isSelected ? "0 0 18px rgba(74,220,200,.4)" : "none",
                 }}
               >
                 <span className="line-clamp-3 leading-snug">{tile.text}</span>
@@ -1430,7 +1430,7 @@ const StarField = ({ count = 46, color = "255,255,255" }) => {
   );
 };
 
-const HeartRow = ({ lives, total = 3, color = "#f43f5e" }) => (
+const HeartRow = ({ lives, total = 3, color = "#E8604F" }) => (
   <div className="flex items-center gap-1">
     {Array.from({ length: total }).map((_, i) => (
       <span
@@ -1717,7 +1717,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
       @keyframes flFallIn {0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
       @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
       @keyframes flBeeFloat {0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-10px) rotate(4deg)}}
-      @keyframes flGlowPulse {0%,100%{box-shadow:0 0 18px rgba(56,189,248,.5)}50%{box-shadow:0 0 34px rgba(56,189,248,.85)}}
+      @keyframes flGlowPulse {0%,100%{box-shadow:0 0 18px rgba(74,220,200,.5)}50%{box-shadow:0 0 34px rgba(74,220,200,.85)}}
     `}</style>
   );
 
@@ -1815,7 +1815,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
         {/* laser + nổ */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
           {shots.map((s) => (
-            <line key={s.id} x1="50" y1="100" x2={s.x} y2={s.y} stroke="#67e8f9" strokeWidth="0.5" style={{ animation: "flLaser .5s ease-out forwards" }} />
+            <line key={s.id} x1="50" y1="100" x2={s.x} y2={s.y} stroke="#7FE7D9" strokeWidth="0.5" style={{ animation: "flLaser .5s ease-out forwards" }} />
           ))}
         </svg>
         {blasts.map((b) => (
@@ -1839,10 +1839,10 @@ const TypingGame = ({ cards, deckName, onClose }) => {
                 top: `${w.y}%`,
                 transform: "translate(-50%,-50%)",
                 animation: "flFallIn .3s ease-out",
-                background: isTarget ? "rgba(8,145,178,.35)" : danger ? "rgba(190,18,60,.3)" : "rgba(255,255,255,.08)",
-                border: `1px solid ${isTarget ? "rgba(103,232,249,.8)" : danger ? "rgba(244,63,94,.6)" : "rgba(255,255,255,.15)"}`,
-                boxShadow: isTarget ? "0 0 16px rgba(103,232,249,.5)" : "none",
-                color: danger ? "#fecdd3" : "#fff",
+                background: isTarget ? "rgba(18,167,148,.35)" : danger ? "rgba(172,56,43,.3)" : "rgba(255,255,255,.08)",
+                border: `1px solid ${isTarget ? "rgba(127,231,217,.8)" : danger ? "rgba(232,96,79,.6)" : "rgba(255,255,255,.15)"}`,
+                boxShadow: isTarget ? "0 0 16px rgba(127,231,217,.5)" : "none",
+                color: danger ? "#FFDFDB" : "#fff",
               }}
             >
               {matchLen > 0 ? (
@@ -1888,7 +1888,7 @@ const TypingGame = ({ cards, deckName, onClose }) => {
           autoCorrect="off"
           spellCheck={false}
           placeholder="Gõ từ đang rơi, khớp là bắn…"
-          className="w-full text-center font-mono text-lg tracking-wide py-3 rounded-2xl bg-white/10 border border-cyan-400/40 text-cyan-200 placeholder:text-indigo-300/40 focus:outline-none focus:border-cyan-300"
+          className="fl-dark-input w-full text-center font-mono text-lg tracking-wide py-3 rounded-2xl bg-white/10 border border-cyan-400/40 text-cyan-200 placeholder:text-indigo-300/40 focus:outline-none focus:border-cyan-300"
           style={{ animation: "flGlowPulse 2.6s ease-in-out infinite" }}
         />
       </div>
@@ -2013,7 +2013,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
       @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
       @keyframes flShakeX {0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
       @keyframes flBoxFlip {0%{transform:rotateX(90deg);opacity:0}100%{transform:rotateX(0);opacity:1}}
-      @keyframes flGlowGold {0%,100%{box-shadow:0 0 18px rgba(251,191,36,.4)}50%{box-shadow:0 0 34px rgba(251,191,36,.8)}}
+      @keyframes flGlowGold {0%,100%{box-shadow:0 0 18px rgba(255,217,46,.4)}50%{box-shadow:0 0 34px rgba(255,217,46,.8)}}
     `}</style>
   );
 
@@ -2038,7 +2038,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
           ) : (
             <button
               onClick={start}
-              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg active:scale-95 transition-transform"
+              className="px-10 py-3.5 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900 shadow-lg active:scale-95 transition-transform"
               style={{ animation: "flGlowGold 2.4s ease-in-out infinite" }}
             >
               Bắt đầu
@@ -2065,7 +2065,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
           </div>
           <button
             onClick={start}
-            className="px-10 py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg active:scale-95 transition-transform"
+            className="px-10 py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900 shadow-lg active:scale-95 transition-transform"
           >
             Chơi lại
           </button>
@@ -2079,7 +2079,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
   const meaningHint = (current?.meaning || "").split("\n").find((l) => l.trim()) || "";
   const wordMeaning = pickMeaning(current?.meaning || ""); // nghĩa tiếng Việt (bỏ dòng phiên âm)
   const boxColor =
-    status === "correct" ? "#22c55e" : status === "wrong" ? "#f43f5e" : "#fbbf24";
+    status === "correct" ? "#269E5C" : status === "wrong" ? "#E8604F" : "#FFD92E";
 
   return (
     <div
@@ -2139,7 +2139,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
                 key={i}
                 className="w-9 h-12 sm:w-10 sm:h-14 rounded-lg flex items-center justify-center font-mono text-2xl font-bold uppercase"
                 style={{
-                  background: filled ? "rgba(251,191,36,.15)" : "rgba(255,255,255,.05)",
+                  background: filled ? "rgba(255,217,46,.15)" : "rgba(255,255,255,.05)",
                   border: `2px solid ${isCursor ? boxColor : filled ? boxColor : "rgba(255,255,255,.15)"}`,
                   color: boxColor,
                   boxShadow: isCursor ? `0 0 12px ${boxColor}` : "none",
@@ -2194,7 +2194,7 @@ const SpellingBee = ({ cards, deckName, onClose }) => {
         <button
           onClick={submit}
           disabled={status !== "typing"}
-          className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg active:scale-95 transition-transform disabled:opacity-40"
+          className="w-full max-w-xs py-3 rounded-2xl font-bold text-lg bg-gradient-to-r from-amber-300 to-orange-400 text-slate-900 shadow-lg active:scale-95 transition-transform disabled:opacity-40"
         >
           Kiểm tra
         </button>
@@ -2233,7 +2233,9 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
 
   return (
     <div className="p-4 flex flex-col gap-5">
-      <h2 className="text-xl font-bold text-slate-800">Trò chơi</h2>
+      <h2 className="text-xl font-extrabold text-slate-900">
+        <span className="fl-mark">Trò chơi</span>
+      </h2>
 
       <div className="flex gap-2 overflow-x-auto pb-1">
         {existingDecks.map((d) => (
@@ -2261,7 +2263,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <button
           onClick={() => setActiveGame("quiz")}
           disabled={quizCount < 4}
-          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-blue-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="fl-sticker w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-blue-500 to-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">❓</div>
           <p className="text-lg font-bold">Kiểm tra</p>
@@ -2276,7 +2278,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <button
           onClick={() => setActiveGame("match")}
           disabled={knownCards.length < 2}
-          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="fl-sticker w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-violet-500 to-purple-700 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🎯</div>
           <p className="text-lg font-bold">Ghép thẻ</p>
@@ -2291,7 +2293,7 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <button
           onClick={() => setActiveGame("typing")}
           disabled={typableCount < 3}
-          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-cyan-500 to-blue-700 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="fl-sticker w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-cyan-500 to-blue-700 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🚀</div>
           <p className="text-lg font-bold">Luyện Gõ</p>
@@ -2308,15 +2310,15 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <button
           onClick={() => setActiveGame("spelling")}
           disabled={typableCount < 3}
-          className="w-full p-5 rounded-3xl text-left text-white bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg active:scale-[0.98] transition-transform disabled:opacity-50"
+          className="fl-sticker w-full p-5 rounded-3xl text-left text-slate-900 bg-gradient-to-br from-amber-300 to-orange-400 active:scale-[0.98] transition-transform disabled:opacity-50"
         >
           <div className="text-3xl mb-2">🐝</div>
           <p className="text-lg font-bold">Ong Chính Tả</p>
-          <p className="text-amber-100 text-sm mt-0.5">
+          <p className="text-slate-800 text-sm mt-0.5">
             Nghe phát âm và gõ lại từ với chính tả chuẩn xác
           </p>
           {typableCount < 3 && (
-            <p className="text-yellow-200 text-xs mt-2">
+            <p className="text-slate-900 font-semibold text-xs mt-2">
               Cần ít nhất 3 từ gõ được (chủ đề này có {typableCount})
             </p>
           )}
@@ -2873,7 +2875,7 @@ const BOOKMARKLET_ANCHOR_HTML =
   '<a href="javascript:' +
   encodeURIComponent(BOOKMARKLET_SRC).replace(/"/g, "&quot;") +
   '" draggable="true" onclick="return false" title="KÉO tôi lên thanh bookmark (đừng bấm)" ' +
-  'class="inline-block px-2 py-0.5 bg-amber-500 text-white font-bold rounded-md cursor-move whitespace-nowrap">⚡ FlashLearn Sub</a>';
+  'class="inline-block px-2 py-0.5 bg-amber-300 text-slate-900 font-bold rounded-md cursor-move whitespace-nowrap">⚡ FlashLearn Sub</a>';
 
 function deriveTitleFromFilename(filename) {
   let name = filename.replace(/\.(srt|vtt|json3?|xml|srv3)$/i, "");
@@ -3786,7 +3788,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   return (
     <div className="animate-in fade-in duration-300 pb-24">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold text-slate-800">Chép chính tả</h2>
+        <h2 className="text-lg font-extrabold text-slate-900">
+          <span className="fl-mark">Chép chính tả</span>
+        </h2>
         <button
           onClick={() => {
             setFormError("");
@@ -4361,11 +4365,14 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans pb-24">
+    <div className="fl-app min-h-screen text-slate-800 font-sans pb-28">
       {/* Header */}
-      <header className="bg-white shadow-sm px-4 py-4 mb-6 sticky top-0 z-10 flex justify-between items-center">
-        <h1 className="text-xl sm:text-2xl font-bold text-blue-600 flex items-center gap-2">
-          <BookOpen className="w-6 h-6" /> FlashLearn
+      <header className="bg-white border-b-2 border-slate-900 px-4 py-3 mb-6 sticky top-0 z-10 flex justify-between items-center">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2.5">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-blue-600 text-white">
+            <BookOpen className="w-5 h-5" />
+          </span>
+          <span className="fl-mark">FlashLearn</span>
         </h1>
         {/* Nhóm Nút Export & Trạng thái Sync */}
         <div className="flex items-center gap-3">
@@ -4390,7 +4397,7 @@ export default function App() {
 
           <button
             onClick={exportToCSV}
-            className="p-2 text-slate-500 hover:bg-slate-100 hover:text-green-600 rounded-full transition-colors bg-slate-50"
+            className="p-2 text-slate-900 rounded-full transition-transform hover:-translate-y-0.5 bg-red-100 border-2 border-slate-900"
             title="Xuất file CSV"
           >
             <Download className="w-5 h-5" />
@@ -4403,7 +4410,9 @@ export default function App() {
         {activeTab === "input" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 mb-6">
-              <h2 className="text-lg font-bold mb-4">Thêm Flashcard</h2>
+              <h2 className="text-lg font-extrabold mb-4">
+                <span className="fl-mark">Thêm Flashcard</span>
+              </h2>
 
               <div className="mb-5">
                 <label className="block text-sm font-medium text-slate-500 mb-1">
@@ -4471,7 +4480,7 @@ export default function App() {
                   type="button"
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                     inputMode === "single"
-                      ? "bg-white shadow-sm text-blue-600"
+                      ? "fl-flat bg-amber-300 text-slate-900 font-bold"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                   onClick={() => setInputMode("single")}
@@ -4482,7 +4491,7 @@ export default function App() {
                   type="button"
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${
                     inputMode === "bulk"
-                      ? "bg-white shadow-sm text-blue-600"
+                      ? "fl-flat bg-amber-300 text-slate-900 font-bold"
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                   onClick={() => setInputMode("bulk")}
@@ -4551,7 +4560,7 @@ export default function App() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Thêm từ
                   </button>
@@ -4585,7 +4594,7 @@ export default function App() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2"
                   >
                     <Plus className="w-5 h-5" /> Thêm danh sách
                   </button>
@@ -4811,6 +4820,10 @@ export default function App() {
                         : "transform 0.3s ease-out",
                   }}
                 >
+                  {/* chấm trang trí kiểu sticker quanh thẻ */}
+                  <span className="fl-dot -left-3 top-8 h-4 w-4 bg-amber-300" />
+                  <span className="fl-dot -right-2 -top-3 h-5 w-5 bg-red-300" />
+                  <span className="fl-dot -bottom-3 left-12 h-3 w-3 bg-blue-400" />
                   <div
                     className={`w-full h-full transition-all duration-500 [transform-style:preserve-3d] ${
                       isFlipped ? "[transform:rotateY(180deg)]" : ""
@@ -4901,13 +4914,13 @@ export default function App() {
                   <button
                     onClick={() => handleSwipeAction("unknown")}
                     disabled={isAdvancingCard}
-                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-red-100 rounded-2xl hover:bg-red-50 text-red-500 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 flex flex-col items-center justify-center py-4 bg-red-100 rounded-2xl hover:bg-red-200 text-red-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <X className="w-8 h-8 mb-1" />
                     <span className="text-xs font-bold uppercase tracking-wider">
                       Chưa thuộc
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-1">
+                    <span className="text-[10px] text-slate-600 mt-1">
                       (Vuốt trái)
                     </span>
                   </button>
@@ -4915,13 +4928,13 @@ export default function App() {
                   <button
                     onClick={() => handleSwipeAction("known")}
                     disabled={isAdvancingCard}
-                    className="flex-1 flex flex-col items-center justify-center py-4 bg-white border-2 border-green-100 rounded-2xl hover:bg-green-50 text-green-500 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 flex flex-col items-center justify-center py-4 bg-green-100 rounded-2xl hover:bg-green-200 text-green-700 transition-colors disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Check className="w-8 h-8 mb-1" />
                     <span className="text-xs font-bold uppercase tracking-wider">
                       Đã thuộc
                     </span>
-                    <span className="text-[10px] text-slate-400 mt-1">
+                    <span className="text-[10px] text-slate-600 mt-1">
                       (Vuốt phải)
                     </span>
                   </button>
@@ -5162,115 +5175,117 @@ export default function App() {
       </main>
 
       {/* --- BOTTOM NAVIGATION BAR --- */}
-      <nav className="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-between px-1 items-center pb-safe z-20">
-        <button
-          onClick={() => setActiveTab("input")}
-          className={`flex-1 flex flex-col items-center py-2.5 ${
-            activeTab === "input"
-              ? "text-blue-600 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <Plus className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Thêm từ
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("study")}
-          className={`flex-1 flex flex-col items-center py-2.5 ${
-            activeTab === "study"
-              ? "text-blue-600 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <BookOpen className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Học bài
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("unknown")}
-          className={`flex-1 flex flex-col items-center py-2.5 relative ${
-            activeTab === "unknown"
-              ? "text-red-500 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <div className="relative">
-            <List className="w-5 h-5 mb-1" />
-            {cards.filter((c) => c.status === "unknown").length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white"></span>
-            )}
-          </div>
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Chưa thuộc
-          </span>
-        </button>
-        <button
-          onClick={() => setActiveTab("known")}
-          className={`flex-1 flex flex-col items-center py-2.5 relative ${
-            activeTab === "known"
-              ? "text-green-500 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <CheckCircle className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Đã thuộc
-          </span>
-        </button>
+      <nav className="fixed bottom-0 left-0 w-full px-2 pb-2 pb-safe z-20">
+        <div className="mx-auto max-w-xl flex justify-between items-stretch gap-0.5 rounded-3xl bg-blue-600 px-1.5 py-1.5">
+          <button
+            onClick={() => setActiveTab("input")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 transition-colors ${
+              activeTab === "input"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <Plus className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Thêm từ
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("study")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 transition-colors ${
+              activeTab === "study"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <BookOpen className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Học bài
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("unknown")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 relative transition-colors ${
+              activeTab === "unknown"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <div className="relative">
+              <List className="w-5 h-5 mb-1" />
+              {cards.filter((c) => c.status === "unknown").length > 0 && (
+                <span className="fl-flat absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900"></span>
+              )}
+            </div>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Chưa thuộc
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("known")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 relative transition-colors ${
+              activeTab === "known"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <CheckCircle className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Đã thuộc
+            </span>
+          </button>
 
-        {/* NÚT TAB MỚI: PHÁT ÂM */}
-        <button
-          onClick={() => setActiveTab("pronunciation")}
-          className={`flex-1 flex flex-col items-center py-2.5 relative ${
-            activeTab === "pronunciation"
-              ? "text-blue-600 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <Mic className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Phát âm
-          </span>
-        </button>
+          {/* NÚT TAB MỚI: PHÁT ÂM */}
+          <button
+            onClick={() => setActiveTab("pronunciation")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 relative transition-colors ${
+              activeTab === "pronunciation"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <Mic className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Phát âm
+            </span>
+          </button>
 
-        {/* NÚT TAB MỚI: GAME */}
-        <button
-          onClick={() => setActiveTab("game")}
-          className={`flex-1 flex flex-col items-center py-2.5 relative ${
-            activeTab === "game"
-              ? "text-amber-500 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <Trophy className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Game
-          </span>
-        </button>
+          {/* NÚT TAB MỚI: GAME */}
+          <button
+            onClick={() => setActiveTab("game")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 relative transition-colors ${
+              activeTab === "game"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <Trophy className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Game
+            </span>
+          </button>
 
-        {/* NÚT TAB MỚI: CHÉP CHÍNH TẢ */}
-        <button
-          onClick={() => setActiveTab("dictation")}
-          className={`flex-1 flex flex-col items-center py-2.5 relative ${
-            activeTab === "dictation"
-              ? "text-blue-600 font-bold"
-              : "text-slate-400 hover:text-slate-600"
-          }`}
-        >
-          <Headphones className="w-5 h-5 mb-1" />
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
-            Chép chính tả
-          </span>
-        </button>
+          {/* NÚT TAB MỚI: CHÉP CHÍNH TẢ */}
+          <button
+            onClick={() => setActiveTab("dictation")}
+            className={`flex-1 flex flex-col items-center rounded-2xl py-2 relative transition-colors ${
+              activeTab === "dictation"
+                ? "bg-amber-300 text-slate-900 font-bold"
+                : "text-white/75 hover:text-white"
+            }`}
+          >
+            <Headphones className="w-5 h-5 mb-1" />
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+              Chép chính tả
+            </span>
+          </button>
+        </div>
       </nav>
 
       {/* Badge version build — để nhận biết mỗi khi có bản deploy mới trên Vercel */}
       <div
         title={`Build lúc ${new Date(__BUILD_TIME__).toLocaleString("vi-VN")}`}
-        className="fixed bottom-16 right-1.5 z-30 select-none rounded-full bg-slate-900/70 px-2 py-0.5 text-[9px] font-mono text-white/80"
+        className="fixed bottom-24 right-1.5 z-30 select-none rounded-full bg-slate-900/70 px-2 py-0.5 text-[9px] font-mono text-white/80"
       >
         v{__APP_VERSION__} · {__BUILD_COMMIT__}
       </div>

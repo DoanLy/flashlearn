@@ -16,3 +16,177 @@
     font-size: 14px;
   }
 }
+
+/* ==========================================================================
+   THEME "STICKER" — teal / vàng nắng / coral, viền mực, bóng cứng lệch.
+   Bảng màu đã được ánh xạ trong tailwind.config.js; phần dưới đây lo phần
+   HÌNH DẠNG (viền, bo góc, bóng đổ) cho các bề mặt sáng của app.
+
+   Nguyên tắc quan trọng: mọi selector bên dưới bám theo TOKEN class của
+   Tailwind (`[class~="bg-white"]` chỉ khớp đúng token `bg-white`, KHÔNG khớp
+   `bg-white/10`) nên 5 màn game nền tối (dùng `bg-white/10`, `bg-slate-900`…)
+   không bị ảnh hưởng — chúng chỉ đổi tông màu qua bảng màu mới.
+   ========================================================================== */
+
+:root {
+  --fl-ink: #16211f;
+  --fl-ink-soft: #24302e;
+  --fl-paper: #f1f4f2;
+  --fl-teal: #2e9e93;
+  --fl-sun: #ffe55c;
+  --fl-coral: #fca096;
+  --fl-shadow: 3px 4px 0 0 var(--fl-ink);
+  --fl-shadow-sm: 2px 3px 0 0 var(--fl-ink);
+}
+
+/* Nền giấy chấm bi nhạt cho toàn app (không áp cho game fullscreen) */
+.fl-app {
+  background-color: var(--fl-paper);
+  background-image: radial-gradient(rgba(22, 33, 31, 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+/* --- Bề mặt thẻ trắng → sticker (viền mực + bóng cứng) --------------------- */
+[class~="bg-white"]:is([class*="rounded-"], [class~="rounded"]):not(
+    [class*="border-l-"]
+  ):not(.fl-flat) {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--fl-ink);
+  box-shadow: var(--fl-shadow);
+}
+
+/* Thẻ có vạch màu bên trái (danh sách chưa thuộc / đã thuộc): giữ vạch, thêm viền */
+[class~="bg-white"][class*="border-l-"] {
+  border-top: 2px solid var(--fl-ink);
+  border-right: 2px solid var(--fl-ink);
+  border-bottom: 2px solid var(--fl-ink);
+  box-shadow: var(--fl-shadow);
+}
+
+/* --- Nút/khối màu đặc → sticker ------------------------------------------- */
+:is(
+    [class~="bg-blue-500"],
+    [class~="bg-blue-600"],
+    [class~="bg-blue-700"],
+    [class~="bg-green-500"],
+    [class~="bg-green-600"],
+    [class~="bg-red-500"],
+    [class~="bg-red-600"],
+    [class~="bg-amber-400"],
+    [class~="bg-amber-500"]
+  ):is([class*="rounded-"], [class~="rounded"]):not(.fl-flat) {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--fl-ink);
+  box-shadow: var(--fl-shadow);
+}
+
+/* --- Chip / nút nền nhạt → viền mực mảnh ----------------------------------- */
+:is(
+    [class~="bg-blue-50"],
+    [class~="bg-blue-100"],
+    [class~="bg-red-50"],
+    [class~="bg-red-100"],
+    [class~="bg-green-50"],
+    [class~="bg-green-100"],
+    [class~="bg-amber-50"],
+    [class~="bg-amber-100"],
+    [class~="bg-slate-100"]
+  ):is([class*="rounded-"], [class~="rounded"]):not(.fl-flat) {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--fl-ink);
+}
+
+/* --- Ô nhập liệu: nền trắng, viền mực, focus đổ bóng teal ------------------ */
+:is(input, textarea, select):is([class*="rounded-"], [class~="rounded"]):not(
+    .fl-dark-input
+  ) {
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--fl-ink);
+  background-color: #fff;
+  box-shadow: none;
+}
+
+:is(input, textarea, select):is([class*="rounded-"], [class~="rounded"]):not(
+    .fl-dark-input
+  ):focus {
+  border-color: var(--fl-teal);
+  box-shadow: 3px 3px 0 0 var(--fl-teal);
+  outline: none;
+}
+
+/* --- Hiệu ứng "ấn xuống" cho nút sticker ----------------------------------- */
+button:is(
+    [class~="bg-white"],
+    [class~="bg-blue-500"],
+    [class~="bg-blue-600"],
+    [class~="bg-blue-700"],
+    [class~="bg-green-500"],
+    [class~="bg-green-600"],
+    [class~="bg-red-500"],
+    [class~="bg-red-600"],
+    [class~="bg-amber-400"],
+    [class~="bg-amber-500"]
+  ):is([class*="rounded-"], [class~="rounded"]):not(:disabled):active {
+  transform: translate(2px, 3px);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Tiện ích riêng của theme
+   ========================================================================== */
+
+/* Chữ được "bôi" bút dạ quang vàng */
+.fl-mark {
+  background-image: linear-gradient(
+    transparent 52%,
+    var(--fl-sun) 52%,
+    var(--fl-sun) 94%,
+    transparent 94%
+  );
+  padding-inline: 0.12em;
+}
+
+/* Khối sticker dựng tay (dùng cho header, nav, thẻ gradient…) */
+.fl-sticker {
+  border: 2px solid var(--fl-ink);
+  box-shadow: var(--fl-shadow);
+}
+
+.fl-sticker-sm {
+  border: 2px solid var(--fl-ink);
+  box-shadow: var(--fl-shadow-sm);
+}
+
+/* Nút phụ: viền nét đứt, nền trắng, bo tròn hoàn toàn */
+.fl-dashed {
+  border: 2px dashed var(--fl-ink);
+  border-radius: 9999px;
+  background-color: #fff;
+}
+
+/* Thanh tiến trình dạng viên vàng chạy trên rãnh nét đứt */
+.fl-track {
+  border: 2px dashed var(--fl-ink);
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.fl-track > .fl-track-fill {
+  border-radius: 9999px;
+  background: var(--fl-sun);
+  border: 2px solid var(--fl-ink);
+  height: 100%;
+  margin: -2px 0 0 -2px;
+}
+
+/* Chấm trang trí rải quanh các khối chính */
+.fl-dot {
+  position: absolute;
+  border-radius: 9999px;
+  border: 2px solid var(--fl-ink);
+  pointer-events: none;
+}
