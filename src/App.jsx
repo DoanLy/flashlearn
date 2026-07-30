@@ -32,6 +32,7 @@ import {
   SkipForward,
   Rewind,
   Upload,
+  Eye,
 } from "lucide-react";
 
 // ============================================================================
@@ -2886,6 +2887,25 @@ function deriveTitleFromFilename(filename) {
 
 const cleanDictationWord = (w) => (w || "").toLowerCase().replace(/[^a-z0-9']/g, "");
 
+// Đếm số từ ở ĐẦU câu mà người dùng đã gõ khớp, tính trực tiếp từ ô nhập — nhờ vậy từ gõ
+// đúng sáng xanh ngay, không cần bấm "Kiểm tra".
+// includePartial = tính cả từ đang gõ dở ở cuối ô (chưa có dấu cách sau nó):
+//   - true  → dùng cho phần HIỂN THỊ, để từ xanh lên ngay khi vừa gõ xong ký tự cuối.
+//   - false → dùng khi GHI NHẬN tiến độ, tránh chốt sớm từ mới trùng một phần (vd đáp án là
+//     "a", người dùng đang gõ "and": lúc mới có chữ "a" thì chưa được tính là xong).
+const countMatchedWords = (input, targetWords, includePartial) => {
+  const tokens = (input || "").split(/\s+/).filter(Boolean);
+  if (!tokens.length) return 0;
+  const settled = /\s$/.test(input) ? tokens.length : tokens.length - 1;
+  const limit = includePartial ? tokens.length : settled;
+  let matched = 0;
+  for (let i = 0; i < limit && i < targetWords.length; i++) {
+    if (cleanDictationWord(tokens[i]) !== cleanDictationWord(targetWords[i])) break;
+    matched = i + 1;
+  }
+  return matched;
+};
+
 let ytApiPromise = null;
 function loadYouTubeIframeAPI() {
   if (typeof window === "undefined") return Promise.resolve(null);
@@ -3091,7 +3111,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [wordStatus, setWordStatus] = useState("neutral"); // 'neutral' | 'incorrect'
   const [wrongIndices, setWrongIndices] = useState({});
-  const [hasChecked, setHasChecked] = useState(false);
+  const [revealedIndices, setRevealedIndices] = useState({});
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isPlayingSegment, setIsPlayingSegment] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
@@ -3261,8 +3281,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setConfirmedCount(0);
     setWordStatus("neutral");
     setWrongIndices({});
+    setRevealedIndices({});
     setShowFullAnswer(false);
-    setHasChecked(false);
     setLookupWord(null);
   };
 
@@ -3274,7 +3294,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     if (!seg) return;
     const targetWords = seg.text.trim().split(/\s+/);
     if (confirmedCount >= targetWords.length) return;
-    setHasChecked(true);
 
     const typedWords = userInput.trim().split(/\s+/).filter(Boolean);
     if (!typedWords.length) return;
@@ -3320,6 +3339,27 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const finalizeSegment = (total, wrongCount) => {
     const accuracy = Math.round(((total - wrongCount) / total) * 100);
     updateProgress(currentIndex, accuracy);
+  };
+
+  // Ghi nhận tiến độ ngay trong lúc gõ: từ nào gõ đúng là chốt luôn, gõ đúng hết cả câu thì
+  // tự chấm điểm và mở nút "Câu sau" — không cần bấm "Kiểm tra".
+  // Chỉ tăng, không giảm: từ đã gõ đúng thì xoá bớt chữ cũng không mất trạng thái đúng.
+  const handleTyping = (value) => {
+    setUserInput(value);
+    const seg = activeVideo?.segments?.[currentIndex];
+    if (!seg) return;
+    const targetWords = seg.text.trim().split(/\s+/);
+    if (confirmedCount >= targetWords.length) return;
+    let commit = countMatchedWords(value, targetWords, false);
+    // Từ cuối câu không có dấu cách theo sau — gõ khớp là xong câu, chốt luôn.
+    if (countMatchedWords(value, targetWords, true) === targetWords.length)
+      commit = targetWords.length;
+    if (commit <= confirmedCount) return;
+    setConfirmedCount(commit);
+    setWordStatus("neutral");
+    if (commit === targetWords.length) {
+      finalizeSegment(targetWords.length, Object.keys(wrongIndices).length);
+    }
   };
 
   const goToSegment = (index) => {
@@ -3637,11 +3677,35 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
         {(() => {
           const targetWords = seg.text.trim().split(/\s+/);
           const segmentDone = confirmedCount >= targetWords.length;
+          // Từ đang gõ dở ở cuối ô: khớp là xanh ngay, chưa cần dấu cách.
+          const liveCount = Math.max(
+            confirmedCount,
+            countMatchedWords(userInput, targetWords, true),
+          );
+          // Đã gõ xong (có dấu cách sau) nhiều từ hơn số từ đúng ⇒ đang có từ sai.
+          const typedTokens = userInput.split(/\s+/).filter(Boolean);
+          const settledTokens = /\s$/.test(userInput)
+            ? typedTokens.length
+            : typedTokens.length - 1;
+          const liveMismatch = !segmentDone && settledTokens > confirmedCount;
+          // Bấm mắt để xem trước một từ — tính là lỗi, giống khi bấm "Kiểm tra" mà sai.
+          const revealWord = (i) => {
+            setRevealedIndices((prev) => ({ ...prev, [i]: true }));
+            setWrongIndices((prev) => ({ ...prev, [i]: true }));
+          };
+          const revealAllWords = () => {
+            setShowFullAnswer(true);
+            setWrongIndices((prev) => {
+              const next = { ...prev };
+              for (let i = confirmedCount; i < targetWords.length; i++) next[i] = true;
+              return next;
+            });
+          };
           return (
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
               <textarea
                 value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
+                onChange={(e) => handleTyping(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter") return;
                   e.preventDefault();
@@ -3660,7 +3724,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
               <div className="flex items-center justify-between mt-3">
                 <div className="flex items-center gap-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
-                  {wordStatus === "incorrect" && !segmentDone && (
+                  {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
                     <>
                       <AlertCircle className="w-4 h-4" /> Chưa đúng
                     </>
@@ -3689,47 +3753,63 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                 )}
               </div>
 
-              {hasChecked && (
-                <>
-                  <div className="flex flex-wrap gap-x-1.5 gap-y-1 text-sm leading-relaxed p-3 mt-1 bg-slate-50 rounded-xl">
+              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần bấm Kiểm
+                  tra); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
+                  <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 mt-1 bg-slate-50 rounded-xl">
                     {targetWords.map((w, i) => {
+                      const isDone = i < liveCount;
                       const revealThis =
                         showFullAnswer ||
+                        revealedIndices[i] ||
                         (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
-                      const visible = i < confirmedCount || revealThis;
-                      if (!visible) {
-                        return (
-                          <span key={i} className="text-slate-300 tracking-widest">
-                            {"*".repeat(w.length)}
-                          </span>
-                        );
-                      }
-                      const colorCls =
-                        i < confirmedCount
-                          ? wrongIndices[i]
-                            ? "text-amber-600"
-                            : "text-slate-500"
-                          : "text-green-600 font-bold";
-                      // Chỉ từ có chữ cái mới bấm tra nghĩa được (bỏ qua "7.", "8." ...).
-                      if (!/[a-z]/i.test(w)) {
-                        return (
-                          <span key={i} className={colorCls}>
-                            {w}
-                          </span>
-                        );
-                      }
+                      const visible = isDone || revealThis;
+                      const hasLetters = /[a-z]/i.test(w);
+                      const boxCls = !visible
+                        ? "bg-white border-slate-200 text-slate-400"
+                        : wrongIndices[i]
+                          ? "bg-amber-50 border-amber-300 text-amber-700"
+                          : isDone
+                            ? "bg-green-50 border-green-400 text-green-700"
+                            : "bg-white border-slate-300 text-slate-600";
                       return (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setLookupWord(w)}
-                          className={`${colorCls} hover:underline decoration-dotted underline-offset-2 cursor-pointer`}
-                        >
-                          {w}
-                        </button>
+                        <div key={i} className="flex flex-col items-center gap-0.5">
+                          {!visible && hasLetters ? (
+                            <button
+                              type="button"
+                              onClick={() => revealWord(i)}
+                              title="Hiện từ này (tính là lỗi)"
+                              className="text-slate-400 hover:text-blue-600"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span className="h-3.5" />
+                          )}
+                          {visible && hasLetters ? (
+                            <button
+                              type="button"
+                              onClick={() => setLookupWord(w)}
+                              title="Bấm để tra nghĩa"
+                              className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
+                            >
+                              {w}
+                            </button>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} ${
+                                visible ? "" : "tracking-widest"
+                              }`}
+                            >
+                              {visible ? w : "*".repeat(w.length)}
+                            </span>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
+                  <p className="text-[11px] text-slate-400 mt-1.5">
+                    Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
+                  </p>
 
                   {lookupWord && (
                     <WordMeaningCard
@@ -3740,6 +3820,16 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                     />
                   )}
 
+                  {!showFullAnswer && !segmentDone && (
+                    <button
+                      type="button"
+                      onClick={revealAllWords}
+                      className="w-full mt-3 py-2 text-sm font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-xl hover:bg-amber-100"
+                    >
+                      Hiện tất cả các từ
+                    </button>
+                  )}
+
                   <div className="flex flex-col gap-1.5 mt-3">
                     <label className="flex items-center gap-2 text-xs text-slate-500">
                       <input
@@ -3747,19 +3837,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                         checked={showAnswerImmediately}
                         onChange={(e) => setShowAnswerImmediately(e.target.checked)}
                       />
-                      Hiện đáp án ngay khi gõ sai
-                    </label>
-                    <label className="flex items-center gap-2 text-xs text-slate-500">
-                      <input
-                        type="checkbox"
-                        checked={showFullAnswer}
-                        onChange={(e) => setShowFullAnswer(e.target.checked)}
-                      />
-                      Hiện toàn bộ đáp án
+                      Hiện đáp án ngay khi bấm "Kiểm tra" mà sai
                     </label>
                   </div>
-                </>
-              )}
             </div>
           );
         })()}

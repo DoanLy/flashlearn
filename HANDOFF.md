@@ -21,7 +21,52 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-28) — v1.14.1: fix 3 lỗi CHIỀU CAO sau khi responsive
+## Phiên làm việc gần nhất (2026-07-30) — v1.15.0: Chép chính tả chấm đúng/sai NGAY khi gõ
+
+User gửi ảnh mẫu (app khác) và yêu cầu: **gõ đúng từ nào thì phải biết ngay, không cần bấm
+"Kiểm tra"**. Trước đây bảng đáp án chỉ hiện SAU lần bấm "Kiểm tra" đầu tiên (state
+`hasChecked`), nên người học gõ xong cả câu vẫn phải bấm mới biết đúng hay sai.
+
+Tất cả nằm trong `DictationCoach` (`src/App.jsx`):
+
+1. **Helper `countMatchedWords(input, targetWords, includePartial)`** (cạnh
+   `cleanDictationWord`) — đếm số từ ở ĐẦU câu đã gõ khớp, dừng ở từ sai đầu tiên.
+   `includePartial` là điểm cốt lõi:
+   - `true` → tính cả từ đang gõ dở ở cuối ô (chưa có dấu cách sau). Dùng cho **hiển thị**,
+     để từ xanh lên ngay khi vừa gõ ký tự cuối (giống ảnh mẫu: con trỏ ngay sau "at" mà "at"
+     đã xanh).
+   - `false` → chỉ tính các từ đã "chốt" (có dấu cách theo sau). Dùng khi **ghi nhận tiến độ**
+     (`confirmedCount`), tránh chốt sớm từ trùng một phần: đáp án là "a" mà người dùng đang gõ
+     "and" thì lúc mới có chữ "a" KHÔNG được tính là xong — nếu chốt sớm thì `confirmedCount`
+     (chỉ tăng, không giảm) sẽ khoá sai vĩnh viễn.
+   - Từ CUỐI câu không có dấu cách theo sau ⇒ xử lý riêng: nếu bản `includePartial=true` khớp
+     hết cả câu thì chốt luôn cả câu.
+2. **`handleTyping(value)`** thay `setUserInput` trực tiếp trong `onChange` của textarea: vừa
+   set input, vừa chốt `confirmedCount` và tự `finalizeSegment` khi gõ đúng hết câu (tự chấm
+   điểm, ẩn nút "Kiểm tra", mở "Câu sau"). **Cố ý KHÔNG dùng `useEffect`** — eslint rule
+   `react-hooks/set-state-in-effect` cấm setState đồng bộ trong effect, và tính từ event
+   handler cũng đỡ một vòng render.
+3. **Bảng từ luôn hiện** (bỏ hẳn state `hasChecked`), mỗi từ là một ô có viền:
+   - chưa gõ → `bg-white` + `*` đúng số ký tự + icon mắt phía trên để xem trước từ đó;
+   - gõ đúng → `bg-green-50 border-green-400`;
+   - sai / đã bấm xem trước → `bg-amber-50 border-amber-300`.
+   Bấm vào ô đã hiện vẫn tra nghĩa được như trước (`WordMeaningCard`).
+4. **Xem trước bị tính là lỗi** (state mới `revealedIndices`, đồng thời set `wrongIndices`) —
+   có dòng nhắc nhỏ dưới bảng. Checkbox "Hiện toàn bộ đáp án" cũ đổi thành nút
+   **"Hiện tất cả các từ"**, bấm là mark tất cả từ chưa gõ thành lỗi (giống ảnh mẫu).
+   Checkbox còn lại đổi nhãn cho rõ: "Hiện đáp án ngay khi bấm Kiểm tra mà sai".
+5. **"Chưa đúng" cũng hiện live**: `liveMismatch` = số từ đã chốt (có dấu cách) > `confirmedCount`.
+   Nhưng live sai thì **không** tự lộ đáp án — muốn lộ phải bấm "Kiểm tra" (có tính lỗi), nếu
+   không thì được xem đáp án miễn phí.
+
+**Đã test thật** (vite dev :5180, bơm video giả vào localStorage): gõ "look at" → 2 ô xanh
+ngay, chưa bấm gì; gõ "zzz" → "Chưa đúng" hiện ngay; gõ hết câu đúng → "Xong câu này · 100%"
+tự nhảy; bấm mắt 1 từ rồi gõ đúng cả câu → 83% (5/6), TB 92%. Lưu ý khi test bằng browser
+pane: `computer type` OK nhưng `key BackSpace`/`ctrl+a` KHÔNG tới được React — phải set giá
+trị bằng native setter của `HTMLTextAreaElement.prototype.value` rồi `dispatchEvent(new
+Event('input',{bubbles:true}))`, và đọc DOM lại Ở LƯỢT SAU vì React render bất đồng bộ.
+
+## Phiên trước (2026-07-28) — v1.14.1: fix 3 lỗi CHIỀU CAO sau khi responsive
 
 User báo 3 lỗi ngay sau v1.14.0, **cả 3 đều là chiều cao chứ không phải chiều ngang** —
 v1.14.0 mới chỉ lo chiều ngang. **Bài học chung: thanh nav là `fixed` cao ~72px + `pb-2`,
