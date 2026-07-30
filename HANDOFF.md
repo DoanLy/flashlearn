@@ -21,7 +21,56 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-30) — v1.15.0: Chép chính tả chấm đúng/sai NGAY khi gõ
+## Phiên làm việc gần nhất (2026-07-30) — v1.16.0: Layout game Ghép thẻ + hướng dẫn nhập hàng loạt
+
+User báo "layout của game ghép thẻ chưa hợp lý" và "UI chỗ thêm từ hàng loạt bị xấu text".
+
+### 1. `MatchGame` — đổi từ lưới xáo trộn sang 2 cột Từ | Nghĩa
+
+Trước: 10 ô (5 từ + 5 nghĩa) trộn lẫn vào `grid-cols-2 sm:grid-cols-3`, mọi ô cùng style,
+cùng `min-h-[92px]`, `max-w-4xl`, khu vực lưới `overflow-y-auto`. Hệ quả:
+
+- Không phân biệt được ô nào là từ, ô nào là nghĩa → phải đọc cả 10 ô mới bắt đầu chơi được.
+- Từ tiếng Anh 1–2 chữ và nghĩa tiếng Việt vài chục ký tự dùng chung 1 khổ ô → ô từ thừa chỗ,
+  ô nghĩa bị `line-clamp-3` cắt chữ.
+- 10 ô / 3 cột trên desktop → hàng cuối lẻ 1 ô.
+- Ghép xong ô để lại lỗ trống nguyên cỡ 92px gần như vô hình.
+- Lưới cuộn dọc được, mà game đang đếm ngược 20s thì không ai kịp cuộn.
+
+Sau (đều nằm trong `MatchGame`, `src/App.jsx`):
+
+- `COLS_CLASS` (const module-level) = `grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]` — cột nghĩa
+  rộng gấp 1.4 cột từ. Có 2 nhãn nhỏ "TỪ" (teal) / "NGHĨA" (amber) phía trên.
+- `tiles` vẫn shuffle như cũ, sau đó tách thành `wordCells`/`meaningCells` bằng filter theo
+  `type` **và giữ lại index gốc** để `handleTile(idx)` không phải sửa. Vì tách từ mảng đã xáo
+  nên thứ tự trong mỗi cột vẫn ngẫu nhiên và 2 cột không thẳng hàng theo cặp.
+- Lưới là `min-h-0 flex-1 auto-rows-fr` với đúng 5 hàng ⇒ chia hết chiều cao còn lại, **không
+  còn cuộn**. Đã đo: 1280×720 hàng cao 112px, 375×812 cao 131px, 1024×560 cao 80px — cả 3 đều
+  vừa viewport, `scrollHeight == innerHeight`, không ô nào bị cắt chữ.
+- Ô từ: `justify-center`, `font-bold`, `line-clamp-2`. Ô nghĩa: `justify-start text-left`,
+  `line-clamp-4` (nghĩa dài đọc trái sang phải dễ hơn là canh giữa).
+- Ô đã ghép **không bị xoá khỏi lưới** — giữ nguyên chỗ (tránh các ô còn lại nhảy vị trí giữa
+  lúc đua thời gian), chỉ đổi thành khung nét đứt xanh có dấu ✓. Bỏ keyframe `flTileMatch`.
+- `handleTile`: bấm 2 ô **cùng cột** giờ chỉ là đổi lựa chọn, không tính ghép sai (trước đây
+  mất streak oan). Chỉ ô khác cột mới chấm đúng/sai.
+
+### 2. Hướng dẫn ở form "Hàng loạt"
+
+Đoạn hint cũ là 1 câu dài nhồi thẻ `<code>` giữa câu (`Từ vựng: / Phiên âm: / Nghĩa của từ: /
+Ví dụ:`) — trong cột hẹp ~245px nó ngắt dòng ngay giữa khối code, chữ `text-slate-400` lại quá
+nhạt. Đổi thành một khối `bg-slate-50` viền nhạt: 4 nhãn mỗi nhãn 1 dòng dạng chip
+(`flex items-baseline` + `shrink-0` nên chip không bao giờ bị cắt), kèm chú thích
+bắt buộc / để trống được, và dòng cuối nói rõ dấu `&` phân cách. Đã đo: 5 chip đều
+`getClientRects().length === 1`, không tràn ngang.
+
+**Lưu ý test:** Browser pane không chụp được screenshot khi pane bị ẩn, và `element.click()`
+bằng javascript_tool tạo event `isTrusted=false` **thường không tới được onClick của React**
+(state `selected` vẫn null dù listener DOM đã bắn). Cách kiểm chứng dùng được: đọc thẳng fiber
+`el[__reactFiber$...]` → leo `.return` tới `MatchGame` → đi chuỗi `memoizedState` để xem
+phase/tiles/selected/matchedIds. Nhớ đừng `JSON.stringify` hook `sessionQueueRef` — nó chứa
+cả nghìn thẻ, log nổ ngay.
+
+## Phiên trước (2026-07-30) — v1.15.0: Chép chính tả chấm đúng/sai NGAY khi gõ
 
 User gửi ảnh mẫu (app khác) và yêu cầu: **gõ đúng từ nào thì phải biết ngay, không cần bấm
 "Kiểm tra"**. Trước đây bảng đáp án chỉ hiện SAU lần bấm "Kiểm tra" đầu tiên (state

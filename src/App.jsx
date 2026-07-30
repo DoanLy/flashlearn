@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   Plus,
@@ -975,8 +975,12 @@ const QuizGame = ({ cards, onClose }) => {
 };
 
 // ============================================================================
-// COMPONENT: MatchGame (Ghép thẻ — chạm từ và nghĩa của nó để nối)
+// COMPONENT: MatchGame (Ghép thẻ — chạm từ ở cột trái rồi nghĩa của nó ở cột phải)
 // ============================================================================
+// Cột "nghĩa" rộng hơn cột "từ": từ tiếng Anh thường chỉ 1–2 chữ còn nghĩa tiếng Việt
+// có thể dài mấy chục ký tự, chia đều 50/50 thì ô từ thừa chỗ mà ô nghĩa bị cắt chữ.
+const COLS_CLASS = "grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]";
+
 const MatchGame = ({ cards, onClose }) => {
   const PAIRS = Math.min(5, cards.length);
   const COUNTDOWN = 20;
@@ -1062,7 +1066,12 @@ const MatchGame = ({ cards, onClose }) => {
     }
 
     const selTile = tiles[selected];
-    if (selTile.pairId === tile.pairId && selTile.type !== tile.type) {
+    // Bấm 2 ô cùng cột = đổi ý chọn lại, không tính là ghép sai (trước đây bị mất streak).
+    if (selTile.type === tile.type) {
+      setSelected(idx);
+      return;
+    }
+    if (selTile.pairId === tile.pairId) {
       const newMatched = new Set(matchedIds);
       newMatched.add(tile.pairId);
       setMatchedIds(newMatched);
@@ -1102,7 +1111,6 @@ const MatchGame = ({ cards, onClose }) => {
     <style>{`
       @keyframes flStarTwinkle {0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
       @keyframes flPopIn {0%{transform:scale(.5);opacity:0}60%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
-      @keyframes flTileMatch {0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(.6);opacity:0}}
       @keyframes flGlowTeal {0%,100%{box-shadow:0 0 16px rgba(46,158,147,.4)}50%{box-shadow:0 0 32px rgba(46,158,147,.8)}}
     `}</style>
   );
@@ -1116,7 +1124,7 @@ const MatchGame = ({ cards, onClose }) => {
           <div className="text-6xl" style={{ animation: "flPopIn .5s ease-out" }}>🧩</div>
           <div>
             <h2 className="text-2xl font-extrabold tracking-tight">Ghép thẻ</h2>
-            <p className="text-emerald-200/80 text-sm mt-1">Chạm từ và nghĩa của nó để nối · Đua thời gian</p>
+            <p className="text-emerald-200/80 text-sm mt-1">Chạm từ ở cột trái, rồi chạm nghĩa của nó ở cột phải</p>
           </div>
           <div className="px-4 py-2 rounded-full bg-white/10 border border-white/15 text-sm text-emerald-100">
             {cards.length} từ đã thuộc · {PAIRS} cặp/vòng
@@ -1199,6 +1207,74 @@ const MatchGame = ({ cards, onClose }) => {
     );
   }
 
+  // Tách lưới thành 2 cột theo type, giữ lại index gốc trong `tiles` để handleTile
+  // vẫn nhận đúng ô. `tiles` đã shuffle nên thứ tự trong mỗi cột cũng đã ngẫu nhiên.
+  const wordCells = tiles
+    .map((tile, idx) => ({ tile, idx }))
+    .filter((c) => c.tile.type === "word");
+  const meaningCells = tiles
+    .map((tile, idx) => ({ tile, idx }))
+    .filter((c) => c.tile.type === "meaning");
+  const rows = wordCells.map((wordCell, i) => [wordCell, meaningCells[i]]);
+
+  // Ô đã ghép KHÔNG bị xoá khỏi lưới — giữ nguyên chỗ để các ô còn lại không nhảy
+  // vị trí giữa lúc đang đua thời gian, chỉ đổi thành khung nét đứt có dấu ✓.
+  const renderTile = (cell) => {
+    if (!cell) return <div />;
+    const { tile, idx } = cell;
+    const isWord = tile.type === "word";
+    if (matchedIds.has(tile.pairId)) {
+      return (
+        <div
+          key={tile.id}
+          className="flex min-h-0 items-center justify-center rounded-2xl border-2 border-dashed border-emerald-400/25 bg-emerald-400/[.06]"
+        >
+          <span
+            className="text-lg text-emerald-300/70"
+            style={{ animation: "flPopIn .4s ease-out" }}
+          >
+            ✓
+          </span>
+        </div>
+      );
+    }
+    const isSelected = selected === idx;
+    const isWrong = wrongPair?.includes(idx);
+    let border = isWord ? "rgba(94,234,212,.28)" : "rgba(252,211,77,.26)";
+    let bg = "rgba(255,255,255,.05)";
+    let text = "#DBE0DE";
+    if (isWrong) {
+      border = "#E8604F";
+      bg = "rgba(232,96,79,.15)";
+      text = "#FFDFDB";
+    } else if (isSelected) {
+      border = "#4ADCC8";
+      bg = "rgba(74,220,200,.16)";
+      text = "#D2F6EF";
+    }
+    return (
+      <button
+        key={tile.id}
+        onClick={() => handleTile(idx)}
+        className={`flex min-h-0 items-center overflow-hidden rounded-2xl border-2 px-2.5 py-2 transition-all active:scale-95 sm:px-3 ${
+          isWord
+            ? "justify-center text-center text-sm font-bold sm:text-base"
+            : "justify-start text-left text-[13px] font-medium sm:text-sm"
+        }`}
+        style={{
+          borderColor: border,
+          background: bg,
+          color: text,
+          boxShadow: isSelected ? "0 0 18px rgba(74,220,200,.4)" : "none",
+        }}
+      >
+        <span className={`leading-snug ${isWord ? "line-clamp-2" : "line-clamp-4"}`}>
+          {tile.text}
+        </span>
+      </button>
+    );
+  };
+
   // phase playing
   return (
     <div className={`fixed inset-0 z-50 flex flex-col overflow-hidden text-white select-none ${wrapBg}`}>
@@ -1242,50 +1318,27 @@ const MatchGame = ({ cards, onClose }) => {
         </div>
       </div>
 
-      {/* Lưới thẻ */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-4 py-4">
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-4xl mx-auto content-start">
-          {tiles.map((tile, idx) => {
-            const isMatched = matchedIds.has(tile.pairId);
-            const isSelected = selected === idx;
-            const isWrong = wrongPair?.includes(idx);
-            if (isMatched) {
-              return (
-                <div
-                  key={tile.id}
-                  className="min-h-[92px] rounded-2xl border border-emerald-500/20 bg-emerald-500/5"
-                  style={{ animation: "flTileMatch .5s ease-out forwards" }}
-                />
-              );
-            }
-            let border = "rgba(139,151,148,.25)";
-            let bg = "rgba(255,255,255,.04)";
-            let text = "#DBE0DE";
-            if (isWrong) {
-              border = "#E8604F";
-              bg = "rgba(232,96,79,.15)";
-              text = "#FFDFDB";
-            } else if (isSelected) {
-              border = "#4ADCC8";
-              bg = "rgba(74,220,200,.16)";
-              text = "#D2F6EF";
-            }
-            return (
-              <button
-                key={tile.id}
-                onClick={() => handleTile(idx)}
-                className="min-h-[92px] rounded-2xl border-2 flex items-center justify-center p-3 text-center text-sm sm:text-base font-semibold transition-all active:scale-95"
-                style={{
-                  borderColor: border,
-                  background: bg,
-                  color: text,
-                  boxShadow: isSelected ? "0 0 18px rgba(74,220,200,.4)" : "none",
-                }}
-              >
-                <span className="line-clamp-3 leading-snug">{tile.text}</span>
-              </button>
-            );
-          })}
+      {/* Lưới thẻ: cột trái = từ tiếng Anh, cột phải = nghĩa. Hai cột đã được xáo
+          độc lập (tiles xáo sẵn rồi mới tách theo type), nên vẫn phải suy nghĩ để
+          ghép — nhưng không còn phải đọc cả 10 ô mới biết ô nào là từ, ô nào nghĩa. */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2 sm:px-4 sm:pb-4">
+        <div className="mx-auto flex h-full w-full min-h-0 max-w-3xl flex-col gap-1.5">
+          <div className={`grid ${COLS_CLASS} gap-2 px-1.5 sm:gap-3`}>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300/70">
+              Từ
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300/70">
+              Nghĩa
+            </span>
+          </div>
+          <div className={`grid min-h-0 flex-1 auto-rows-fr ${COLS_CLASS} gap-2 sm:gap-3`}>
+            {rows.map(([wordCell, meaningCell], row) => (
+              <Fragment key={row}>
+                {renderTile(wordCell)}
+                {renderTile(meaningCell)}
+              </Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -4651,17 +4704,35 @@ export default function App() {
                     <label className="block text-sm font-medium text-slate-500 mb-1">
                       Nhập danh sách từ
                     </label>
-                    <p className="text-xs text-slate-400 mb-2 leading-relaxed">
-                      Mỗi từ 4 dòng{" "}
-                      <code className="bg-slate-100 px-1 rounded text-blue-500">
-                        Từ vựng: / Phiên âm: / Nghĩa của từ: / Ví dụ:
-                      </code>
-                      , các từ cách nhau bởi 1 dòng chỉ có{" "}
-                      <code className="bg-slate-100 px-1 rounded text-blue-500">
-                        &amp;
-                      </code>
-                      . Phiên âm/Ví dụ để trống được.
-                    </p>
+                    {/* Trước đây là 1 đoạn văn dài với các thẻ <code> nằm giữa câu — trong
+                        cột hẹp nó bị ngắt dòng ngay giữa khối code, chữ xám nhạt lại khó đọc.
+                        Đổi thành danh sách mỗi nhãn 1 dòng, nhãn không bao giờ bị cắt. */}
+                    <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                      <p className="text-xs font-semibold text-slate-600">
+                        Mỗi từ gồm 4 dòng theo đúng thứ tự:
+                      </p>
+                      <ul className="mt-1.5 space-y-1">
+                        {[
+                          ["Từ vựng:", "bắt buộc"],
+                          ["Phiên âm:", "để trống được"],
+                          ["Nghĩa của từ:", "bắt buộc"],
+                          ["Ví dụ:", "để trống được"],
+                        ].map(([label, note]) => (
+                          <li key={label} className="flex items-baseline gap-2 text-xs">
+                            <code className="shrink-0 rounded bg-white px-1.5 py-0.5 font-mono text-blue-600 ring-1 ring-slate-200">
+                              {label}
+                            </code>
+                            <span className="text-slate-500">{note}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-2 flex items-baseline gap-2 text-xs text-slate-500">
+                        <span>Giữa 2 từ là một dòng chỉ có</span>
+                        <code className="shrink-0 rounded bg-white px-1.5 py-0.5 font-mono text-blue-600 ring-1 ring-slate-200">
+                          &amp;
+                        </code>
+                      </p>
+                    </div>
                     <textarea
                       value={bulkInput}
                       onChange={(e) => setBulkInput(e.target.value)}
