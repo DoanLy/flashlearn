@@ -21,7 +21,49 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-30) — v1.16.1: nạp 3940 từ Oxford A1–B2 vào DB (chỉ dữ liệu, không đụng code app)
+## Phiên làm việc gần nhất (2026-07-30) — v1.16.2: bổ sung Phiên âm + Ví dụ (ngữ cảnh văn phòng) cho 3334 thẻ Oxford
+
+User yêu cầu 4 chủ đề `Từ Vựng Oxford 3000 A1/A2/B1/B2` phải có phiên âm và câu ví dụ, ưu
+tiên ví dụ liên quan **giao tiếp văn phòng**. **Không sửa dòng code nào trong `src/`** — chỉ
+thêm script + dữ liệu, ghi thẳng vào Supabase.
+
+- **Trạng thái DB lúc bắt đầu:** 6690 thẻ, trong đó 3334 thẻ Oxford (A1 **235** · A2 870 ·
+  B1 807 · B2 1422). Tức A1 đã mất 578 thẻ so với phiên trước (836) và A2/B1/B2 mỗi deck mất
+  1–3 thẻ — nhiều khả năng user tự xoá bớt qua UI. **Đã hỏi user và user chọn giữ nguyên 235
+  thẻ A1**, không khôi phục. Muốn khôi phục thì chạy lại `scripts/import-oxford.mjs --apply`
+  (script tự bỏ qua thẻ đã có).
+- **Phiên âm (IPA Anh-Anh, đúng chuẩn Oxford):** `scripts/build-oxford-phonetics.mjs` đọc DB
+  rồi tra 2 nguồn tải về (đã gitignore, KHÔNG commit):
+  1. `scripts/_oxford_full_word.json` — bản scrape Oxford Learner's Dictionaries
+     (github.com/tyypgzl/Oxford-5000-words, 5948 mục có `phonetics.uk`). Khớp theo từ đã bóc
+     chú thích `(…)`, ưu tiên mục **cùng từ loại** rồi **cùng cấp độ CEFR**; nếu thẻ gộp nhiều
+     từ loại đọc khác nhau thì ghi cả 2 (`record` → `/ˈrekɔːd/, /rɪˈkɔːd/`, 24 thẻ như vậy).
+  2. `scripts/_en_UK_ipa.txt` (ipa-dict en_UK) + `--api` gọi dictionaryapi.dev làm dự phòng —
+     **thực tế không cần dùng**: nguồn 1 phủ 3333/3334 thẻ, chỉ `aged` phải điền tay
+     (`PHONETIC_OVERRIDE` trong script fill).
+  - Kết quả trung gian: `scripts/oxford-phonetics.json` (có commit).
+- **Ví dụ:** viết tay 3334 câu, để trong `scripts/oxford-examples/chunk-01..17.txt`, mỗi dòng
+  `a1-0001|English sentence|Bản dịch tiếng Việt` (id ngắn = id thẻ bỏ tiền tố `oxford-`).
+  Ngữ cảnh công sở (họp, báo cáo, hạn chót, khách hàng, nhà cung cấp, hoá đơn…); từ nào không
+  ghép được vào văn phòng (aunt, elephant, snake…) thì dùng câu đời thường nhưng vẫn gắn với
+  công ty nếu tự nhiên.
+- **Script ghi: `scripts/fill-oxford-phonetics-examples.mjs`** (dry-run mặc định, `--apply`
+  mới ghi, tự backup toàn bộ bảng `cards` trước khi ghi):
+  - Giữ NGUYÊN dòng `Nghĩa:` đang có; thẻ nào đã sẵn `Phiên âm:`/`Ví dụ:` thì không đè
+    ⇒ **chạy lại là no-op**. Ghi bằng `upsert` theo `id`, chunk 300 thẻ.
+  - Dòng ví dụ có format `Ví dụ: "English." (Tiếng Việt.)` — giống các deck cũ (City/IELTS).
+  - Nếu file ví dụ có dòng sai định dạng hoặc trùng id, script **dừng ngay** trước khi ghi.
+- **Kết quả thật trên DB:** 3334/3334 thẻ Oxford đúng format 3 dòng
+  `Phiên âm: … / Nghĩa: … / Ví dụ: …`. Tổng số thẻ vẫn 6690 (không tạo/xoá thẻ), 3356 thẻ deck
+  khác **không bị đụng**, `status` giữ nguyên (27 known + 9 unknown). Backup trước khi ghi:
+  `scripts/_backup_cards_1785430663685.json` (đã gitignore).
+- **Đã tự kiểm tra dữ liệu ví dụ trước khi ghi:** 0 dòng sai định dạng, 0 id trùng, 0 câu
+  tiếng Anh trùng nhau, 0 bản dịch thiếu dấu tiếng Việt, không câu nào > 110 ký tự; 19 câu
+  "không chứa đúng chữ gốc" là do chia động từ bất quy tắc (cry→cried, steal→stole…) — cố ý giữ.
+- Dữ liệu nằm ở Supabase nên **không cần deploy** mới thấy; mặt sau thẻ học sẽ tự hiện đủ 3
+  khối Phiên âm / Nghĩa / Ví dụ (logic `parseCardFields` có sẵn từ v1.11.0).
+
+## Phiên trước (2026-07-30) — v1.16.1: nạp 3940 từ Oxford A1–B2 vào DB (chỉ dữ liệu, không đụng code app)
 
 User đưa file `D:\ENGLISH\Oxford_Vocabulary_A1_B2.xlsx` và yêu cầu nạp hết vào 4 chủ đề
 `Từ Vựng Oxford 3000 A1/A2/B1/B2`. **Không sửa dòng code nào trong `src/`** — chỉ thêm script

@@ -1,0 +1,200 @@
+a2-0367|She prepared the whole presentation herself.|Cô ấy tự mình chuẩn bị toàn bộ bài thuyết trình.
+a2-0368|Please do not hide bad news from the manager.|Vui lòng đừng giấu tin xấu với quản lý.
+a2-0369|The shelves are too high for the boxes.|Các kệ quá cao so với những thùng hàng.
+a2-0370|Our office is on a hill outside the city.|Văn phòng của chúng tôi nằm trên một ngọn đồi ngoài thành phố.
+a2-0371|The director answered the client's email himself.|Giám đốc đã tự mình trả lời email của khách hàng.
+a2-0372|This desk is his, and the one by the window is mine.|Bàn này là của anh ấy, còn bàn cạnh cửa sổ là của tôi.
+a2-0373|The new price list hit our small customers hard.|Bảng giá mới đã tác động mạnh đến các khách hàng nhỏ của chúng tôi.
+a2-0374|Our Canadian partners play hockey every winter.|Các đối tác Canada của chúng tôi chơi khúc côn cầu mỗi mùa đông.
+a2-0375|We hold a team meeting every Monday morning.|Chúng tôi tổ chức họp nhóm vào sáng thứ Hai hằng tuần.
+a2-0376|There is a hole in the box, so the goods got wet.|Có một cái lỗ trên thùng nên hàng bị ướt.
+a2-0377|My home office is quieter than the open space.|Văn phòng tại nhà của tôi yên tĩnh hơn khu làm việc chung.
+a2-0378|We still have hope of winning this contract.|Chúng tôi vẫn còn hy vọng giành được hợp đồng này.
+a2-0379|The company signed a huge contract with a bank.|Công ty đã ký một hợp đồng khổng lồ với một ngân hàng.
+a2-0380|Our human resources team handles all contracts.|Bộ phận nhân sự của chúng tôi xử lý mọi hợp đồng.
+a2-0381|He hurt his back while lifting a heavy box.|Anh ấy bị đau lưng khi nâng một thùng nặng.
+a2-0382|This candidate is ideal for the sales position.|Ứng viên này rất lý tưởng cho vị trí kinh doanh.
+a2-0383|We must identify the cause of the delay.|Chúng ta phải xác định nguyên nhân của việc chậm trễ.
+a2-0384|She is ill today and will work from home.|Hôm nay cô ấy bị ốm và sẽ làm việc ở nhà.
+a2-0385|He was away for a week because of illness.|Anh ấy nghỉ một tuần vì bệnh.
+a2-0386|Please use a clear image of the product in the brochure.|Vui lòng dùng hình ảnh rõ nét của sản phẩm trong tài liệu quảng cáo.
+a2-0387|Please reply to the client immediately.|Vui lòng trả lời khách hàng ngay lập tức.
+a2-0388|It is impossible to finish this report today.|Không thể hoàn thành báo cáo này trong hôm nay.
+a2-0389|Delivery is included in the price.|Phí giao hàng đã bao gồm trong giá.
+a2-0390|Everyone must attend, including the new staff.|Mọi người đều phải tham dự, bao gồm cả nhân viên mới.
+a2-0391|Sales increased by ten per cent this year.|Doanh số đã tăng mười phần trăm trong năm nay.
+a2-0392|The team did an incredible job in only two weeks.|Cả nhóm đã làm một việc khó tin chỉ trong hai tuần.
+a2-0393|We asked an independent expert to check the accounts.|Chúng tôi đã nhờ một chuyên gia độc lập kiểm tra sổ sách.
+a2-0394|Each individual on the team has a clear task.|Mỗi cá nhân trong nhóm đều có nhiệm vụ rõ ràng.
+a2-0395|Our company works in the food industry.|Công ty chúng tôi hoạt động trong ngành công nghiệp thực phẩm.
+a2-0396|The Friday meeting is informal, so you can dress casually.|Cuộc họp thứ Sáu khá thân mật nên bạn có thể mặc thoải mái.
+a2-0397|He reported a small injury from the warehouse.|Anh ấy đã báo cáo một chấn thương nhỏ ở nhà kho.
+a2-0398|The factory must keep insects away from the food area.|Nhà máy phải giữ côn trùng tránh xa khu vực thực phẩm.
+a2-0399|Please wait inside the building until the car arrives.|Vui lòng đợi bên trong tòa nhà cho đến khi xe đến.
+a2-0400|The client cannot come, so we will call instead.|Khách hàng không đến được nên thay vào đó chúng tôi sẽ gọi điện.
+a2-0401|Please follow the instructions in the manual.|Vui lòng làm theo hướng dẫn trong sách hướng dẫn.
+a2-0402|The instructor showed us how to use the new machine.|Người hướng dẫn đã chỉ chúng tôi cách dùng cỗ máy mới.
+a2-0403|The technician brought a special instrument to test the line.|Kỹ thuật viên mang một dụng cụ đặc biệt để kiểm tra đường dây.
+a2-0404|She asked several intelligent questions in the meeting.|Cô ấy đã đặt vài câu hỏi thông minh trong cuộc họp.
+a2-0405|We work with international clients every day.|Chúng tôi làm việc với khách hàng quốc tế mỗi ngày.
+a2-0406|Start the report with a short introduction.|Hãy bắt đầu báo cáo bằng một phần giới thiệu ngắn.
+a2-0407|Our engineers invented a faster packing machine.|Các kỹ sư của chúng tôi đã phát minh ra một máy đóng gói nhanh hơn.
+a2-0408|This invention saves the factory two hours a day.|Phát minh này giúp nhà máy tiết kiệm hai tiếng mỗi ngày.
+a2-0409|Thank you for the invitation to your conference.|Cảm ơn lời mời tham dự hội nghị của bạn.
+a2-0410|We invited the client to visit our factory.|Chúng tôi đã mời khách hàng đến thăm nhà máy.
+a2-0411|The project involves three departments.|Dự án này liên quan đến ba phòng ban.
+a2-0412|Please check every item on the invoice.|Vui lòng kiểm tra từng mục trên hóa đơn.
+a2-0413|The machine turns itself off after ten minutes.|Cỗ máy tự tắt sau mười phút.
+a2-0414|I was late because of a traffic jam.|Tôi đến muộn vì kẹt xe.
+a2-0415|A jazz band played at the company dinner.|Một ban nhạc jazz đã chơi trong bữa tiệc của công ty.
+a2-0416|Our client sells jewellery in five countries.|Khách hàng của chúng tôi bán đồ trang sức ở năm quốc gia.
+a2-0417|The manager started the meeting with a joke.|Quản lý đã bắt đầu cuộc họp bằng một câu chuyện cười.
+a2-0418|A journalist called to ask about our new product.|Một nhà báo đã gọi hỏi về sản phẩm mới của chúng tôi.
+a2-0419|Sales jumped after the new advertisement.|Doanh số đã nhảy vọt sau quảng cáo mới.
+a2-0420|She left early to pick up her kids from school.|Cô ấy về sớm để đón con ở trường.
+a2-0421|Long meetings kill the team's energy.|Những cuộc họp dài giết chết năng lượng của cả nhóm.
+a2-0422|The customer is king in our company.|Khách hàng là vua trong công ty chúng tôi.
+a2-0423|He hurt his knee on the stairs at the office.|Anh ấy bị đau đầu gối trên cầu thang ở văn phòng.
+a2-0424|Please use a knife to open the boxes carefully.|Vui lòng dùng dao để mở các thùng hàng một cách cẩn thận.
+a2-0425|Please knock before you enter the manager's room.|Vui lòng gõ cửa trước khi vào phòng quản lý.
+a2-0426|His knowledge of the market helped us win the deal.|Kiến thức của anh ấy về thị trường đã giúp chúng tôi thắng thương vụ.
+a2-0427|The samples are being tested in the lab.|Các mẫu đang được kiểm tra trong phòng thí nghiệm.
+a2-0428|The lady at reception will help you with the visitor pass.|Người phụ nữ ở quầy lễ tân sẽ giúp bạn làm thẻ khách.
+a2-0429|Our team building trip was at a lake near the city.|Chuyến team building của chúng tôi ở một cái hồ gần thành phố.
+a2-0430|The lamp on my desk is broken.|Đèn bàn trên bàn tôi bị hỏng.
+a2-0431|My flight lands at seven in the morning.|Chuyến bay của tôi hạ cánh lúc bảy giờ sáng.
+a2-0432|Please bring your laptop to the meeting.|Vui lòng mang máy tính xách tay đến cuộc họp.
+a2-0433|I finished the report last, after everyone had left.|Tôi hoàn thành báo cáo cuối cùng, sau khi mọi người đã về.
+a2-0434|The training lasts three hours.|Buổi đào tạo kéo dài ba tiếng.
+a2-0435|We can discuss the details at a later meeting.|Chúng ta có thể bàn chi tiết trong một cuộc họp sau.
+a2-0436|There was a lot of laughter at the year-end party.|Đã có rất nhiều tiếng cười trong bữa tiệc cuối năm.
+a2-0437|Our contracts must follow the local law.|Hợp đồng của chúng tôi phải tuân theo luật pháp địa phương.
+a2-0438|Our lawyer will check the contract this week.|Luật sư của chúng tôi sẽ kiểm tra hợp đồng trong tuần này.
+a2-0439|Nobody on this team is lazy.|Không ai trong nhóm này lười biếng cả.
+a2-0440|She will lead the new project.|Cô ấy sẽ dẫn dắt dự án mới.
+a2-0441|A good leader listens to the whole team.|Một người lãnh đạo giỏi lắng nghe cả nhóm.
+a2-0442|The company supports learning at every level.|Công ty hỗ trợ việc học tập ở mọi cấp bậc.
+a2-0443|Please send the file at least one day before the meeting.|Vui lòng gửi tệp ít nhất một ngày trước cuộc họp.
+a2-0444|We invited a professor to give a lecture to our staff.|Chúng tôi đã mời một giáo sư đến giảng bài cho nhân viên.
+a2-0445|There is lemon water in the meeting room.|Có nước chanh trong phòng họp.
+a2-0446|Could you lend me a pen for the meeting?|Bạn cho tôi mượn cây bút để họp được không?
+a2-0447|We spent less money on travel this year.|Chúng tôi đã chi ít tiền hơn cho việc đi lại trong năm nay.
+a2-0448|Customer satisfaction reached a very high level.|Mức độ hài lòng của khách hàng đạt mức rất cao.
+a2-0449|Working from home changed my lifestyle.|Làm việc tại nhà đã thay đổi lối sống của tôi.
+a2-0450|Take the lift to the fifth floor.|Hãy đi thang máy lên tầng năm.
+a2-0451|Please light the room before the client arrives.|Vui lòng thắp sáng căn phòng trước khi khách hàng đến.
+a2-0452|This laptop is light enough to carry every day.|Chiếc máy tính này đủ nhẹ để mang theo mỗi ngày.
+a2-0453|The client is likely to sign this week.|Khách hàng có khả năng sẽ ký trong tuần này.
+a2-0454|I sent you a link to the meeting.|Tôi đã gửi bạn một đường liên kết vào cuộc họp.
+a2-0455|A good listener makes a good manager.|Người biết lắng nghe sẽ là một quản lý giỏi.
+a2-0456|We have little time before the deadline.|Chúng ta có ít thời gian trước hạn chót.
+a2-0457|Please lock the office door when you leave.|Vui lòng khóa cửa văn phòng khi bạn về.
+a2-0458|Could you take a look at my report?|Bạn xem qua báo cáo của tôi được không?
+a2-0459|The lorry with our goods arrives at noon.|Chiếc xe tải chở hàng của chúng ta đến lúc trưa.
+a2-0460|The file was lost when the computer crashed.|Tệp đã bị mất khi máy tính hỏng.
+a2-0461|The machines in the factory are very loud.|Máy móc trong nhà máy rất ồn.
+a2-0462|Please do not speak loudly in the open office.|Vui lòng đừng nói to trong khu văn phòng chung.
+a2-0463|What a lovely idea for the team event!|Thật là một ý tưởng đáng yêu cho sự kiện của nhóm!
+a2-0464|Our costs are low compared with our competitors.|Chi phí của chúng tôi thấp so với các đối thủ.
+a2-0465|Good luck with your presentation tomorrow.|Chúc may mắn với bài thuyết trình ngày mai của bạn.
+a2-0466|We are lucky to have such a strong team.|Chúng tôi may mắn có một đội ngũ mạnh như vậy.
+a2-0467|Please check the mail at reception every morning.|Vui lòng kiểm tra thư ở quầy lễ tân mỗi sáng.
+a2-0468|Price is a major problem for this client.|Giá là một vấn đề chính đối với khách hàng này.
+a2-0469|Most of the engineers in the factory are male.|Phần lớn kỹ sư trong nhà máy là nam.
+a2-0470|She manages a team of ten people.|Cô ấy quản lý một nhóm mười người.
+a2-0471|Please ask your manager to approve the request.|Vui lòng nhờ quản lý duyệt yêu cầu này.
+a2-0472|He answered the complaint in a polite manner.|Anh ấy đã trả lời khiếu nại theo cách lịch sự.
+a2-0473|Please mark the urgent items on the list.|Vui lòng đánh dấu những mục gấp trong danh sách.
+a2-0474|She is going to marry a colleague from our Hanoi office.|Cô ấy sắp kết hôn với một đồng nghiệp ở văn phòng Hà Nội.
+a2-0475|We changed the material to reduce the cost.|Chúng tôi đã đổi vật liệu để giảm chi phí.
+a2-0476|Mathematics is important for the finance team.|Toán học rất quan trọng với nhóm tài chính.
+a2-0477|You need good maths to work in accounting.|Bạn cần giỏi toán để làm kế toán.
+a2-0478|There is one more matter to discuss.|Còn một vấn đề nữa cần thảo luận.
+a2-0479|The client may ask for a discount.|Khách hàng có thể sẽ xin giảm giá.
+a2-0480|The media reported our new product this morning.|Truyền thông đã đưa tin về sản phẩm mới của chúng tôi sáng nay.
+a2-0481|The company pays for a medical check every year.|Công ty chi trả khám sức khỏe mỗi năm.
+a2-0482|There is basic medicine in the office first aid box.|Có thuốc cơ bản trong hộp sơ cứu của văn phòng.
+a2-0483|I have a bad memory for names, so I write them down.|Tôi có trí nhớ tên kém nên tôi ghi lại.
+a2-0484|You mentioned a discount in your last email.|Bạn đã đề cập đến việc giảm giá trong email trước.
+a2-0485|The frame is made of metal, not plastic.|Khung được làm bằng kim loại, không phải nhựa.
+a2-0486|We use a new method to check quality.|Chúng tôi dùng một phương pháp mới để kiểm tra chất lượng.
+a2-0487|The printer is in the middle of the office.|Máy in ở giữa văn phòng.
+a2-0488|The client might change the delivery date.|Khách hàng có thể sẽ đổi ngày giao hàng.
+a2-0489|Would you mind sending the file again?|Bạn có phiền gửi lại tệp không?
+a2-0490|That laptop is mine.|Chiếc máy tính đó là của tôi.
+a2-0491|There is a mirror next to the meeting room door.|Có một cái gương cạnh cửa phòng họp.
+a2-0492|One page is missing from the contract.|Hợp đồng bị thiếu mất một trang.
+a2-0493|Please send me your mobile number.|Vui lòng gửi tôi số điện thoại di động của bạn.
+a2-0494|The children's brand uses a monkey as its symbol.|Thương hiệu cho trẻ em dùng con khỉ làm biểu tượng.
+a2-0495|We worked until we could see the moon.|Chúng tôi làm việc đến khi nhìn thấy mặt trăng.
+a2-0496|Our customers are mostly small companies.|Khách hàng của chúng tôi chủ yếu là các công ty nhỏ.
+a2-0497|Many staff come to the office by motorcycle.|Nhiều nhân viên đến văn phòng bằng xe máy.
+a2-0498|The movement of goods is tracked by the new system.|Sự di chuyển của hàng hóa được theo dõi bằng hệ thống mới.
+a2-0499|The staff club organises musical events.|Câu lạc bộ nhân viên tổ chức các sự kiện âm nhạc.
+a2-0500|We hired a musician for the company party.|Chúng tôi đã thuê một nhạc công cho bữa tiệc công ty.
+a2-0501|I wrote the whole proposal myself.|Tôi tự viết toàn bộ đề xuất.
+a2-0502|The corridor to the warehouse is very narrow.|Hành lang dẫn đến nhà kho rất hẹp.
+a2-0503|The national market is growing fast.|Thị trường quốc gia đang tăng trưởng nhanh.
+a2-0504|Our products use materials from nature.|Sản phẩm của chúng tôi dùng nguyên liệu từ thiên nhiên.
+a2-0505|The project is nearly finished.|Dự án gần như đã hoàn thành.
+a2-0506|It is necessary to sign both copies.|Việc ký cả hai bản là cần thiết.
+a2-0507|My neck hurts after a long day at the computer.|Cổ tôi đau sau một ngày dài ngồi máy tính.
+a2-0508|There is a need for more staff in customer service.|Có nhu cầu tuyển thêm người cho bộ phận dịch vụ khách hàng.
+a2-0509|Neither supplier can deliver before Friday.|Không nhà cung cấp nào trong hai bên có thể giao trước thứ Sáu.
+a2-0510|I always feel nervous before a big presentation.|Tôi luôn thấy hồi hộp trước một buổi thuyết trình lớn.
+a2-0511|The office network was down for an hour.|Mạng của văn phòng đã sập trong một tiếng.
+a2-0512|The noise from the street makes calls difficult.|Tiếng ồn từ ngoài đường làm việc gọi điện trở nên khó khăn.
+a2-0513|The open office is noisy in the afternoon.|Khu văn phòng chung ồn ào vào buổi chiều.
+a2-0514|None of the suppliers answered our email.|Không nhà cung cấp nào trả lời email của chúng tôi.
+a2-0515|It is normal to feel busy at the end of the quarter.|Cảm thấy bận rộn vào cuối quý là chuyện bình thường.
+a2-0516|I normally start work at eight.|Tôi thường bắt đầu làm việc lúc tám giờ.
+a2-0517|Did you notice the mistake in the invoice?|Bạn có nhận thấy lỗi trong hóa đơn không?
+a2-0518|She reads a novel during her lunch break.|Cô ấy đọc tiểu thuyết trong giờ nghỉ trưa.
+a2-0519|The missing file is nowhere in the shared folder.|Tệp bị mất không có ở đâu trong thư mục dùng chung.
+a2-0520|Please number the pages of the report.|Vui lòng đánh số các trang của báo cáo.
+a2-0521|There are nuts and fruit for the coffee break.|Có các loại hạt và trái cây cho giờ giải lao.
+a2-0522|Our goods cross the ocean by ship.|Hàng của chúng tôi vượt đại dương bằng tàu.
+a2-0523|They offered us a better price for a large order.|Họ đã đề nghị chúng tôi mức giá tốt hơn cho đơn hàng lớn.
+a2-0524|A customs officer checked the shipping documents.|Một viên chức hải quan đã kiểm tra chứng từ vận chuyển.
+a2-0525|The price of oil affects our transport costs.|Giá dầu ảnh hưởng đến chi phí vận chuyển của chúng tôi.
+a2-0526|Please put the boxes onto the shelf.|Vui lòng đặt các thùng lên trên kệ.
+a2-0527|This project is a great opportunity for you.|Dự án này là một cơ hội tuyệt vời cho bạn.
+a2-0528|We have two options: delay the launch or add staff.|Chúng ta có hai lựa chọn: hoãn ra mắt hoặc tăng người.
+a2-0529|It was an ordinary working day, with no surprises.|Đó là một ngày làm việc bình thường, không có gì bất ngờ.
+a2-0530|Our organization has offices in three countries.|Tổ chức của chúng tôi có văn phòng ở ba quốc gia.
+a2-0531|Could you organize the meeting for Thursday?|Bạn tổ chức cuộc họp vào thứ Năm được không?
+a2-0532|Please keep the original invoice for the accountant.|Vui lòng giữ hóa đơn gốc cho kế toán.
+a2-0533|We built the whole system ourselves.|Chúng tôi đã tự mình xây dựng toàn bộ hệ thống.
+a2-0534|The client is waiting outside the meeting room.|Khách hàng đang đợi bên ngoài phòng họp.
+a2-0535|There is a small oven in the office kitchen.|Có một cái lò nướng nhỏ trong bếp văn phòng.
+a2-0536|The company owns two warehouses.|Công ty sở hữu hai nhà kho.
+a2-0537|The owner of the building raised the rent.|Chủ sở hữu tòa nhà đã tăng tiền thuê.
+a2-0538|Please pack the samples for the client visit.|Vui lòng đóng gói các mẫu cho buổi gặp khách hàng.
+a2-0539|He has back pain after sitting all day.|Anh ấy bị đau lưng sau khi ngồi cả ngày.
+a2-0540|A painter is working in the new office this week.|Một thợ sơn đang làm việc ở văn phòng mới tuần này.
+a2-0541|The conference took place in an old palace.|Hội nghị đã diễn ra trong một cung điện cổ.
+a2-0542|He wears smart pants and a shirt to the office.|Anh ấy mặc quần dài lịch sự và áo sơ mi đến văn phòng.
+a2-0543|Staff parking is behind the building.|Chỗ đỗ xe của nhân viên ở phía sau tòa nhà.
+a2-0544|Is there a particular reason for the delay?|Có lý do cụ thể nào cho việc chậm trễ không?
+a2-0545|Could you pass me the report, please?|Bạn chuyền giúp tôi bản báo cáo được không?
+a2-0546|Our client transports passengers between cities.|Khách hàng của chúng tôi vận chuyển hành khách giữa các thành phố.
+a2-0547|It is ten past nine and the meeting has started.|Đã chín giờ mười phút và cuộc họp đã bắt đầu.
+a2-0548|Our software is used to manage patient records.|Phần mềm của chúng tôi được dùng để quản lý hồ sơ bệnh nhân.
+a2-0549|The sales data shows a clear pattern.|Dữ liệu bán hàng cho thấy một khuôn mẫu rõ ràng.
+a2-0550|The company raised our pay this year.|Công ty đã tăng lương cho chúng tôi trong năm nay.
+a2-0551|I need some peace to finish this report.|Tôi cần chút yên tĩnh để hoàn thành báo cáo này.
+a2-0552|The supplier counts every penny in the contract.|Nhà cung cấp tính từng đồng xu trong hợp đồng.
+a2-0553|The price is ten dollars per unit.|Giá là mười đô la mỗi đơn vị.
+a2-0554|Sales grew by five per cent this quarter.|Doanh số đã tăng năm phần trăm trong quý này.
+a2-0555|The team performed very well under pressure.|Cả nhóm đã thực hiện rất tốt dưới áp lực.
+a2-0556|Perhaps we should call the client instead of writing.|Có lẽ chúng ta nên gọi cho khách hàng thay vì viết thư.
+a2-0557|You need permission from your manager to take leave.|Bạn cần sự cho phép của quản lý để nghỉ phép.
+a2-0558|She has a friendly personality, so clients trust her.|Cô ấy có tính cách thân thiện nên khách hàng tin tưởng cô ấy.
+a2-0559|Staff cannot bring pets into the office.|Nhân viên không được mang thú cưng vào văn phòng.
+a2-0560|The company pays for petrol on business trips.|Công ty chi trả tiền xăng trong các chuyến công tác.
+a2-0561|We photographed the new product for the catalogue.|Chúng tôi đã chụp ảnh sản phẩm mới cho cuốn catalogue.
+a2-0562|The job requires physical work in the warehouse.|Công việc đòi hỏi lao động thể chất trong nhà kho.
+a2-0563|He studied physics before becoming an engineer.|Anh ấy học vật lý trước khi trở thành kỹ sư.
+a2-0564|Please pick a date for the training.|Vui lòng chọn một ngày cho buổi đào tạo.
+a2-0565|The pilot announced a delay of thirty minutes.|Phi công thông báo chậm ba mươi phút.
+a2-0566|Our company wants to protect the planet.|Công ty chúng tôi muốn bảo vệ hành tinh này.

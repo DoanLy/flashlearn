@@ -1,0 +1,134 @@
+b2-1292|The insurance does not cover damage from terrorism.|Bảo hiểm không chi trả thiệt hại do khủng bố.
+b2-1293|Airport security protects passengers from terrorists.|An ninh sân bay bảo vệ hành khách khỏi những kẻ khủng bố.
+b2-1294|Testing of the new product takes two weeks.|Việc thử nghiệm sản phẩm mới mất hai tuần.
+b2-1295|Our client prints textbooks for schools.|Khách hàng của chúng tôi in sách giáo khoa cho trường học.
+b2-1296|The theft of a laptop was reported to security.|Vụ trộm một máy tính xách tay đã được báo cho bộ phận an ninh.
+b2-1297|The company pays for a therapist if staff need help.|Công ty chi trả cho nhà trị liệu nếu nhân viên cần giúp đỡ.
+b2-1298|He is back at work after therapy.|Anh ấy đã đi làm lại sau liệu trình điều trị.
+b2-1299|She wrote her thesis about our industry.|Cô ấy đã viết luận án về ngành của chúng tôi.
+b2-1300|We did a thorough check of every invoice.|Chúng tôi đã kiểm tra kỹ lưỡng từng hóa đơn.
+b2-1301|Please read the contract thoroughly.|Vui lòng đọc hợp đồng một cách kỹ lưỡng.
+b2-1302|Cheap imports are a threat to our market.|Hàng nhập giá rẻ là mối đe dọa với thị trường của chúng tôi.
+b2-1303|The client threatened to cancel the contract.|Khách hàng đã đe dọa hủy hợp đồng.
+b2-1304|The report got a thumbs up from the director.|Báo cáo đã được giám đốc giơ ngón tay cái khen ngợi.
+b2-1305|The supplier was late; thus we could not deliver.|Nhà cung cấp đã trễ, do đó chúng tôi không thể giao hàng.
+b2-1306|We timed the whole packing process.|Chúng tôi đã tính giờ toàn bộ quy trình đóng gói.
+b2-1307|The timing of the launch is very important.|Thời điểm ra mắt rất quan trọng.
+b2-1308|There are tissues in every meeting room.|Có khăn giấy trong mọi phòng họp.
+b2-1309|The report is titled "Market Review 2026".|Báo cáo có tiêu đề "Rà soát thị trường 2026".
+b2-1310|The truck can carry ten tons of goods.|Chiếc xe tải có thể chở mười tấn hàng.
+b2-1311|Please keep a polite tone in client emails.|Vui lòng giữ giọng điệu lịch sự trong email gửi khách hàng.
+b2-1312|We export two hundred tonnes of material a year.|Chúng tôi xuất khẩu hai trăm tấn vật liệu mỗi năm.
+b2-1313|This has been a tough quarter for the team.|Đây là một quý khó khăn với cả nhóm.
+b2-1314|The company organised a football tournament for staff.|Công ty đã tổ chức một giải bóng đá cho nhân viên.
+b2-1315|We traced the error back to the supplier.|Chúng tôi đã lần theo lỗi ngược về phía nhà cung cấp.
+b2-1316|You can track your order on our website.|Bạn có thể theo dõi đơn hàng của mình trên trang web của chúng tôi.
+b2-1317|Trading with this market started last year.|Việc giao dịch với thị trường này bắt đầu từ năm ngoái.
+b2-1318|The fire at the factory was a tragedy.|Vụ cháy ở nhà máy là một thảm kịch.
+b2-1319|The accident in the warehouse was tragic.|Tai nạn trong nhà kho thật bi thảm.
+b2-1320|Patience is a useful trait in customer service.|Kiên nhẫn là một nét tính cách hữu ích trong dịch vụ khách hàng.
+b2-1321|Please transfer the payment before Friday.|Vui lòng chuyển khoản thanh toán trước thứ Sáu.
+b2-1322|The new system transformed our whole process.|Hệ thống mới đã biến đổi toàn bộ quy trình của chúng tôi.
+b2-1323|The transition to the new software took a month.|Việc chuyển tiếp sang phần mềm mới mất một tháng.
+b2-1324|The machine transmits data to the control room.|Cỗ máy truyền dữ liệu về phòng điều khiển.
+b2-1325|Transportation costs rose with the fuel price.|Chi phí vận chuyển tăng cùng với giá nhiên liệu.
+b2-1326|We were trapped in a long meeting all afternoon.|Chúng tôi bị kẹt trong một cuộc họp dài suốt buổi chiều.
+b2-1327|Our experienced staff are our real treasure.|Nhân viên giàu kinh nghiệm là kho báu thật sự của chúng tôi.
+b2-1328|We ran a three-month trial of the new system.|Chúng tôi đã chạy thử nghiệm hệ thống mới trong ba tháng.
+b2-1329|The documentary shows a tribe living near the forest.|Bộ phim tài liệu cho thấy một bộ lạc sống gần rừng.
+b2-1330|The complaint triggered a full review.|Khiếu nại đã kích hoạt một cuộc rà soát toàn diện.
+b2-1331|The global market for this product is worth trillions.|Thị trường toàn cầu cho sản phẩm này trị giá hàng nghìn tỷ.
+b2-1332|Be careful not to trip over the cables.|Cẩn thận đừng vấp vào dây cáp.
+b2-1333|Our vehicles are also used to move troops.|Xe của chúng tôi cũng được dùng để chở binh lính.
+b2-1334|Our packaging is tested in tropical conditions.|Bao bì của chúng tôi được thử nghiệm trong điều kiện nhiệt đới.
+b2-1335|Sorry to trouble you, but the client is waiting.|Xin lỗi làm phiền bạn, nhưng khách hàng đang đợi.
+b2-1336|We are truly grateful for your support.|Chúng tôi thật sự biết ơn sự hỗ trợ của bạn.
+b2-1337|Trust between us and the client took years to build.|Niềm tin giữa chúng tôi và khách hàng mất nhiều năm để xây dựng.
+b2-1338|Let me have another try at fixing the printer.|Để tôi thử sửa máy in một lần nữa.
+b2-1339|The company sent aid after the tsunami.|Công ty đã gửi viện trợ sau trận sóng thần.
+b2-1340|Someone was humming a tune in the office.|Ai đó đang ngân nga một giai điệu trong văn phòng.
+b2-1341|The road to the port goes through a tunnel.|Con đường ra cảng đi qua một đường hầm.
+b2-1342|Our ultimate goal is to lead this market.|Mục tiêu cuối cùng của chúng tôi là dẫn đầu thị trường này.
+b2-1343|Ultimately, the client decides the delivery date.|Cuối cùng thì khách hàng là người quyết định ngày giao hàng.
+b2-1344|A third delay would be unacceptable.|Lần chậm trễ thứ ba sẽ là không thể chấp nhận được.
+b2-1345|There is uncertainty about next year's budget.|Có sự không chắc chắn về ngân sách năm sau.
+b2-1346|A worker fell unconscious in the heat.|Một công nhân đã ngất đi vì nóng.
+b2-1347|All machines undergo a safety check every year.|Mọi cỗ máy đều trải qua kiểm tra an toàn hằng năm.
+b2-1348|We undertake to deliver within five days.|Chúng tôi cam kết giao hàng trong vòng năm ngày.
+b2-1349|We had an unexpected order from a new client.|Chúng tôi đã có một đơn hàng bất ngờ từ khách hàng mới.
+b2-1350|The plan unfolded exactly as we expected.|Kế hoạch đã diễn ra đúng như chúng tôi mong đợi.
+b2-1351|It was unfortunate that the client called during the meeting.|Thật không may là khách hàng gọi đúng lúc đang họp.
+b2-1352|Our service is unique in this market.|Dịch vụ của chúng tôi là độc nhất trong thị trường này.
+b2-1353|The new goal united the two departments.|Mục tiêu mới đã đoàn kết hai phòng ban.
+b2-1354|There is real unity in this team.|Có sự đoàn kết thật sự trong nhóm này.
+b2-1355|Good service is a universal need.|Dịch vụ tốt là một nhu cầu phổ quát.
+b2-1356|The new campaign says our product is out of this universe.|Chiến dịch mới nói rằng sản phẩm của chúng tôi ngoài sức tưởng tượng.
+b2-1357|The cause of the error is still unknown.|Nguyên nhân của lỗi vẫn chưa rõ.
+b2-1358|The upper floor is used for meetings.|Tầng phía trên được dùng để họp.
+b2-1359|Costs have moved upwards since January.|Chi phí đã đi lên kể từ tháng Một.
+b2-1360|Most of our customers live in urban areas.|Phần lớn khách hàng của chúng tôi sống ở khu vực đô thị.
+b2-1361|I urge you to reply to the client today.|Tôi thúc giục bạn trả lời khách hàng ngay hôm nay.
+b2-1362|This is an urgent request from the client.|Đây là một yêu cầu khẩn cấp từ khách hàng.
+b2-1363|Data usage in the office rose this month.|Mức sử dụng dữ liệu ở văn phòng đã tăng trong tháng này.
+b2-1364|The old printer is now useless.|Máy in cũ giờ đã vô dụng.
+b2-1365|The offer is valid for thirty days.|Chào giá có hiệu lực trong ba mươi ngày.
+b2-1366|We value long-term relationships with our clients.|Chúng tôi coi trọng mối quan hệ dài hạn với khách hàng.
+b2-1367|There is some variation in quality between batches.|Có chút biến thiên về chất lượng giữa các lô hàng.
+b2-1368|Prices vary from market to market.|Giá thay đổi tùy theo từng thị trường.
+b2-1369|The company has a vast network of suppliers.|Công ty có một mạng lưới nhà cung cấp rộng lớn.
+b2-1370|The venue for the conference is a hotel downtown.|Địa điểm tổ chức hội nghị là một khách sạn ở trung tâm.
+b2-1371|The chart uses a vertical bar for each month.|Biểu đồ dùng một cột thẳng đứng cho mỗi tháng.
+b2-1372|That is the very point the client made.|Đó chính là điểm mà khách hàng đã nêu.
+b2-1373|Please send the file via email.|Vui lòng gửi tệp qua email.
+b2-1374|Winning this tender was a big victory.|Thắng gói thầu này là một chiến thắng lớn.
+b2-1375|From the client's viewpoint, the price is high.|Từ góc nhìn của khách hàng, giá này cao.
+b2-1376|Violence at work is never acceptable.|Bạo lực ở nơi làm việc không bao giờ được chấp nhận.
+b2-1377|We held a virtual meeting with the client.|Chúng tôi đã họp ảo với khách hàng.
+b2-1378|I need a visa for the business trip.|Tôi cần thị thực cho chuyến công tác.
+b2-1379|The safety sign must be visible from the door.|Biển an toàn phải nhìn thấy được từ ngoài cửa.
+b2-1380|The director shared her vision for the company.|Giám đốc đã chia sẻ tầm nhìn của bà về công ty.
+b2-1381|The presentation needs more visual material.|Bài thuyết trình cần thêm tài liệu trực quan.
+b2-1382|Good communication is vital in this project.|Giao tiếp tốt là điều sống còn trong dự án này.
+b2-1383|Our client produces vitamin tablets.|Khách hàng của chúng tôi sản xuất viên vitamin.
+b2-1384|Please turn down the volume during the call.|Vui lòng giảm âm lượng trong cuộc gọi.
+b2-1385|Joining the charity run is voluntary.|Việc tham gia chạy từ thiện là tự nguyện.
+b2-1386|Voting on the new plan takes place tomorrow.|Việc bỏ phiếu về kế hoạch mới diễn ra vào ngày mai.
+b2-1387|The company raised wages this year.|Công ty đã tăng tiền công trong năm nay.
+b2-1388|Please do not wander into the production area.|Vui lòng đừng đi lang thang vào khu vực sản xuất.
+b2-1389|The company works to reduce global warming.|Công ty hoạt động để giảm sự nóng lên toàn cầu.
+b2-1390|This report is way better than the last one.|Báo cáo này tốt hơn nhiều so với bản trước.
+b2-1391|Our main weakness is slow delivery.|Điểm yếu chính của chúng tôi là giao hàng chậm.
+b2-1392|The company built its wealth on good service.|Công ty đã xây dựng của cải nhờ dịch vụ tốt.
+b2-1393|Our product is aimed at wealthy customers.|Sản phẩm của chúng tôi nhắm đến khách hàng giàu có.
+b2-1394|We hold a weekly meeting on Monday.|Chúng tôi họp hằng tuần vào thứ Hai.
+b2-1395|There is a weird noise from the printer.|Có một tiếng động kỳ quặc phát ra từ máy in.
+b2-1396|The company cares about the welfare of its staff.|Công ty quan tâm đến phúc lợi của nhân viên.
+b2-1397|Our client buys wheat for its bakeries.|Khách hàng của chúng tôi mua lúa mì cho các tiệm bánh.
+b2-1398|Sales rose in the north, whereas they fell in the south.|Doanh số tăng ở phía bắc, trong khi lại giảm ở phía nam.
+b2-1399|We deliver wherever the client needs the goods.|Chúng tôi giao hàng bất cứ nơi đâu khách hàng cần.
+b2-1400|Please do not whisper during the presentation.|Vui lòng đừng thì thầm trong lúc thuyết trình.
+b2-1401|Whoever answers the phone must take a message.|Bất cứ ai nghe điện thoại đều phải ghi lại lời nhắn.
+b2-1402|The client with whom we signed the contract called today.|Vị khách mà chúng tôi ký hợp đồng cùng đã gọi hôm nay.
+b2-1403|This method is widely used in our industry.|Phương pháp này được dùng rộng rãi trong ngành của chúng tôi.
+b2-1404|There is widespread support for the new plan.|Có sự ủng hộ lan rộng cho kế hoạch mới.
+b2-1405|The factory protects the local wildlife.|Nhà máy bảo vệ động vật hoang dã địa phương.
+b2-1406|The client is willing to pay more for faster delivery.|Khách hàng sẵn lòng trả thêm để được giao hàng nhanh hơn.
+b2-1407|Please wind the cable neatly after the meeting.|Vui lòng quấn dây cáp gọn gàng sau cuộc họp.
+b2-1408|A loose wire caused the machine to stop.|Một sợi dây lỏng đã làm cỗ máy dừng lại.
+b2-1409|The founder shared his wisdom with the new managers.|Người sáng lập đã chia sẻ sự khôn ngoan của mình với các quản lý mới.
+b2-1410|It was wise to check the contract twice.|Thật sáng suốt khi kiểm tra hợp đồng hai lần.
+b2-1411|The client withdrew the order last week.|Khách hàng đã rút đơn hàng vào tuần trước.
+b2-1412|Two colleagues were witnesses to the accident.|Hai đồng nghiệp là nhân chứng của vụ tai nạn.
+b2-1413|Our workforce grew to three hundred people.|Lực lượng lao động của chúng tôi đã tăng lên ba trăm người.
+b2-1414|Safety in the workplace is everyone's duty.|An toàn nơi làm việc là bổn phận của mọi người.
+b2-1415|We are holding a workshop on client communication.|Chúng tôi đang tổ chức một buổi hội thảo về giao tiếp với khách hàng.
+b2-1416|A software worm damaged two computers.|Một loại sâu máy tính đã làm hỏng hai máy tính.
+b2-1417|The delay was bad, but worse was to come.|Việc chậm trễ đã tệ, nhưng điều tệ hơn còn ở phía trước.
+b2-1418|The worst is over; orders are rising again.|Điều tệ nhất đã qua, đơn hàng đang tăng trở lại.
+b2-1419|The contract is of great worth to our company.|Hợp đồng có giá trị lớn với công ty chúng tôi.
+b2-1420|A worker treated a small wound in the first aid room.|Một công nhân đã xử lý vết thương nhỏ trong phòng sơ cứu.
+b2-1421|Please wrap the samples before shipping.|Vui lòng gói các mẫu trước khi gửi.
+b2-1422|Typing all day hurts my wrist.|Đánh máy cả ngày làm đau cổ tay tôi.
+b2-1423|Hiding the error would be a wrong against the client.|Giấu lỗi sẽ là điều sai trái với khách hàng.
+b2-1424|The price is high, yet the quality is excellent.|Giá cao, nhưng chất lượng thì xuất sắc.
+b2-1425|Our factory is in an industrial zone.|Nhà máy của chúng tôi nằm trong một khu công nghiệp.

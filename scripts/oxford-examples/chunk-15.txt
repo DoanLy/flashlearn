@@ -1,0 +1,200 @@
+b2-0892|There was strong opposition to the new working hours.|Đã có sự phản đối mạnh với giờ làm việc mới.
+b2-0893|We are optimistic about next quarter.|Chúng tôi lạc quan về quý tới.
+b2-0894|The company sponsored a local orchestra.|Công ty đã tài trợ một dàn nhạc giao hưởng địa phương.
+b2-0895|Our client makes equipment for organ surgery.|Khách hàng của chúng tôi sản xuất thiết bị phẫu thuật nội tạng.
+b2-0896|The client only buys organic materials.|Khách hàng chỉ mua nguyên liệu hữu cơ.
+b2-0897|Please state the country of origin on the label.|Vui lòng ghi nước xuất xứ trên nhãn.
+b2-0898|Send the file today; otherwise we miss the deadline.|Hãy gửi tệp hôm nay, nếu không chúng ta sẽ lỡ hạn chót.
+b2-0899|The outcome of the meeting was positive.|Kết quả của cuộc họp là tích cực.
+b2-0900|The outer box protects the product during transport.|Lớp thùng bên ngoài bảo vệ sản phẩm khi vận chuyển.
+b2-0901|Please wear a smart outfit for the client visit.|Vui lòng mặc bộ trang phục lịch sự cho buổi gặp khách hàng.
+b2-0902|Please send me an outline of the presentation.|Vui lòng gửi tôi dàn ý của bài thuyết trình.
+b2-0903|Factory output rose by ten per cent.|Sản lượng nhà máy đã tăng mười phần trăm.
+b2-0904|Her work this year was outstanding.|Công việc của cô ấy trong năm nay thật xuất sắc.
+b2-0905|Overall, the project was a success.|Nhìn chung, dự án đã thành công.
+b2-0906|The team overcame many problems this year.|Cả nhóm đã vượt qua nhiều vấn đề trong năm nay.
+b2-0907|The goods will be delivered overnight.|Hàng sẽ được giao qua đêm.
+b2-0908|Half of our sales come from overseas.|Một nửa doanh số của chúng tôi đến từ nước ngoài.
+b2-0909|The client still owes us two invoices.|Khách hàng vẫn còn nợ chúng tôi hai hóa đơn.
+b2-0910|Ownership of the design stays with our company.|Quyền sở hữu thiết kế thuộc về công ty chúng tôi.
+b2-0911|The workers need oxygen masks in that area.|Công nhân cần mặt nạ ô xy ở khu vực đó.
+b2-0912|The pace of work increases at the end of the quarter.|Nhịp độ công việc tăng lên vào cuối quý.
+b2-0913|We package every order carefully.|Chúng tôi đóng gói mọi đơn hàng một cách cẩn thận.
+b2-0914|There is a packet of coffee in the kitchen.|Có một gói cà phê trong bếp.
+b2-0915|The device fits in the palm of your hand.|Thiết bị vừa trong lòng bàn tay của bạn.
+b2-0916|A panel of three managers chose the winner.|Một ban gồm ba quản lý đã chọn người thắng cuộc.
+b2-0917|There is no need for panic; the system will be back soon.|Không cần hoảng loạn, hệ thống sẽ trở lại sớm thôi.
+b2-0918|The city parade blocked the road to the office.|Cuộc diễu hành của thành phố đã chặn đường đến văn phòng.
+b2-0919|The two projects run parallel to each other.|Hai dự án chạy song song với nhau.
+b2-0920|Parliament passed a new law on packaging.|Quốc hội đã thông qua một luật mới về bao bì.
+b2-0921|We hire part-time staff for the busy season.|Chúng tôi tuyển nhân viên bán thời gian cho mùa cao điểm.
+b2-0922|Every participant receives a certificate.|Mỗi người tham gia đều nhận được giấy chứng nhận.
+b2-0923|Participation in the safety training is compulsory.|Việc tham gia buổi đào tạo an toàn là bắt buộc.
+b2-0924|The delay was partly our fault.|Việc chậm trễ một phần là lỗi của chúng tôi.
+b2-0925|We signed a partnership with a Japanese firm.|Chúng tôi đã ký quan hệ đối tác với một hãng Nhật Bản.
+b2-0926|Please read this passage of the contract again.|Vui lòng đọc lại đoạn này của hợp đồng.
+b2-0927|She is passionate about customer service.|Cô ấy đầy đam mê với dịch vụ khách hàng.
+b2-0928|Please change your password every three months.|Vui lòng đổi mật khẩu ba tháng một lần.
+b2-0929|Dealing with clients needs patience.|Làm việc với khách hàng cần sự kiên nhẫn.
+b2-0930|Please be patient; the system is still loading.|Vui lòng kiên nhẫn, hệ thống vẫn đang tải.
+b2-0931|Let's pause the meeting for five minutes.|Chúng ta hãy tạm dừng cuộc họp năm phút.
+b2-0932|We compare our prices with those of our peers.|Chúng tôi so sánh giá của mình với các công ty ngang hàng.
+b2-0933|Late delivery brings a penalty under this contract.|Giao hàng muộn sẽ bị phạt theo hợp đồng này.
+b2-0934|The company pays into a pension fund for every employee.|Công ty đóng vào quỹ lương hưu cho mỗi nhân viên.
+b2-0935|Clients perceive our brand as reliable.|Khách hàng nhận thức thương hiệu của chúng tôi là đáng tin cậy.
+b2-0936|The perception of quality matters as much as the product.|Cảm nhận về chất lượng quan trọng ngang với chính sản phẩm.
+b2-0937|She was offered a permanent contract.|Cô ấy đã được mời một hợp đồng lâu dài.
+b2-0938|The old system was permanently switched off.|Hệ thống cũ đã bị tắt vĩnh viễn.
+b2-0939|We need a permit to build the new warehouse.|Chúng tôi cần giấy phép để xây nhà kho mới.
+b2-0940|The client has a different perspective on the price.|Khách hàng có góc nhìn khác về giá.
+b2-0941|The project is now in its second phase.|Dự án hiện đang ở giai đoạn thứ hai.
+b2-0942|Online shopping is a global phenomenon.|Mua sắm trực tuyến là một hiện tượng toàn cầu.
+b2-0943|Our company philosophy is simple: serve the customer.|Triết lý công ty của chúng tôi rất đơn giản: phục vụ khách hàng.
+b2-0944|This candidate is my pick for the position.|Ứng viên này là lựa chọn của tôi cho vị trí.
+b2-0945|Picture the new office with better lighting.|Hãy hình dung văn phòng mới với ánh sáng tốt hơn.
+b2-0946|There is a pile of invoices on my desk.|Có một đống hóa đơn trên bàn tôi.
+b2-0947|The company clinic gives out basic pills for headaches.|Phòng khám công ty phát thuốc viên cơ bản trị đau đầu.
+b2-0948|The staff football match is on the pitch behind the factory.|Trận bóng của nhân viên diễn ra trên sân sau nhà máy.
+b2-0949|It is a pity that the client chose another supplier.|Thật đáng tiếc là khách hàng đã chọn nhà cung cấp khác.
+b2-0950|The student is doing a placement in our office.|Bạn sinh viên đang thực tập ở văn phòng chúng tôi.
+b2-0951|Please use plain language in client emails.|Vui lòng dùng ngôn ngữ đơn giản trong email gửi khách hàng.
+b2-0952|The chart plots our sales over five years.|Biểu đồ vẽ doanh số của chúng tôi qua năm năm.
+b2-0953|The offer includes free delivery, plus a discount.|Chào giá bao gồm giao hàng miễn phí, cộng thêm giảm giá.
+b2-0954|She asked a pointed question about our costs.|Cô ấy đã đặt một câu hỏi sắc bén về chi phí của chúng tôi.
+b2-0955|The popularity of our product is growing.|Mức phổ biến của sản phẩm chúng tôi đang tăng.
+b2-0956|A large portion of the budget goes to salaries.|Một phần lớn ngân sách dành cho lương.
+b2-0957|The delay poses a risk to the whole project.|Việc chậm trễ đặt ra rủi ro cho cả dự án.
+b2-0958|We positioned the new product as a premium brand.|Chúng tôi định vị sản phẩm mới là thương hiệu cao cấp.
+b2-0959|One positive is that the client still trusts us.|Một điểm tích cực là khách hàng vẫn tin chúng ta.
+b2-0960|She possesses all the skills we need.|Cô ấy sở hữu mọi kỹ năng chúng tôi cần.
+b2-0961|This is a potential client for next year.|Đây là một khách hàng tiềm năng cho năm sau.
+b2-0962|The delay is potentially very expensive.|Việc chậm trễ có khả năng rất tốn kém.
+b2-0963|Solar panels power our warehouse.|Các tấm pin mặt trời cung cấp điện cho nhà kho của chúng tôi.
+b2-0964|The director praised the team for the fast delivery.|Giám đốc đã khen ngợi cả nhóm vì giao hàng nhanh.
+b2-0965|A short introduction precedes the main report.|Một phần giới thiệu ngắn đi trước báo cáo chính.
+b2-0966|Time with a client is precious.|Thời gian với khách hàng rất quý giá.
+b2-0967|Please give me the precise number of units.|Vui lòng cho tôi con số chính xác về số lượng.
+b2-0968|That is precisely what the client asked for.|Đó chính xác là điều khách hàng yêu cầu.
+b2-0969|This client's orders are predictable every month.|Đơn hàng của khách này có thể đoán trước mỗi tháng.
+b2-0970|Please state your preference for the meeting time.|Vui lòng cho biết bạn thích giờ họp nào hơn.
+b2-0971|A colleague is pregnant and will take leave in May.|Một đồng nghiệp đang mang thai và sẽ nghỉ vào tháng Năm.
+b2-0972|Good preparation makes a meeting shorter.|Chuẩn bị tốt làm cho cuộc họp ngắn hơn.
+b2-0973|Your presence at the meeting is important.|Sự hiện diện của bạn trong cuộc họp rất quan trọng.
+b2-0974|We preserve all records for ten years.|Chúng tôi giữ gìn mọi hồ sơ trong mười năm.
+b2-0975|The product is priced below the competition.|Sản phẩm được định giá thấp hơn đối thủ.
+b2-0976|We take pride in our customer service.|Chúng tôi tự hào về dịch vụ khách hàng của mình.
+b2-0977|We sell primarily to small businesses.|Chúng tôi bán chủ yếu cho các doanh nghiệp nhỏ.
+b2-0978|Speed is our prime advantage.|Tốc độ là lợi thế hàng đầu của chúng tôi.
+b2-0979|The principal reason for the delay is the supplier.|Lý do chính của việc chậm trễ là nhà cung cấp.
+b2-0980|Honesty is a basic principle in our company.|Trung thực là một nguyên tắc căn bản trong công ty chúng tôi.
+b2-0981|Please check the small print in the contract.|Vui lòng kiểm tra phần chữ in nhỏ trong hợp đồng.
+b2-0982|Prior experience in sales is required.|Kinh nghiệm bán hàng trước đó là điều kiện bắt buộc.
+b2-0983|Customer complaints are our top priority.|Khiếu nại của khách hàng là ưu tiên hàng đầu của chúng tôi.
+b2-0984|We protect the privacy of our clients' data.|Chúng tôi bảo vệ sự riêng tư của dữ liệu khách hàng.
+b2-0985|There is a high probability of a price rise.|Có xác suất cao về việc tăng giá.
+b2-0986|A delay is probable because of the weather.|Việc chậm trễ có thể xảy ra vì thời tiết.
+b2-0987|Please follow the procedure for approving invoices.|Vui lòng làm theo quy trình phê duyệt hóa đơn.
+b2-0988|We will proceed with the order tomorrow.|Chúng tôi sẽ tiến hành đơn hàng vào ngày mai.
+b2-0989|We process about a hundred orders a day.|Chúng tôi xử lý khoảng một trăm đơn hàng mỗi ngày.
+b2-0990|Our client sells fresh produce to supermarkets.|Khách hàng của chúng tôi bán nông sản tươi cho siêu thị.
+b2-0991|She is a real professional in negotiations.|Cô ấy là một người thật sự chuyên nghiệp trong đàm phán.
+b2-0992|Programming the new machine took one week.|Việc lập trình cỗ máy mới mất một tuần.
+b2-0993|The project is progressing well.|Dự án đang tiến triển tốt.
+b2-0994|The company has progressive policies on parental leave.|Công ty có chính sách tiến bộ về nghỉ thai sản.
+b2-0995|The rules prohibit visitors from the production area.|Quy định cấm khách vào khu vực sản xuất.
+b2-0996|We project sales of one million this year.|Chúng tôi dự kiến doanh số một triệu trong năm nay.
+b2-0997|The new market looks promising.|Thị trường mới trông đầy hứa hẹn.
+b2-0998|She received a promotion to team leader.|Cô ấy đã được thăng chức lên trưởng nhóm.
+b2-0999|The complaint prompted a review of the process.|Khiếu nại đã thúc đẩy một cuộc rà soát quy trình.
+b2-1000|We have proof that the goods left on time.|Chúng tôi có bằng chứng rằng hàng đã rời kho đúng hạn.
+b2-1001|A large proportion of our clients are abroad.|Một tỷ lệ lớn khách hàng của chúng tôi ở nước ngoài.
+b2-1002|Please send your proposal by Friday.|Vui lòng gửi đề xuất của bạn trước thứ Sáu.
+b2-1003|I propose that we meet the client next week.|Tôi đề xuất chúng ta gặp khách hàng vào tuần tới.
+b2-1004|The prospect of a new contract is good.|Triển vọng có hợp đồng mới rất tốt.
+b2-1005|The packaging gives good protection during transport.|Bao bì bảo vệ tốt trong quá trình vận chuyển.
+b2-1006|Our client sells protein products for athletes.|Khách hàng của chúng tôi bán sản phẩm đạm cho vận động viên.
+b2-1007|Protesters gathered outside the factory gate.|Người biểu tình đã tập trung ngoài cổng nhà máy.
+b2-1008|The pressure at work has a psychological effect.|Áp lực công việc có tác động tâm lý.
+b2-1009|A psychologist gave a talk about stress at work.|Một nhà tâm lý học đã có bài nói về căng thẳng trong công việc.
+b2-1010|She studied psychology before working in human resources.|Cô ấy học tâm lý học trước khi làm nhân sự.
+b2-1011|Our research appeared in an industry publication.|Nghiên cứu của chúng tôi đã xuất hiện trên một ấn phẩm ngành.
+b2-1012|The new product received good publicity.|Sản phẩm mới đã được quảng bá tốt.
+b2-1013|Our client works in publishing.|Khách hàng của chúng tôi làm trong ngành xuất bản.
+b2-1014|A punk band played at the staff party.|Một ban nhạc punk đã chơi trong bữa tiệc nhân viên.
+b2-1015|Our software is used by pupils in secondary schools.|Phần mềm của chúng tôi được học sinh trung học sử dụng.
+b2-1016|Please keep the receipt for every purchase.|Vui lòng giữ hóa đơn cho mọi lần mua hàng.
+b2-1017|The product is made of pure cotton.|Sản phẩm được làm từ bông tinh khiết.
+b2-1018|The decision was purely financial.|Quyết định hoàn toàn mang tính tài chính.
+b2-1019|We will pursue this client for another month.|Chúng tôi sẽ theo đuổi khách hàng này thêm một tháng nữa.
+b2-1020|The pursuit of quality costs money.|Sự theo đuổi chất lượng thì tốn tiền.
+b2-1021|The cause of the error is still a puzzle.|Nguyên nhân của lỗi vẫn là một câu đố.
+b2-1022|Please complete the staff questionnaire.|Vui lòng hoàn thành bảng câu hỏi khảo sát nhân viên.
+b2-1023|The company does not accept racial discrimination.|Công ty không chấp nhận phân biệt đối xử về chủng tộc.
+b2-1024|There is no place for racism at work.|Không có chỗ cho nạn phân biệt chủng tộc ở nơi làm việc.
+b2-1025|Racist jokes are not acceptable in the office.|Những câu đùa phân biệt chủng tộc không được chấp nhận ở văn phòng.
+b2-1026|Workers wear badges to measure radiation.|Công nhân đeo thẻ để đo mức bức xạ.
+b2-1027|The goods travel by rail to the north.|Hàng đi bằng đường sắt lên phía bắc.
+b2-1028|We do a random check on ten orders a day.|Chúng tôi kiểm tra ngẫu nhiên mười đơn hàng mỗi ngày.
+b2-1029|Prices range from ten to fifty dollars.|Giá dao động từ mười đến năm mươi đô la.
+b2-1030|Our service ranks first in the customer survey.|Dịch vụ của chúng tôi xếp hạng nhất trong khảo sát khách hàng.
+b2-1031|The company saw rapid growth last year.|Công ty đã tăng trưởng nhanh chóng vào năm ngoái.
+b2-1032|Online orders are growing rapidly.|Đơn hàng trực tuyến đang tăng nhanh chóng.
+b2-1033|The warehouse had a problem with rats last year.|Nhà kho đã gặp vấn đề với chuột cống vào năm ngoái.
+b2-1034|Customers rate our service five out of five.|Khách hàng đánh giá dịch vụ của chúng tôi năm trên năm.
+b2-1035|Our rating on the review site improved.|Chỉ số đánh giá của chúng tôi trên trang nhận xét đã cải thiện.
+b2-1036|The price of raw materials is rising.|Giá nguyên liệu thô đang tăng.
+b2-1037|The client is beyond the reach of our delivery network.|Khách hàng nằm ngoài phạm vi mạng lưới giao hàng của chúng tôi.
+b2-1038|Please set a realistic deadline.|Vui lòng đặt một hạn chót thực tế.
+b2-1039|The price is reasonable for this quality.|Giá này phải chăng với chất lượng như vậy.
+b2-1040|The team worked reasonably well under pressure.|Cả nhóm đã làm việc khá tốt dưới áp lực.
+b2-1041|We had to rebuild the client's trust after the delay.|Chúng tôi đã phải xây dựng lại niềm tin của khách hàng sau việc chậm trễ.
+b2-1042|I cannot recall the exact date of the meeting.|Tôi không nhớ lại được ngày chính xác của cuộc họp.
+b2-1043|Please write the receiver's address on the box.|Vui lòng ghi địa chỉ người nhận lên thùng hàng.
+b2-1044|Sales fell during the recession.|Doanh số đã giảm trong thời kỳ suy thoái.
+b2-1045|I reckon the client will sign this week.|Tôi cho rằng khách hàng sẽ ký trong tuần này.
+b2-1046|The award is recognition of the team's hard work.|Giải thưởng là sự công nhận cho công sức của cả nhóm.
+b2-1047|Sales recovered after the summer.|Doanh số đã hồi phục sau mùa hè.
+b2-1048|The recovery of the market took two years.|Sự hồi phục của thị trường mất hai năm.
+b2-1049|We are recruiting two engineers this month.|Chúng tôi đang tuyển hai kỹ sư trong tháng này.
+b2-1050|Recruitment takes about six weeks.|Việc tuyển dụng mất khoảng sáu tuần.
+b2-1051|We agreed on a small reduction in price.|Chúng tôi đã thống nhất giảm giá một chút.
+b2-1052|A referee was invited for the staff football match.|Một trọng tài đã được mời cho trận bóng của nhân viên.
+b2-1053|The company gives jobs to some refugees.|Công ty tạo việc làm cho một số người tị nạn.
+b2-1054|We regard this client as our most important one.|Chúng tôi coi khách hàng này là quan trọng nhất.
+b2-1055|The regional manager visits us every month.|Quản lý khu vực đến thăm chúng tôi hằng tháng.
+b2-1056|Please register for the training before Friday.|Vui lòng đăng ký buổi đào tạo trước thứ Sáu.
+b2-1057|Registration for the conference closes tomorrow.|Việc đăng ký hội nghị đóng vào ngày mai.
+b2-1058|We regret that we cannot deliver this week.|Chúng tôi rất tiếc là không thể giao hàng trong tuần này.
+b2-1059|New laws regulate how we store customer data.|Luật mới điều tiết cách chúng tôi lưu trữ dữ liệu khách hàng.
+b2-1060|Our factory follows strict safety regulations.|Nhà máy của chúng tôi tuân theo quy định an toàn nghiêm ngặt.
+b2-1061|The good result reinforces our new strategy.|Kết quả tốt củng cố chiến lược mới của chúng tôi.
+b2-1062|Our prices are relatively low for this market.|Giá của chúng tôi tương đối thấp so với thị trường này.
+b2-1063|Please send only the relevant documents.|Vui lòng chỉ gửi những tài liệu có liên quan.
+b2-1064|It was a relief when the client accepted the offer.|Thật nhẹ nhõm khi khách hàng chấp nhận chào giá.
+b2-1065|The new tool relieves the team of manual work.|Công cụ mới giảm bớt công việc thủ công cho cả nhóm.
+b2-1066|We were relieved to hear that the goods arrived.|Chúng tôi đã nhẹ nhõm khi nghe tin hàng đã đến.
+b2-1067|We rely on this supplier for all our packaging.|Chúng tôi dựa vào nhà cung cấp này cho toàn bộ bao bì.
+b2-1068|The client made a positive remark about our service.|Khách hàng đã có một nhận xét tích cực về dịch vụ của chúng tôi.
+b2-1069|The team made remarkable progress this year.|Cả nhóm đã tiến bộ đáng chú ý trong năm nay.
+b2-1070|Sales were remarkably high in June.|Doanh số cao một cách đáng kể vào tháng Sáu.
+b2-1071|Accurate reporting helps the board make decisions.|Việc báo cáo chính xác giúp ban quản trị ra quyết định.
+b2-1072|A representative from the supplier will visit us.|Một người đại diện của nhà cung cấp sẽ đến thăm chúng tôi.
+b2-1073|Our company has a good reputation for service.|Công ty chúng tôi có danh tiếng tốt về dịch vụ.
+b2-1074|Please read the requirements before you apply.|Vui lòng đọc các yêu cầu trước khi bạn ứng tuyển.
+b2-1075|The team rescued the project after the delay.|Cả nhóm đã cứu dự án sau sự chậm trễ.
+b2-1076|We keep a reserve of materials for busy months.|Chúng tôi giữ một lượng vật liệu dự trữ cho những tháng bận rộn.
+b2-1077|Local residents complained about the noise from the factory.|Cư dân địa phương đã phàn nàn về tiếng ồn từ nhà máy.
+b2-1078|The sales manager resigned last month.|Quản lý kinh doanh đã từ chức vào tháng trước.
+b2-1079|The team resisted the change at first.|Cả nhóm ban đầu đã chống lại sự thay đổi.
+b2-1080|The board passed a resolution about the budget.|Ban quản trị đã thông qua một nghị quyết về ngân sách.
+b2-1081|We resolved the complaint within one day.|Chúng tôi đã giải quyết khiếu nại trong vòng một ngày.
+b2-1082|Cutting prices is our last resort.|Giảm giá là biện pháp cuối cùng của chúng tôi.
+b2-1083|The IT team restored the files from a backup.|Bộ phận công nghệ thông tin đã khôi phục tệp từ bản sao lưu.
+b2-1084|We restrict access to the client database.|Chúng tôi hạn chế quyền truy cập vào cơ sở dữ liệu khách hàng.
+b2-1085|There are restrictions on visitors in the factory.|Có những quy định hạn chế đối với khách trong nhà máy.
+b2-1086|Our products are also sold in retail shops.|Sản phẩm của chúng tôi cũng được bán trong các cửa hàng bán lẻ.
+b2-1087|A good salary helps us retain staff.|Mức lương tốt giúp chúng tôi giữ chân nhân viên.
+b2-1088|His retirement was announced at the meeting.|Việc nghỉ hưu của ông ấy đã được công bố trong cuộc họp.
+b2-1089|The report revealed a problem in the process.|Báo cáo đã tiết lộ một vấn đề trong quy trình.
+b2-1090|Revenue grew by fifteen per cent this year.|Doanh thu đã tăng mười lăm phần trăm trong năm nay.
+b2-1091|The contract needs one more revision before signing.|Hợp đồng cần thêm một lần sửa đổi trước khi ký.

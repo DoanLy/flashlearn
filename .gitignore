@@ -25,3 +25,7 @@ dist-ssr
 
 # Backup snapshot của bảng cards, tạo bởi scripts/normalize-card-fields.mjs --apply
 scripts/_backup_cards_*.json
+
+# File nguồn tải về cho scripts/build-oxford-phonetics.mjs (không commit, tải lại khi cần)
+scripts/_en_UK_ipa.txt
+scripts/_oxford_full_word.json

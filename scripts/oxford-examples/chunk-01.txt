@@ -1,0 +1,200 @@
+a1-0001|The meeting room is just across the hall from my desk.|Phòng họp ở ngay bên kia hành lang, đối diện bàn làm việc của tôi.
+a1-0002|Don't be afraid to ask your manager for help.|Đừng ngại nhờ quản lý giúp đỡ.
+a1-0003|Our office is only ten minutes from the airport.|Văn phòng của chúng tôi chỉ cách sân bay mười phút.
+a1-0004|The client was angry because we sent the report late.|Khách hàng đã tức giận vì chúng tôi gửi báo cáo muộn.
+a1-0005|Could we book another room for the training session?|Chúng ta đặt thêm một phòng khác cho buổi đào tạo được không?
+a1-0007|The new office opens in April.|Văn phòng mới sẽ mở cửa vào tháng Tư.
+a1-0009|Most of my team takes leave in August.|Phần lớn nhân viên trong nhóm tôi nghỉ phép vào tháng Tám.
+a1-0010|My aunt works in the accounting department.|Dì tôi làm việc ở phòng kế toán.
+a1-0011|We usually hire new staff in autumn.|Chúng tôi thường tuyển nhân viên mới vào mùa thu.
+a1-0012|My boss is away on a business trip this week.|Sếp tôi đi công tác xa trong tuần này.
+a1-0016|At the beginning of the meeting, we review last week's tasks.|Đầu buổi họp, chúng tôi rà soát lại công việc tuần trước.
+a1-0017|The printer is behind the door on your left.|Máy in ở phía sau cánh cửa bên trái bạn.
+a1-0019|She is the best designer in our company.|Cô ấy là nhà thiết kế giỏi nhất công ty chúng tôi.
+a1-0020|The second version of the slides is much better.|Bản slide thứ hai tốt hơn nhiều.
+a1-0022|The woman with blonde hair is our new receptionist.|Người phụ nữ tóc vàng là lễ tân mới của chúng tôi.
+a1-0024|We took a boat to visit the factory by the river.|Chúng tôi đi thuyền đến thăm nhà máy bên sông.
+a1-0027|You should wear boots when you visit the factory floor.|Bạn nên đi ủng khi xuống xưởng sản xuất.
+a1-0028|I get bored when a meeting has no clear agenda.|Tôi thấy chán khi một cuộc họp không có chương trình rõ ràng.
+a1-0048|There is bread and butter in the office kitchen.|Trong bếp văn phòng có bánh mì và bơ.
+a1-0066|The company does not waste a single cent.|Công ty không lãng phí một xu nào.
+a1-0067|Our head office is in the city centre.|Trụ sở chính của chúng tôi nằm ở trung tâm thành phố.
+a1-0068|This company has been in business for almost a century.|Công ty này đã hoạt động gần một thế kỷ.
+a1-0084|Sales figures climbed after the new campaign.|Doanh số leo lên sau chiến dịch mới.
+a1-0089|Please leave your coat in the cupboard near reception.|Vui lòng để áo khoác vào tủ gần quầy lễ tân.
+a1-0092|I studied accounting at college before joining this company.|Tôi học kế toán ở trường cao đẳng trước khi vào công ty này.
+a1-0110|My cousin works for one of our partner companies.|Anh họ tôi làm việc cho một công ty đối tác của chúng tôi.
+a1-0111|The company logo has a cow on it because it sells milk.|Logo công ty có hình con bò vì công ty bán sữa.
+a1-0125|My colleague brought her daughter to the office party.|Đồng nghiệp của tôi đưa con gái đến bữa tiệc ở văn phòng.
+a1-0136|We practise a short dialogue in English before every client call.|Chúng tôi luyện một đoạn hội thoại ngắn bằng tiếng Anh trước mỗi cuộc gọi với khách.
+a1-0137|Keep a dictionary on your desk when you write English emails.|Hãy để một cuốn từ điển trên bàn khi bạn viết email tiếng Anh.
+a1-0139|A healthy diet helps me stay focused at work.|Chế độ ăn lành mạnh giúp tôi tập trung khi làm việc.
+a1-0144|Please don't leave dirty cups in the office kitchen.|Đừng để cốc bẩn trong bếp văn phòng.
+a1-0153|The meeting room is downstairs, next to reception.|Phòng họp ở tầng dưới, cạnh quầy lễ tân.
+a1-0164|Our sales team covers the east of the country.|Nhóm kinh doanh của chúng tôi phụ trách khu vực phía đông của cả nước.
+a1-0169|Eighteen people signed up for the training course.|Mười tám người đã đăng ký khóa đào tạo.
+a1-0170|Eighty per cent of our staff work from home on Friday.|Tám mươi phần trăm nhân viên của chúng tôi làm việc ở nhà vào thứ Sáu.
+a1-0171|The children saw an elephant on the company family day.|Bọn trẻ đã nhìn thấy một con voi trong ngày hội gia đình của công ty.
+a1-0172|The daily meeting starts at eleven.|Cuộc họp hằng ngày bắt đầu lúc mười một giờ.
+a1-0178|The client pays us in euros.|Khách hàng thanh toán cho chúng tôi bằng đồng euro.
+a1-0179|Even the manager did not know about the change.|Ngay cả quản lý cũng không biết về thay đổi đó.
+a1-0182|Have you ever worked with this supplier before?|Bạn đã từng làm việc với nhà cung cấp này bao giờ chưa?
+a1-0184|Everybody in the team must join the Monday meeting.|Mọi người trong nhóm đều phải tham gia cuộc họp thứ Hai.
+a1-0189|The team is excited about the new project.|Cả nhóm rất phấn khích về dự án mới.
+a1-0190|Working with international clients is exciting.|Làm việc với khách hàng quốc tế rất thú vị.
+a1-0210|The annual report is due in February.|Báo cáo thường niên phải nộp vào tháng Hai.
+a1-0214|I have a few questions about your proposal.|Tôi có một vài câu hỏi về đề xuất của bạn.
+a1-0216|This is the fifth item on today's agenda.|Đây là mục thứ năm trong chương trình họp hôm nay.
+a1-0217|Fifty people attended the company workshop.|Năm mươi người đã tham dự buổi hội thảo của công ty.
+a1-0223|Please finish the report before Friday.|Vui lòng hoàn thành báo cáo trước thứ Sáu.
+a1-0225|The first item on the agenda is the budget.|Mục đầu tiên trong chương trình họp là ngân sách.
+a1-0228|My flat is close to the office, so I walk to work.|Căn hộ của tôi gần văn phòng nên tôi đi bộ đi làm.
+a1-0229|My flight to the conference leaves at six in the morning.|Chuyến bay đến hội nghị của tôi cất cánh lúc sáu giờ sáng.
+a1-0231|We sent flowers to thank the client for the contract.|Chúng tôi gửi hoa để cảm ơn khách hàng vì hợp đồng.
+a1-0234|The company provides free food during overtime.|Công ty cung cấp thức ăn miễn phí trong giờ làm thêm.
+a1-0235|My foot hurts after standing at the exhibition all day.|Chân tôi đau sau khi đứng cả ngày ở triển lãm.
+a1-0236|Our staff play football together every Saturday.|Nhân viên của chúng tôi chơi bóng đá cùng nhau vào mỗi thứ Bảy.
+a1-0240|Forty candidates applied for the position.|Bốn mươi ứng viên đã nộp đơn cho vị trí này.
+a1-0241|The training lasts four hours.|Buổi đào tạo kéo dài bốn tiếng.
+a1-0242|Fourteen orders arrived this morning.|Mười bốn đơn hàng đã đến sáng nay.
+a1-0243|This is the fourth time the client has changed the deadline.|Đây là lần thứ tư khách hàng thay đổi hạn chót.
+a1-0245|We send the weekly report every Friday.|Chúng tôi gửi báo cáo tuần vào mỗi thứ Sáu.
+a1-0249|Please write your name on the front of the folder.|Vui lòng viết tên bạn ở mặt trước của tập hồ sơ.
+a1-0257|I studied geography, but now I work in logistics.|Tôi học địa lý, nhưng giờ tôi làm trong ngành hậu cần.
+a1-0266|My grandfather started this small company in 1980.|Ông tôi đã lập công ty nhỏ này vào năm 1980.
+a1-0267|My grandmother still asks about my job every week.|Bà tôi vẫn hỏi thăm về công việc của tôi mỗi tuần.
+a1-0268|Each employee can bring one grandparent to the family day.|Mỗi nhân viên có thể đưa một ông hoặc bà đến ngày hội gia đình.
+a1-0269|You did a great job on the presentation.|Bạn đã làm rất tuyệt trong buổi thuyết trình.
+a1-0274|I guess the client will ask for a discount.|Tôi đoán khách hàng sẽ xin giảm giá.
+a1-0275|He plays the guitar at the company year-end party.|Anh ấy chơi đàn ghi ta trong tiệc cuối năm của công ty.
+a1-0278|Half of the team is working from home today.|Một nửa nhóm hôm nay làm việc tại nhà.
+a1-0280|Tell me what happened at the meeting yesterday.|Hãy kể cho tôi nghe chuyện gì đã xảy ra ở cuộc họp hôm qua.
+a1-0281|The client is happy with our service.|Khách hàng hài lòng với dịch vụ của chúng tôi.
+a1-0289|The company pays for our health insurance.|Công ty chi trả bảo hiểm sức khỏe cho chúng tôi.
+a1-0290|Try to keep a healthy routine even in busy weeks.|Hãy cố giữ thói quen lành mạnh ngay cả trong những tuần bận rộn.
+a1-0307|The old factory is next to a horse farm.|Nhà máy cũ nằm cạnh một trang trại ngựa.
+a1-0314|The design is nice; however, it costs too much.|Thiết kế thì đẹp; tuy nhiên, nó quá đắt.
+a1-0315|We printed a hundred copies of the brochure.|Chúng tôi đã in một trăm bản tài liệu quảng cáo.
+a1-0316|I am hungry because the meeting ran through lunch.|Tôi đói vì cuộc họp kéo dài qua giờ ăn trưa.
+a1-0317|Her husband also works in our IT department.|Chồng cô ấy cũng làm ở phòng công nghệ thông tin của chúng tôi.
+a1-0323|Imagine how much time this tool can save the team.|Hãy tưởng tượng công cụ này tiết kiệm được bao nhiêu thời gian cho cả nhóm.
+a1-0324|It is important to reply to clients within one day.|Việc trả lời khách hàng trong vòng một ngày là rất quan trọng.
+a1-0328|Please send me more information about the new policy.|Vui lòng gửi cho tôi thêm thông tin về chính sách mới.
+a1-0329|The manager showed a lot of interest in my idea.|Quản lý đã tỏ ra rất quan tâm đến ý tưởng của tôi.
+a1-0330|I am interested in joining the marketing team.|Tôi thấy hứng thú với việc tham gia nhóm marketing.
+a1-0331|The report has some interesting numbers about our customers.|Báo cáo có vài con số thú vị về khách hàng của chúng ta.
+a1-0335|Let me introduce our new team member.|Để tôi giới thiệu thành viên mới của nhóm.
+a1-0338|The company changed its logo last month.|Công ty đã đổi logo của nó vào tháng trước.
+a1-0339|He wears a jacket and tie for client meetings.|Anh ấy mặc áo khoác và đeo cà vạt khi gặp khách hàng.
+a1-0340|Our new budget starts in January.|Ngân sách mới của chúng tôi bắt đầu từ tháng Một.
+a1-0344|The journey to the client's factory takes two hours.|Chuyến đi đến nhà máy của khách hàng mất hai tiếng.
+a1-0345|There is orange juice in the fridge for guests.|Có nước cam trong tủ lạnh dành cho khách.
+a1-0346|The office is quiet in July because many people take leave.|Văn phòng vắng vào tháng Bảy vì nhiều người nghỉ phép.
+a1-0347|We will launch the product in June.|Chúng tôi sẽ ra mắt sản phẩm vào tháng Sáu.
+a1-0351|The warehouse is two kilometres from the office.|Nhà kho cách văn phòng hai ki lô mét.
+a1-0353|Please wash your cup in the office kitchen.|Vui lòng rửa cốc của bạn ở bếp văn phòng.
+a1-0356|English is the working language in our company.|Tiếng Anh là ngôn ngữ làm việc trong công ty chúng tôi.
+a1-0357|We work with several large customers in Asia.|Chúng tôi làm việc với vài khách hàng lớn ở châu Á.
+a1-0358|This is the last item on the agenda.|Đây là mục cuối cùng trong chương trình họp.
+a1-0361|Everyone laughed at the manager's joke.|Mọi người đều cười vì câu đùa của quản lý.
+a1-0363|I usually leave the office at six.|Tôi thường rời văn phòng lúc sáu giờ.
+a1-0369|Our company library has many books about management.|Thư viện công ty có nhiều sách về quản lý.
+a1-0370|The files lie on the desk next to the printer.|Các tập hồ sơ nằm trên bàn cạnh máy in.
+a1-0371|A good job makes life easier.|Công việc tốt làm cuộc sống dễ dàng hơn.
+a1-0372|There is not enough light in this meeting room.|Phòng họp này không đủ ánh sáng.
+a1-0384|We do not want to lose this customer.|Chúng ta không muốn mất khách hàng này.
+a1-0395|The new manager will join us in March.|Quản lý mới sẽ gia nhập với chúng tôi vào tháng Ba.
+a1-0397|She got married last month, so her surname changed in our system.|Cô ấy đã kết hôn tháng trước, nên họ của cô ấy đổi trong hệ thống.
+a1-0398|Your skills match the job description very well.|Kỹ năng của bạn rất hợp với bản mô tả công việc.
+a1-0404|Please explain the meaning of this term in the contract.|Vui lòng giải thích ý nghĩa của thuật ngữ này trong hợp đồng.
+a1-0407|The meeting starts at nine in the morning.|Cuộc họp bắt đầu lúc chín giờ sáng.
+a1-0411|The new office is thirty metres long.|Văn phòng mới dài ba mươi mét.
+a1-0412|The system will be updated at midnight.|Hệ thống sẽ được cập nhật vào lúc nửa đêm.
+a1-0413|The factory is a mile from the main road.|Nhà máy cách đường lớn một dặm.
+a1-0415|The project budget is one million dollars.|Ngân sách dự án là một triệu đô la.
+a1-0418|There is a small mistake in the invoice.|Có một lỗi nhỏ trong hóa đơn.
+a1-0419|We built a simple model to show the new process.|Chúng tôi đã dựng một mô hình đơn giản để minh họa quy trình mới.
+a1-0420|Our new office is bright and modern.|Văn phòng mới của chúng tôi sáng sủa và hiện đại.
+a1-0421|Could you wait a moment? I am on a call.|Bạn đợi một chút được không? Tôi đang gọi điện.
+a1-0422|We hold a team meeting every Monday.|Chúng tôi họp nhóm vào mỗi thứ Hai.
+a1-0423|The company saves money by using online meetings.|Công ty tiết kiệm tiền nhờ họp trực tuyến.
+a1-0424|We review the sales numbers every month.|Chúng tôi rà soát số liệu bán hàng mỗi tháng.
+a1-0426|I answer emails first thing in the morning.|Việc đầu tiên tôi làm buổi sáng là trả lời email.
+a1-0428|My mother also worked in this industry.|Mẹ tôi cũng từng làm trong ngành này.
+a1-0429|Our team photo was taken on a mountain during the trip.|Ảnh tập thể của nhóm được chụp trên một ngọn núi trong chuyến đi.
+a1-0430|My computer mouse stopped working during the presentation.|Con chuột máy tính của tôi hỏng giữa buổi thuyết trình.
+a1-0431|Please cover your mouth when you cough in the office.|Vui lòng che miệng khi bạn ho trong văn phòng.
+a1-0436|The company visit ended with a trip to the museum.|Chuyến thăm công ty kết thúc bằng buổi đi bảo tàng.
+a1-0437|Soft music plays in the reception area.|Nhạc nhẹ được phát ở khu vực lễ tân.
+a1-0444|We received negative feedback from one customer.|Chúng tôi nhận được phản hồi tiêu cực từ một khách hàng.
+a1-0445|The company next door is our neighbour and our client.|Công ty bên cạnh là hàng xóm và cũng là khách hàng của chúng tôi.
+a1-0449|Our new product was mentioned in the newspaper.|Sản phẩm mới của chúng tôi được nhắc đến trên báo.
+a1-0455|Nineteen people replied to the survey.|Mười chín người đã trả lời khảo sát.
+a1-0456|Ninety per cent of the tasks are done.|Chín mươi phần trăm công việc đã hoàn thành.
+a1-0460|Our branch in the north opens next year.|Chi nhánh của chúng tôi ở phía bắc sẽ mở vào năm sau.
+a1-0461|He has a cold, so his nose is blocked.|Anh ấy bị cảm nên mũi bị nghẹt.
+a1-0465|The budget meeting is in November.|Cuộc họp ngân sách diễn ra vào tháng Mười Một.
+a1-0468|The company nurse checks our health every year.|Y tá của công ty kiểm tra sức khỏe cho chúng tôi hằng năm.
+a1-0469|Please do not leave personal objects in the meeting room.|Vui lòng không để đồ vật cá nhân trong phòng họp.
+a1-0470|The new system goes live in October.|Hệ thống mới sẽ vận hành vào tháng Mười.
+a1-0485|In my opinion, we should delay the launch.|Theo ý kiến của tôi, chúng ta nên hoãn buổi ra mắt.
+a1-0486|The printer is on the opposite side of the room.|Máy in ở phía đối diện của căn phòng.
+a1-0488|I always keep an orange on my desk for a snack.|Tôi luôn để một quả cam trên bàn để ăn nhẹ.
+a1-0499|There is a large painting in the reception area.|Có một bức tranh lớn ở khu vực lễ tân.
+a1-0500|I keep a pair of shoes at the office for client meetings.|Tôi để sẵn một đôi giày ở văn phòng để gặp khách hàng.
+a1-0502|Please read the first paragraph of the contract carefully.|Vui lòng đọc kỹ đoạn văn đầu tiên của hợp đồng.
+a1-0508|Bring your passport for the business trip next week.|Hãy mang hộ chiếu cho chuyến công tác tuần sau.
+a1-0514|Please pass the salt and pepper at the team lunch.|Vui lòng chuyền muối và hạt tiêu trong bữa trưa của nhóm.
+a1-0515|Your report is perfect; nothing needs to change.|Báo cáo của bạn hoàn hảo, không cần sửa gì cả.
+a1-0516|Sales were strong during this period.|Doanh số mạnh trong giai đoạn này.
+a1-0521|Please send a photograph for your staff card.|Vui lòng gửi một bức ảnh cho thẻ nhân viên của bạn.
+a1-0522|This phrase is often used in business emails.|Cụm từ này thường được dùng trong email công việc.
+a1-0525|Can you send me a piece of the report to review?|Bạn gửi cho tôi một phần của báo cáo để xem được không?
+a1-0530|My plane lands two hours before the meeting.|Máy bay của tôi hạ cánh hai tiếng trước cuộc họp.
+a1-0531|There are plants in the office to make it look fresh.|Trong văn phòng có cây để trông tươi mát hơn.
+a1-0537|A policeman came to the office to check the security report.|Một viên cảnh sát đã đến văn phòng để kiểm tra báo cáo an ninh.
+a1-0541|We received positive feedback from the client.|Chúng tôi nhận được phản hồi tích cực từ khách hàng.
+a1-0542|Is it possible to move the meeting to Thursday?|Có thể dời cuộc họp sang thứ Năm được không?
+a1-0544|The canteen serves chicken and potatoes today.|Căng tin hôm nay phục vụ gà và khoai tây.
+a1-0545|The invoice from our London office is in pounds.|Hóa đơn từ văn phòng London của chúng tôi tính bằng bảng Anh.
+a1-0546|Presenting in English needs a lot of practice.|Thuyết trình bằng tiếng Anh cần luyện tập nhiều.
+a1-0547|I practise my presentation before every client meeting.|Tôi luyện bài thuyết trình trước mỗi buổi gặp khách hàng.
+a1-0548|I prefer to have meetings in the morning.|Tôi thích họp vào buổi sáng hơn.
+a1-0550|At present, we have twenty people in the department.|Hiện tại, chúng tôi có hai mươi người trong phòng ban.
+a1-0551|The new office is pretty far from the city centre.|Văn phòng mới khá xa trung tâm thành phố.
+a1-0553|The client will probably reply tomorrow.|Khách hàng có lẽ sẽ trả lời vào ngày mai.
+a1-0556|The company runs a training programme for new staff.|Công ty tổ chức một chương trình đào tạo cho nhân viên mới.
+a1-0557|I am working on a new project with the sales team.|Tôi đang làm một dự án mới với nhóm kinh doanh.
+a1-0558|The chart uses purple for last year's data.|Biểu đồ dùng màu tím cho dữ liệu năm ngoái.
+a1-0560|Sales grew ten per cent in the last quarter.|Doanh số tăng mười phần trăm trong quý vừa rồi.
+a1-0565|The presentation was quite long, but very clear.|Bài thuyết trình khá dài nhưng rất rõ ràng.
+a1-0580|We took the client to a restaurant after the meeting.|Chúng tôi đưa khách hàng đến nhà hàng sau cuộc họp.
+a1-0590|Checking email is part of my morning routine at work.|Kiểm tra email là một phần trong thói quen buổi sáng của tôi ở công ty.
+a1-0594|I usually order a salad for lunch at the office.|Tôi thường gọi món salad cho bữa trưa ở văn phòng.
+a1-0595|Could you pass me the salt, please?|Bạn chuyền giúp tôi lọ muối được không?
+a1-0597|I ate a sandwich at my desk because of the deadline.|Tôi ăn bánh mì kẹp ngay tại bàn vì hạn chót.
+a1-0598|The team works on Saturday only when there is an urgent order.|Nhóm chỉ làm việc vào thứ Bảy khi có đơn hàng gấp.
+a1-0601|Our products are based on science and careful testing.|Sản phẩm của chúng tôi dựa trên khoa học và thử nghiệm cẩn thận.
+a1-0602|A scientist from the lab joined our meeting.|Một nhà khoa học từ phòng thí nghiệm đã tham dự cuộc họp của chúng tôi.
+a1-0605|Please wait a second while I open the file.|Vui lòng đợi một giây trong khi tôi mở tệp.
+a1-0610|Please change this sentence in the email to the client.|Vui lòng sửa câu này trong email gửi khách hàng.
+a1-0611|The new school year for our trainees starts in September.|Năm học mới của các bạn thực tập sinh bắt đầu vào tháng Chín.
+a1-0613|Seventeen people confirmed they will attend.|Mười bảy người đã xác nhận sẽ tham dự.
+a1-0614|Seventy customers answered our survey.|Bảy mươi khách hàng đã trả lời khảo sát của chúng tôi.
+a1-0617|The client's farm has more than a thousand sheep.|Trang trại của khách hàng có hơn một nghìn con cừu.
+a1-0618|He wears a white shirt to the office every day.|Anh ấy mặc áo sơ mi trắng đến văn phòng mỗi ngày.
+a1-0632|Please explain the situation to the manager.|Vui lòng giải thích tình huống này với quản lý.
+a1-0634|Sixteen orders are still waiting for approval.|Mười sáu đơn hàng vẫn đang chờ phê duyệt.
+a1-0635|Sixty staff joined the online training.|Sáu mươi nhân viên đã tham gia buổi đào tạo trực tuyến.
+a1-0637|She wears a black skirt for client meetings.|Cô ấy mặc chân váy đen khi gặp khách hàng.
+a1-0641|The team saw a snake during the trip to the factory.|Cả nhóm nhìn thấy một con rắn trong chuyến đi đến nhà máy.
+a1-0653|That sounds like a good plan to me.|Nghe có vẻ là một kế hoạch hay đối với tôi.
+a1-0655|Our largest customers are in the south of the country.|Những khách hàng lớn nhất của chúng tôi ở phía nam đất nước.
+a1-0658|We offer a special price for long-term customers.|Chúng tôi có mức giá đặc biệt cho khách hàng lâu năm.
+a1-0664|Please stand near the screen while you present.|Vui lòng đứng gần màn hình khi bạn thuyết trình.
+a1-0667|The company made a short statement about the delay.|Công ty đã đưa ra một lời phát biểu ngắn về việc chậm trễ.
+a1-0668|The office is five minutes from the train station.|Văn phòng cách nhà ga tàu năm phút.
+a1-0684|I stop at the supermarket after work.|Tôi ghé siêu thị sau giờ làm.
+a1-0686|Bring a sweater; the meeting room is very cold.|Hãy mang áo len, phòng họp rất lạnh.
+a1-0688|Swimming after work helps me relax.|Bơi lội sau giờ làm giúp tôi thư giãn.
+a1-0689|We printed T-shirts with the company logo for the event.|Chúng tôi in áo phông có logo công ty cho sự kiện.

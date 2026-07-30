@@ -1,0 +1,200 @@
+b2-0292|The company survived the financial crisis.|Công ty đã sống sót qua cuộc khủng hoảng tài chính.
+b2-0293|Price is not the only criterion for choosing a supplier.|Giá không phải tiêu chí duy nhất để chọn nhà cung cấp.
+b2-0294|A well-known critic wrote about our new product.|Một nhà phê bình nổi tiếng đã viết về sản phẩm mới của chúng tôi.
+b2-0295|The next two weeks are critical for this project.|Hai tuần tới là giai đoạn quan trọng của dự án này.
+b2-0296|The report looks critically at our sales process.|Báo cáo nhìn nhận một cách phê phán quy trình bán hàng của chúng tôi.
+b2-0297|The manager accepted the criticism politely.|Quản lý đã tiếp nhận lời phê bình một cách lịch sự.
+b2-0298|Please do not criticize a colleague in front of a client.|Vui lòng đừng chỉ trích đồng nghiệp trước mặt khách hàng.
+b2-0299|Our client sells machines for the rice crop.|Khách hàng của chúng tôi bán máy móc cho vụ lúa.
+b2-0300|Good communication is crucial in this project.|Giao tiếp tốt là yếu tố cốt yếu trong dự án này.
+b2-0301|The company rewarded the top sellers with a cruise.|Công ty đã thưởng cho những người bán giỏi nhất một chuyến du ngoạn bằng tàu.
+b2-0302|There was a cry of surprise when we announced the bonus.|Đã có một tiếng kêu ngạc nhiên khi chúng tôi công bố khoản thưởng.
+b2-0303|The manager's nod was my cue to start the presentation.|Cái gật đầu của quản lý là tín hiệu để tôi bắt đầu thuyết trình.
+b2-0304|There is no quick cure for a bad process.|Không có phương thuốc nhanh nào cho một quy trình tệ.
+b2-0305|The client was curious about our production method.|Khách hàng tò mò về phương pháp sản xuất của chúng tôi.
+b2-0306|The engineer measured the current in the machine.|Kỹ sư đã đo dòng điện trong máy.
+b2-0307|The training curriculum covers six topics.|Chương trình đào tạo bao gồm sáu chủ đề.
+b2-0308|The sales curve is rising again.|Đường cong doanh số đang tăng trở lại.
+b2-0309|The new desk has a curved edge.|Cái bàn mới có cạnh cong.
+b2-0310|The children's packaging has a cute animal on it.|Bao bì cho trẻ em có hình một con vật dễ thương.
+b2-0311|Our client produces dairy products.|Khách hàng của chúng tôi sản xuất các sản phẩm từ sữa.
+b2-0312|Nobody dared to question the deadline.|Không ai dám chất vấn hạn chót.
+b2-0313|The staff left the factory in darkness after the power cut.|Nhân viên rời nhà máy trong bóng tối sau khi mất điện.
+b2-0314|All customer details are kept in one database.|Mọi thông tin khách hàng được lưu trong một cơ sở dữ liệu.
+b2-0315|Please date and sign the contract.|Vui lòng ghi ngày và ký vào hợp đồng.
+b2-0316|The deadline for the report is Friday.|Hạn chót của báo cáo là thứ Sáu.
+b2-0317|The chemicals in the factory can be deadly without a mask.|Hóa chất trong nhà máy có thể gây chết người nếu không đeo khẩu trang.
+b2-0318|We buy parts from a local dealer.|Chúng tôi mua linh kiện từ một đại lý địa phương.
+b2-0319|There was a long debate about the new prices.|Đã có một cuộc tranh luận dài về giá mới.
+b2-0320|The company has no debt to the bank.|Công ty không có khoản nợ nào với ngân hàng.
+b2-0321|The new supplier offers a decent price.|Nhà cung cấp mới đưa ra mức giá khá tốt.
+b2-0322|The goods are stored on the lower deck of the ship.|Hàng được chứa ở boong dưới của con tàu.
+b2-0323|You must declare all goods at customs.|Bạn phải khai báo toàn bộ hàng hóa ở hải quan.
+b2-0324|Sales declined in the second quarter.|Doanh số đã suy giảm trong quý hai.
+b2-0325|The decorations for the anniversary arrive tomorrow.|Đồ trang trí cho lễ kỷ niệm sẽ đến vào ngày mai.
+b2-0326|Costs decreased after we changed the supplier.|Chi phí đã giảm sau khi chúng tôi đổi nhà cung cấp.
+b2-0327|The whole team was deeply disappointed by the result.|Cả nhóm đã thất vọng sâu sắc về kết quả.
+b2-0328|We defeated two competitors to win this contract.|Chúng tôi đã đánh bại hai đối thủ để giành hợp đồng này.
+b2-0329|Our best defence against complaints is good service.|Sự phòng vệ tốt nhất trước khiếu nại là dịch vụ tốt.
+b2-0330|She defended her team's decision at the meeting.|Cô ấy đã bảo vệ quyết định của nhóm mình trong cuộc họp.
+b2-0331|The union is a defender of workers' rights.|Công đoàn là người bảo vệ quyền lợi của người lao động.
+b2-0332|The rain delayed the delivery by one day.|Mưa đã làm chậm việc giao hàng một ngày.
+b2-0333|Please do not delete any file from the shared folder.|Vui lòng đừng xóa tệp nào khỏi thư mục dùng chung.
+b2-0334|The change in the report was deliberate.|Việc thay đổi trong báo cáo là có chủ ý.
+b2-0335|She deliberately left the price out of the email.|Cô ấy đã cố ý không đưa giá vào email.
+b2-0336|The bonus delighted the whole team.|Khoản thưởng đã làm cả nhóm vui thích.
+b2-0337|We are delighted to work with your company.|Chúng tôi rất vui mừng được làm việc với công ty của bạn.
+b2-0338|Delivery takes three working days.|Việc giao hàng mất ba ngày làm việc.
+b2-0339|Demand for this product is rising.|Nhu cầu cho sản phẩm này đang tăng.
+b2-0340|The company is not a democracy, but everyone is heard.|Công ty không phải một nền dân chủ, nhưng mọi người đều được lắng nghe.
+b2-0341|The team made the decision in a democratic way.|Cả nhóm đã ra quyết định theo cách dân chủ.
+b2-0342|The figures demonstrate that our service is improving.|Các con số chứng minh rằng dịch vụ của chúng tôi đang cải thiện.
+b2-0343|The supplier gave a demonstration of the new machine.|Nhà cung cấp đã trình diễn cỗ máy mới.
+b2-0344|The supplier denied that the goods were late.|Nhà cung cấp phủ nhận rằng hàng bị giao muộn.
+b2-0345|The truck departs at six in the morning.|Xe tải khởi hành lúc sáu giờ sáng.
+b2-0346|Our sales are dependent on two large clients.|Doanh số của chúng tôi phụ thuộc vào hai khách hàng lớn.
+b2-0347|The client paid a deposit of twenty per cent.|Khách hàng đã đặt cọc hai mươi phần trăm.
+b2-0348|He felt depressed after losing the contract.|Anh ấy thấy chán nản sau khi mất hợp đồng.
+b2-0349|The sales figures this month are depressing.|Số liệu bán hàng tháng này thật gây chán nản.
+b2-0350|The company supports staff with depression.|Công ty hỗ trợ nhân viên bị trầm cảm.
+b2-0351|The report lacks depth in the market analysis.|Báo cáo thiếu chiều sâu ở phần phân tích thị trường.
+b2-0352|Most of our income derives from exports.|Phần lớn thu nhập của chúng tôi bắt nguồn từ xuất khẩu.
+b2-0353|We will not desert a client in a difficult time.|Chúng tôi sẽ không bỏ rơi khách hàng trong lúc khó khăn.
+b2-0354|The team deserves a bonus for this project.|Cả nhóm xứng đáng nhận thưởng cho dự án này.
+b2-0355|There is a strong desire to improve our service.|Có một khát khao mạnh mẽ cải thiện dịch vụ của chúng tôi.
+b2-0356|We are desperate for more staff in the busy season.|Chúng tôi rất cần thêm nhân sự trong mùa cao điểm.
+b2-0357|The team worked desperately to meet the deadline.|Cả nhóm đã làm việc trong tuyệt vọng để kịp hạn chót.
+b2-0358|The fire caused the destruction of the old warehouse.|Đám cháy đã gây ra sự phá hủy nhà kho cũ.
+b2-0359|Please detail the costs in the second section.|Vui lòng trình bày chi tiết chi phí ở phần thứ hai.
+b2-0360|The client asked for a detailed offer.|Khách hàng đã yêu cầu một chào giá chi tiết.
+b2-0361|The system detects errors in the invoices.|Hệ thống phát hiện lỗi trong các hóa đơn.
+b2-0362|Her determination helped the team finish on time.|Sự quyết tâm của cô ấy đã giúp nhóm hoàn thành đúng hạn.
+b2-0363|We devote two hours a week to training.|Chúng tôi dành hai tiếng mỗi tuần cho việc đào tạo.
+b2-0364|Our prices differ from market to market.|Giá của chúng tôi khác nhau tùy theo từng thị trường.
+b2-0365|The workers dug a channel behind the factory.|Công nhân đã đào một rãnh phía sau nhà máy.
+b2-0366|The office is accessible for staff with a disability.|Văn phòng có thể tiếp cận được cho nhân viên khuyết tật.
+b2-0367|There is a parking space for disabled visitors.|Có chỗ đỗ xe dành cho khách khuyết tật.
+b2-0368|There was a disagreement about the delivery terms.|Đã có sự bất đồng về điều khoản giao hàng.
+b2-0369|We do not want to disappoint our biggest client.|Chúng tôi không muốn làm khách hàng lớn nhất thất vọng.
+b2-0370|The result was a disappointment for everyone.|Kết quả là một sự thất vọng với tất cả mọi người.
+b2-0371|The old training videos are on a disc.|Các video đào tạo cũ nằm trên một chiếc đĩa.
+b2-0372|Meeting deadlines needs discipline.|Đáp ứng hạn chót cần có kỷ luật.
+b2-0373|We can discount the price for a large order.|Chúng tôi có thể giảm giá cho đơn hàng lớn.
+b2-0374|The long approval process discourages new ideas.|Quy trình phê duyệt dài làm nản lòng các ý tưởng mới.
+b2-0375|A dishonest report damages the whole company.|Một báo cáo không trung thực làm hại cả công ty.
+b2-0376|The board dismissed the complaint after the review.|Ban quản trị đã bác bỏ khiếu nại sau khi rà soát.
+b2-0377|The IT team found a disorder in the file system.|Bộ phận công nghệ thông tin phát hiện sự lộn xộn trong hệ thống tệp.
+b2-0378|Our products are displayed at the trade fair.|Sản phẩm của chúng tôi được trưng bày tại hội chợ thương mại.
+b2-0379|We also serve clients in distant provinces.|Chúng tôi cũng phục vụ khách hàng ở các tỉnh xa.
+b2-0380|The two products serve distinct markets.|Hai sản phẩm phục vụ các thị trường riêng biệt.
+b2-0381|It is hard to distinguish between the two designs.|Rất khó phân biệt giữa hai thiết kế.
+b2-0382|Phone notifications distract the whole team.|Thông báo điện thoại làm cả nhóm phân tâm.
+b2-0383|Please distribute the agenda before the meeting.|Vui lòng phân phát chương trình họp trước cuộc họp.
+b2-0384|Our distribution network covers the whole country.|Mạng lưới phân phối của chúng tôi phủ khắp cả nước.
+b2-0385|Our office is in the business district.|Văn phòng của chúng tôi ở khu kinh doanh.
+b2-0386|Please do not disturb the team during the client call.|Vui lòng đừng làm phiền nhóm trong cuộc gọi với khách hàng.
+b2-0387|Sales took a dive after the price increase.|Doanh số đã lao dốc sau đợt tăng giá.
+b2-0388|We have a diverse team from five provinces.|Chúng tôi có một đội ngũ đa dạng đến từ năm tỉnh.
+b2-0389|Diversity makes our team stronger.|Sự đa dạng làm cho nhóm của chúng tôi mạnh hơn.
+b2-0390|There is a divide between the sales and technical teams.|Có một sự chia rẽ giữa nhóm kinh doanh và nhóm kỹ thuật.
+b2-0391|She works in the export division.|Cô ấy làm ở bộ phận xuất khẩu.
+b2-0392|A divorce does not change your employment contract.|Việc ly hôn không làm thay đổi hợp đồng lao động của bạn.
+b2-0393|Please document every step of the process.|Vui lòng ghi chép lại từng bước của quy trình.
+b2-0394|Domestic sales are stronger than exports this year.|Doanh số trong nước mạnh hơn xuất khẩu trong năm nay.
+b2-0395|Our brand is dominant in the northern market.|Thương hiệu của chúng tôi chiếm ưu thế ở thị trường phía bắc.
+b2-0396|Two large companies dominate this market.|Hai công ty lớn thống trị thị trường này.
+b2-0397|The company made a donation to the local school.|Công ty đã quyên góp cho trường học địa phương.
+b2-0398|Please put a dot next to the urgent items.|Vui lòng đánh một dấu chấm cạnh những mục gấp.
+b2-0399|Our new office is downtown.|Văn phòng mới của chúng tôi ở trung tâm thành phố.
+b2-0400|Costs have moved downwards since March.|Chi phí đã đi xuống kể từ tháng Ba.
+b2-0401|We ordered a dozen chairs for the meeting room.|Chúng tôi đã đặt một tá ghế cho phòng họp.
+b2-0402|Please send me a draft of the contract.|Vui lòng gửi tôi bản nháp của hợp đồng.
+b2-0403|The approval process drags on for weeks.|Quy trình phê duyệt kéo lê hàng tuần.
+b2-0404|There was a dramatic rise in online orders.|Đã có một sự tăng vọt trong đơn hàng trực tuyến.
+b2-0405|Costs rose dramatically after the new tax.|Chi phí đã tăng mạnh sau khi có thuế mới.
+b2-0406|The drought affected our client's harvest.|Hạn hán đã ảnh hưởng đến vụ thu hoạch của khách hàng chúng tôi.
+b2-0407|The old brochure looks dull next to the new one.|Cuốn tài liệu cũ trông buồn tẻ bên cạnh cái mới.
+b2-0408|The factory must not dump waste into the river.|Nhà máy không được đổ chất thải xuống sông.
+b2-0409|Please confirm the duration of the training.|Vui lòng xác nhận thời lượng của buổi đào tạo.
+b2-0410|We work in a dynamic market.|Chúng tôi làm việc trong một thị trường biến động.
+b2-0411|She studied economics before joining our finance team.|Cô ấy học kinh tế học trước khi vào nhóm tài chính của chúng tôi.
+b2-0412|An economist gave a talk at our annual meeting.|Một nhà kinh tế học đã có bài nói tại cuộc họp thường niên.
+b2-0413|Please edit the report before we send it.|Vui lòng biên tập báo cáo trước khi chúng ta gửi.
+b2-0414|This is the third edition of our catalogue.|Đây là ấn bản thứ ba của cuốn catalogue.
+b2-0415|The editorial team checks every brochure.|Nhóm biên tập kiểm tra mọi tài liệu quảng cáo.
+b2-0416|The new process is more efficient.|Quy trình mới hiệu quả hơn.
+b2-0417|The team handled the complaints efficiently.|Cả nhóm đã xử lý các khiếu nại một cách hiệu quả.
+b2-0418|He hurt his elbow on the door of the meeting room.|Anh ấy bị đau khuỷu tay ở cửa phòng họp.
+b2-0419|Our product is designed for elderly users.|Sản phẩm của chúng tôi được thiết kế cho người dùng cao tuổi.
+b2-0420|The staff elected two people to the safety committee.|Nhân viên đã bầu hai người vào ban an toàn.
+b2-0421|Our client sells consumer electronics.|Khách hàng của chúng tôi bán đồ điện tử tiêu dùng.
+b2-0422|The new packaging looks simple and elegant.|Bao bì mới trông đơn giản và thanh lịch.
+b2-0423|The course covers elementary accounting.|Khóa học bao gồm kế toán cơ bản.
+b2-0424|The new system eliminates most paperwork.|Hệ thống mới loại bỏ phần lớn giấy tờ.
+b2-0425|If we cannot agree, the client will buy elsewhere.|Nếu chúng ta không thống nhất được, khách hàng sẽ mua ở nơi khác.
+b2-0426|The team embraced the new working method.|Cả nhóm đã đón nhận phương pháp làm việc mới.
+b2-0427|A new competitor emerged in this market.|Một đối thủ mới đã nổi lên trong thị trường này.
+b2-0428|The factory reduced its emissions this year.|Nhà máy đã giảm lượng khí thải trong năm nay.
+b2-0429|Try to keep the discussion factual, not emotional.|Hãy cố giữ cuộc thảo luận dựa trên sự thật, không phải cảm xúc.
+b2-0430|Losing that client hit the team emotionally.|Việc mất khách hàng đó đã tác động đến nhóm về mặt cảm xúc.
+b2-0431|The manager put emphasis on customer service.|Quản lý đã nhấn mạnh vào dịch vụ khách hàng.
+b2-0432|I want to emphasize the importance of the deadline.|Tôi muốn nhấn mạnh tầm quan trọng của hạn chót.
+b2-0433|The founder built a small business empire.|Người sáng lập đã xây dựng một đế chế kinh doanh nhỏ.
+b2-0434|The new tool enables us to track every order.|Công cụ mới cho phép chúng tôi theo dõi mọi đơn hàng.
+b2-0435|We encountered a problem with the new software.|Chúng tôi đã gặp phải một vấn đề với phần mềm mới.
+b2-0436|The presentation engaged the whole audience.|Bài thuyết trình đã thu hút toàn bộ khán giả.
+b2-0437|The new design enhances the product's value.|Thiết kế mới nâng cao giá trị của sản phẩm.
+b2-0438|The team event was very enjoyable.|Sự kiện của nhóm thật sự rất thú vị.
+b2-0439|We received an enquiry from a new client.|Chúng tôi nhận được một thư hỏi hàng từ khách hàng mới.
+b2-0440|Please ensure that the goods leave today.|Vui lòng đảm bảo rằng hàng rời kho hôm nay.
+b2-0441|The training video is short and entertaining.|Video đào tạo ngắn gọn và mang tính giải trí.
+b2-0442|Her enthusiasm helps the whole team.|Sự nhiệt tình của cô ấy giúp ích cho cả nhóm.
+b2-0443|The client was enthusiastic about the new design.|Khách hàng đã rất hăng hái với thiết kế mới.
+b2-0444|The entire team worked on this order.|Toàn bộ nhóm đã làm việc cho đơn hàng này.
+b2-0445|The delay was entirely our fault.|Việc chậm trễ hoàn toàn là lỗi của chúng tôi.
+b2-0446|The founder is a well-known entrepreneur.|Người sáng lập là một doanh nhân khởi nghiệp nổi tiếng.
+b2-0447|Please put the contract in a large envelope.|Vui lòng cho hợp đồng vào một phong bì lớn.
+b2-0448|In this team, everyone is treated as an equal.|Trong nhóm này, mọi người đều được đối xử như người ngang hàng.
+b2-0449|Every meeting room is equipped with a screen.|Mọi phòng họp đều được trang bị màn hình.
+b2-0450|One euro is roughly the equivalent of this price.|Một euro tương đương xấp xỉ mức giá này.
+b2-0451|The company entered a new era after the merger.|Công ty bước vào một kỷ nguyên mới sau vụ sáp nhập.
+b2-0452|A conflict erupted between the two departments.|Một mâu thuẫn đã bùng nổ giữa hai phòng ban.
+b2-0453|The two offers are essentially the same.|Hai chào giá về cơ bản là giống nhau.
+b2-0454|The company was established in 1995.|Công ty được thành lập vào năm 1995.
+b2-0455|Our client works in real estate.|Khách hàng của chúng tôi làm về bất động sản.
+b2-0456|Could you estimate the cost of the project?|Bạn ước tính chi phí của dự án được không?
+b2-0457|A strong work ethic is valued in this company.|Đạo đức làm việc tốt được coi trọng trong công ty này.
+b2-0458|We follow ethical rules when choosing suppliers.|Chúng tôi tuân theo các quy tắc đạo đức khi chọn nhà cung cấp.
+b2-0459|Our staff come from many ethnic backgrounds.|Nhân viên của chúng tôi đến từ nhiều nền dân tộc khác nhau.
+b2-0460|We evaluate every supplier once a year.|Chúng tôi đánh giá mọi nhà cung cấp mỗi năm một lần.
+b2-0461|The evaluation of the project is on the shared drive.|Bản đánh giá dự án nằm trên ổ đĩa dùng chung.
+b2-0462|Please split the work into even parts.|Vui lòng chia công việc thành các phần đều nhau.
+b2-0463|It is evident that we need a faster process.|Rõ ràng là chúng ta cần một quy trình nhanh hơn.
+b2-0464|There is no evil intention behind the price change.|Không có ý đồ xấu xa nào đằng sau việc đổi giá.
+b2-0465|The evolution of our service took ten years.|Sự tiến hóa của dịch vụ chúng tôi mất mười năm.
+b2-0466|Our company evolved from a small family shop.|Công ty chúng tôi phát triển lên từ một cửa hàng gia đình nhỏ.
+b2-0467|A careful examination of the invoice found the error.|Việc kiểm tra kỹ hóa đơn đã tìm ra lỗi.
+b2-0468|Sales exceeded our target this quarter.|Doanh số đã vượt chỉ tiêu trong quý này.
+b2-0469|We make no exception to the safety rules.|Chúng tôi không có ngoại lệ nào với quy định an toàn.
+b2-0470|The excessive paperwork slows down the team.|Lượng giấy tờ quá mức làm chậm cả nhóm.
+b2-0471|The price excludes tax and delivery.|Giá này không bao gồm thuế và phí giao hàng.
+b2-0472|A late supplier is not an excuse for a late report.|Nhà cung cấp trễ không phải lời bào chữa cho báo cáo trễ.
+b2-0473|The chief executive will visit our branch.|Giám đốc điều hành sẽ đến thăm chi nhánh của chúng tôi.
+b2-0474|We will exhibit our products at the fair in May.|Chúng tôi sẽ trưng bày sản phẩm tại hội chợ vào tháng Năm.
+b2-0475|The company has been in existence for thirty years.|Công ty đã tồn tại được ba mươi năm.
+b2-0476|The emergency exit is at the end of the corridor.|Lối thoát hiểm ở cuối hành lang.
+b2-0477|The client sells exotic fruit to European markets.|Khách hàng bán trái cây ngoại lai sang các thị trường châu Âu.
+b2-0478|The expansion into Asia starts next year.|Việc mở rộng sang châu Á bắt đầu vào năm sau.
+b2-0479|The result was below our expectation.|Kết quả thấp hơn kỳ vọng của chúng tôi.
+b2-0480|Please send your travel expenses to accounting.|Vui lòng gửi chi phí đi lại của bạn cho kế toán.
+b2-0481|Her expertise in logistics is very valuable.|Chuyên môn của cô ấy về hậu cần rất giá trị.
+b2-0482|We should exploit this opportunity in the new market.|Chúng ta nên khai thác cơ hội này ở thị trường mới.
+b2-0483|The exploration of new markets takes time.|Việc thăm dò các thị trường mới cần thời gian.
+b2-0484|The audit exposed a weakness in our process.|Cuộc kiểm toán đã phơi bày một điểm yếu trong quy trình của chúng tôi.
+b2-0485|Long exposure to noise harms the workers' hearing.|Việc tiếp xúc lâu với tiếng ồn gây hại thính giác của công nhân.
+b2-0486|The client wants to extend the contract by one year.|Khách hàng muốn gia hạn hợp đồng thêm một năm.
+b2-0487|We asked for an extension of the deadline.|Chúng tôi đã xin gia hạn thời hạn.
+b2-0488|The report is based on extensive research.|Báo cáo dựa trên nghiên cứu sâu rộng.
+b2-0489|This method is used extensively in our industry.|Phương pháp này được dùng rộng rãi trong ngành của chúng tôi.
+b2-0490|To what extent can we lower the price?|Chúng ta có thể giảm giá đến mức nào?
+b2-0491|We hired an external auditor.|Chúng tôi đã thuê một kiểm toán viên bên ngoài.
