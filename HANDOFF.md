@@ -21,7 +21,44 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-30) — v1.16.0: Layout game Ghép thẻ + hướng dẫn nhập hàng loạt
+## Phiên làm việc gần nhất (2026-07-30) — v1.16.1: nạp 3940 từ Oxford A1–B2 vào DB (chỉ dữ liệu, không đụng code app)
+
+User đưa file `D:\ENGLISH\Oxford_Vocabulary_A1_B2.xlsx` và yêu cầu nạp hết vào 4 chủ đề
+`Từ Vựng Oxford 3000 A1/A2/B1/B2`. **Không sửa dòng code nào trong `src/`** — chỉ thêm script
+nhập liệu và ghi thẳng vào Supabase.
+
+- **File nguồn:** sheet `Vocabulary Data`, 4 cột `Từ vựng | Từ loại (POS) | Cấp độ CEFR |
+  Nghĩa tiếng Việt`. **Không có phiên âm, không có câu ví dụ.** Đã trích ra
+  `scripts/oxford-a1-b2.json` (3943 dòng, có commit — để lần sau chạy lại không cần mở Excel).
+- **Script `scripts/import-oxford.mjs`** (dry-run mặc định, `--apply` mới ghi):
+  - `word` = giữ NGUYÊN ô Từ vựng, kể cả chú thích phân biệt nghĩa của Oxford như
+    `kind (type)`, `light (not heavy)` (33 thẻ) — `cleanWordForGame()` vốn đã bóc phần trong
+    ngoặc nên Luyện Gõ / Ong Chính Tả không bị dính.
+  - `meaning` = **một dòng** `Nghĩa: (n.) sân bay` — POS nhét vào đầu dòng Nghĩa vì không có
+    trường riêng cho từ loại; đúng format `formatCardMeaning`, `pickMeaning` đọc ra được ngay.
+  - `id` = `oxford-a1-0001` (deterministic) ⇒ **chạy lại script là no-op**, và muốn xoá sạch
+    đợt nhập này chỉ cần xoá các id bắt đầu bằng `oxford-`. Script còn skip theo cặp
+    (deck, word) nên chạy lại kể cả khi id đổi cũng không tạo thẻ trùng.
+  - Gộp 3 trường hợp trùng từ trong cùng cấp độ (`ring`, `firm`, `tear`) thành 1 thẻ:
+    `Nghĩa: (n.) chiếc nhẫn, vòng tròn; (v.) rung chuông, gọi điện`.
+- **Kết quả thật trên DB:** 3332 → **7272 thẻ**. A1 836 · A2 871 · B1 808 · B2 1425 (tổng 3940).
+  Đã verify sau khi ghi: 0 thẻ sai format meaning, 0 thẻ rỗng, 0 thẻ trùng từ trong cùng chủ đề,
+  status đều `new`. Backup DB trước khi ghi: `scripts/_backup_cards_before_oxford.json`
+  (đã gitignore, KHÔNG commit).
+- **Đã kiểm chứng trên production** (https://flashlearn-its7.vercel.app, không bấm nút ghi dữ
+  liệu nào): dropdown có đủ 4 chủ đề mới; tab Thêm từ hiện `836 từ` cho A1 với preview nghĩa
+  đúng (`across → (prep., adv.) ngang qua, băng qua`); tab Học bài `ĐANG HỌC: 836 TỪ`, lật thẻ
+  `week → (n.) tuần`. Dữ liệu nằm ở Supabase nên **không cần deploy lại** mới thấy.
+- **Thiếu dữ liệu ở file nguồn (chưa xử lý):** sheet Dashboard ghi A1 = 900 từ nhưng thực tế chỉ
+  có 836 dòng — **64 dòng đầu của khối A1 (rows 2–85) bị TRỐNG hoàn toàn trong file Excel**, tức
+  các từ A1 đứng trước `across` theo thứ tự chữ cái (a, about, above, action…) đã bị mất từ lúc
+  tạo file. A2/B1/B2 khớp đúng dashboard (872 → 871 sau gộp `ring`; 808; 1427 → 1425 sau gộp
+  `firm`/`tear`). Muốn đủ 900 từ A1 thì phải bổ sung 64 từ đó từ nguồn khác rồi chạy lại script
+  (script tự bỏ qua thẻ đã có).
+- Các game (Kiểm tra/Ghép thẻ/Luyện Gõ/Ong Chính Tả) chỉ chạy trên thẻ **đã thuộc**, nên 4 chủ đề
+  mới sẽ hiện "cần ít nhất 3 từ" cho tới khi user học và đánh dấu Đã thuộc — đúng hành vi sẵn có.
+
+## Phiên trước (2026-07-30) — v1.16.0: Layout game Ghép thẻ + hướng dẫn nhập hàng loạt
 
 User báo "layout của game ghép thẻ chưa hợp lý" và "UI chỗ thêm từ hàng loạt bị xấu text".
 
