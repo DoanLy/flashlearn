@@ -2,7 +2,7 @@
   "homepage": "https://DoanLy.github.io/flashlearn",
   "name": "flashlearn",
   "private": true,
-  "version": "1.16.2",
+  "version": "1.16.3",
   "type": "module",
   "scripts": {
     "dev": "vite",

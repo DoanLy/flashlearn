@@ -21,7 +21,36 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-30) — v1.16.2: bổ sung Phiên âm + Ví dụ (ngữ cảnh văn phòng) cho 3334 thẻ Oxford
+## Phiên làm việc gần nhất (2026-07-31) — v1.16.3: fix "Nghĩa/Ví dụ xuống dòng bị tách sang field khác"
+
+**Lỗi user báo:** ở tab Thêm từ, gõ nhiều dòng trong ô *Nghĩa của từ* rồi lưu; mở Sửa lên thì
+dòng 2 nhảy sang ô *Ví dụ* (ví dụ thẻ CHART/"Rất mạnh": `dramatically` ở ô Nghĩa, `enormously`
+ở ô Ví dụ).
+
+- **Nguyên nhân:** cột `meaning` lưu theo dòng (`Phiên âm: … / Nghĩa: … / Ví dụ: …`), nhưng
+  `parseCardFields` chỉ lấy phần SAU nhãn trên **đúng 1 dòng**; mọi dòng không nhãn bị dồn vào
+  mảng `rest`, rồi `rest` được gán bừa sang `example`. Tệ hơn: nếu `example` đã có sẵn thì
+  `rest` bị **vứt luôn** ⇒ 6 thẻ `IELT LỚP 2` (Divorce, Earthquake, Requirement, Spread,
+  Reserve, Get married) mất dòng dịch tiếng Việt trong ngoặc mỗi khi mở Sửa rồi Lưu.
+- **Cách sửa (`src/App.jsx`):**
+  - `parseCardFields` giờ nhớ "trường đang mở" — dòng không nhãn nằm sau `Nghĩa:`/`Ví dụ:` được
+    nối vào chính trường đó bằng `\n`. `Phiên âm:` **không** mở nhận dòng nối tiếp (ô nhập là
+    `<input>`, luôn 1 dòng) nên dữ liệu cũ dạng `Phiên âm: … / <dòng nghĩa không nhãn>` vẫn parse
+    y như trước.
+  - `pickMeaning` gọi thẳng `parseCardFields` (trước đây tự tách dòng riêng, chỉ trả về 1 dòng).
+  - Mặt sau thẻ học: thêm `whitespace-pre-line` cho khối Nghĩa và Ví dụ để thấy đúng chỗ xuống dòng.
+  - 4 ô textarea (Thêm từ + Sửa) `rows` 2 → 3 và `resize-y` cho dễ gõ nhiều dòng; placeholder ô
+    Nghĩa nhắc "nhấn Enter để xuống dòng".
+- **Không cần sửa dữ liệu trên DB** — chuỗi đang lưu vốn đã đúng, chỉ có parser đọc sai.
+- **Kiểm chứng:** `scripts/check-card-field-parsing.mjs` (read-only, chạy `node
+  scripts/check-card-field-parsing.mjs`) so parser cũ vs mới trên **cả 6692 thẻ thật**:
+  chỉ **8 thẻ** đổi kết quả (đúng 8 thẻ đang bị lỗi: 2 thẻ CHART + 6 thẻ IELT LỚP 2 nói trên),
+  6684 thẻ còn lại y hệt; **0 thẻ** fail round-trip `parse → format → parse`.
+  Chạy thật trên `npm run dev`: mở Sửa thẻ "Rất mạnh" → ô Nghĩa có đủ `dramatically\nenormously`,
+  ô Ví dụ rỗng; thêm 1 thẻ tạm nhiều dòng → DB lưu đúng → mở Sửa đọc lại đúng → **đã xoá thẻ tạm**
+  (tổng thẻ vẫn 6692, không đụng `status` thẻ nào).
+
+## Phiên trước (2026-07-30) — v1.16.2: bổ sung Phiên âm + Ví dụ (ngữ cảnh văn phòng) cho 3334 thẻ Oxford
 
 User yêu cầu 4 chủ đề `Từ Vựng Oxford 3000 A1/A2/B1/B2` phải có phiên âm và câu ví dụ, ưu
 tiên ví dụ liên quan **giao tiếp văn phòng**. **Không sửa dòng code nào trong `src/`** — chỉ

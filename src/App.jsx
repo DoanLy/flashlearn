@@ -1403,40 +1403,59 @@ const playableCards = (cards) =>
 // Ưu tiên dòng "Nghĩa:", nếu không có thì bỏ các dòng phiên âm/ví dụ; thẻ đơn giản (chỉ 1 dòng
 // nghĩa) trả về nguyên văn.
 const pickMeaning = (raw) => {
-  const lines = (raw || "").split("\n").map((s) => s.trim()).filter(Boolean);
-  if (!lines.length) return (raw || "").trim();
-  const ngh = lines.find((l) => /^nghĩa\s*[:：]/i.test(l));
-  if (ngh) return ngh.replace(/^nghĩa\s*[:：]\s*/i, "").trim();
-  const rest = lines.filter(
-    (l) => !/^(phiên âm|ipa|ví dụ|example|pron)\s*[:：]/i.test(l) && !/^\/[^/]*\/$/.test(l),
-  );
-  return (rest[0] || lines[0]).trim();
+  const { meaning } = parseCardFields(raw);
+  if (meaning) return meaning;
+  return (raw || "").trim();
 };
 
 // Tách cột `meaning` (format chuẩn 3 dòng "Phiên âm: … / Nghĩa: … / Ví dụ: …")
 // thành 3 trường riêng cho form Thêm/Sửa từ và mặt sau thẻ học. Chấp nhận cả
 // biến thể nhãn (IPA/Pron, "Nghĩa của từ", Example) và thứ tự dòng bất kỳ.
 // Thẻ cũ không có nhãn (chỉ 1 dòng nghĩa thuần) vẫn parse ra đúng { meaning }.
+//
+// Nghĩa và Ví dụ được phép XUỐNG DÒNG: mọi dòng không mang nhãn nằm ngay sau
+// "Nghĩa:"/"Ví dụ:" được coi là phần tiếp theo của chính trường đó (giữ nguyên
+// ký tự xuống dòng), thay vì bị đẩy sang trường khác. Dòng không nhãn đứng
+// trước mọi nhãn vẫn theo luật cũ (dòng đầu = nghĩa, phần còn lại = ví dụ).
 const parseCardFields = (raw) => {
   const lines = (raw || "").split("\n").map((s) => s.trim()).filter(Boolean);
   let phonetic = "";
-  let meaning = "";
-  let example = "";
+  const meaningLines = [];
+  const exampleLines = [];
   const rest = [];
+  // Trường đang mở để nhận các dòng nối tiếp; null = chưa gặp nhãn nào
+  let current = null;
   lines.forEach((l) => {
     let m;
     if (!phonetic && (m = l.match(/^(phiên âm|ipa|pron)\s*[:：]\s*(.*)$/i))) {
       phonetic = m[2].trim();
-    } else if (!meaning && (m = l.match(/^nghĩa(\s*của\s*từ)?\s*[:：]\s*(.*)$/i))) {
-      meaning = m[2].trim();
-    } else if (!example && (m = l.match(/^(ví dụ|example)\s*[:：]\s*(.*)$/i))) {
-      example = m[2].trim();
+      // Phiên âm luôn 1 dòng (ô nhập là <input>) nên không mở nhận dòng nối tiếp
+      current = null;
+    } else if (
+      !meaningLines.length &&
+      (m = l.match(/^nghĩa(\s*của\s*từ)?\s*[:：]\s*(.*)$/i))
+    ) {
+      if (m[2].trim()) meaningLines.push(m[2].trim());
+      current = "meaning";
+    } else if (
+      !exampleLines.length &&
+      (m = l.match(/^(ví dụ|example)\s*[:：]\s*(.*)$/i))
+    ) {
+      if (m[2].trim()) exampleLines.push(m[2].trim());
+      current = "example";
     } else if (!phonetic && /^\/[^/]*\/$/.test(l)) {
       phonetic = l;
+      current = null;
+    } else if (current === "meaning") {
+      meaningLines.push(l);
+    } else if (current === "example") {
+      exampleLines.push(l);
     } else {
       rest.push(l);
     }
   });
+  let meaning = meaningLines.join("\n");
+  let example = exampleLines.join("\n");
   if (!meaning) meaning = rest.shift() || "";
   if (!example && rest.length) example = rest.join(" ");
   return { phonetic, meaning, example };
@@ -4670,9 +4689,9 @@ export default function App() {
                     <textarea
                       value={meaningInput}
                       onChange={(e) => setMeaningInput(e.target.value)}
-                      placeholder="VD: đỉnh cao"
-                      rows={2}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-none"
+                      placeholder={"VD: đỉnh cao\n(nhấn Enter để xuống dòng)"}
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-y"
                       required
                     />
                   </div>
@@ -4687,8 +4706,8 @@ export default function App() {
                       value={exampleInput}
                       onChange={(e) => setExampleInput(e.target.value)}
                       placeholder="VD: Traffic reaches its peak between 8 and 9 in the morning."
-                      rows={2}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-none"
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border-none focus:ring-2 focus:ring-blue-500 transition-shadow outline-none resize-y"
                     />
                   </div>
                   <button
@@ -4829,15 +4848,15 @@ export default function App() {
                             <textarea
                               value={editMeaning}
                               onChange={(e) => setEditMeaning(e.target.value)}
-                              rows={2}
-                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
+                              rows={3}
+                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-y"
                               placeholder="Nghĩa của từ"
                             />
                             <textarea
                               value={editExample}
                               onChange={(e) => setEditExample(e.target.value)}
-                              rows={2}
-                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
+                              rows={3}
+                              className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-y"
                               placeholder="Ví dụ (không bắt buộc)"
                             />
                           </div>
@@ -5031,12 +5050,12 @@ export default function App() {
                           </p>
                         )}
                         {!backIsWord && (
-                          <p className="text-white text-center select-none w-full break-words text-2xl font-semibold">
+                          <p className="text-white text-center select-none w-full break-words whitespace-pre-line text-2xl font-semibold">
                             {backText}
                           </p>
                         )}
                         {currentCardFields.example && (
-                          <p className="text-blue-100/85 text-center select-none w-full break-words text-sm italic leading-relaxed border-t border-white/15 pt-3 mt-1">
+                          <p className="text-blue-100/85 text-center select-none w-full break-words whitespace-pre-line text-sm italic leading-relaxed border-t border-white/15 pt-3 mt-1">
                             {currentCardFields.example}
                           </p>
                         )}
