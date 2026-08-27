@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
+import React, { useState, useEffect, useMemo, useRef, Fragment } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   Plus,
@@ -33,7 +33,11 @@ import {
   Rewind,
   Upload,
   Eye,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import { lookupWord, collectStudyWords, translateWords } from "./lib/vocab";
 
 // ============================================================================
 // SUPABASE CLIENT
@@ -62,7 +66,8 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   const [isAddingMode, setIsAddingMode] = useState(false);
   const [targetDeck, setTargetDeck] = useState("Chung");
-  const [wordCache, setWordCache] = useState({});
+  // Không còn cache riêng ở component: lib/vocab đã cache nghĩa trong localStorage nên kết
+  // quả dùng chung được cho cả màn Phát âm lẫn Chép chính tả và sống qua reload trang.
 
   const recognitionRef = useRef(null);
   const spokenTextRef = useRef("");
@@ -276,56 +281,24 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     }
   };
 
-  const handleWordClick = async (wordObj) => {
+  // Tra nghĩa dùng chung lib/vocab (cache localStorage → bảng CEFR offline → /api/translate),
+  // nhận kết quả DẦN nên phần nào có trước hiện trước, không đứng hình chờ mạng.
+  const lookupCancelRef = useRef(null);
+  const handleWordClick = (wordObj) => {
     if (!wordObj?.clean) return;
     speakText(wordObj.clean);
     setIsAddingMode(false);
 
-    if (wordCache[wordObj.clean]) {
-      setSelectedWord({
-        ...wordObj,
-        ...wordCache[wordObj.clean],
-        loading: false,
-      });
-      return;
-    }
-
-    setSelectedWord({ ...wordObj, loading: true });
-
-    try {
-      const dictPromise = fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${wordObj.clean}`,
-      ).then((res) => (res.ok ? res.json() : null));
-
-      const transPromise = fetch(
-        `https://api.mymemory.translated.net/get?q=${wordObj.clean}&langpair=en|vi`,
-      ).then((res) => (res.ok ? res.json() : null));
-
-      const [dictData, transData] = await Promise.all([
-        dictPromise,
-        transPromise,
-      ]);
-
-      const phonetic =
-        dictData?.[0]?.phonetic ||
-        dictData?.[0]?.phonetics?.find((p) => p.text)?.text ||
-        "n/a";
-      const meaning =
-        transData?.responseData?.translatedText || "Không có dữ liệu.";
-
-      const data = { meaning, phonetic };
-      setWordCache((prev) => ({ ...prev, [wordObj.clean]: data }));
-      setSelectedWord({ ...wordObj, ...data, loading: false });
-    } catch (error) {
-      console.error("Lỗi khi tra từ:", error);
-      setSelectedWord({
-        ...wordObj,
-        loading: false,
-        meaning: "Lỗi kết nối.",
-        phonetic: "",
-      });
-    }
+    lookupCancelRef.current?.();
+    setSelectedWord({ ...wordObj, loading: true, meaning: "", phonetic: "" });
+    lookupCancelRef.current = lookupWord(wordObj.clean, (patch) => {
+      setSelectedWord((prev) =>
+        prev?.clean === wordObj.clean ? { ...prev, ...patch } : prev,
+      );
+    });
   };
+
+  useEffect(() => () => lookupCancelRef.current?.(), []);
 
   const handleAddSubmit = () => {
     if (selectedWord && selectedWord.meaning && onAddFlashcard) {
@@ -471,15 +444,9 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
             <X size={18} />
           </button>
 
-          {selectedWord.loading ? (
-            <div className="flex flex-col items-center py-6 gap-3">
-              <Loader2 className="animate-spin text-blue-400 w-8 h-8" />
-              <p className="text-xs text-slate-400 tracking-widest uppercase font-bold">
-                Đang tra cứu...
-              </p>
-            </div>
-          ) : (
+          {(
             <>
+              {/* Từ + nút phát âm hiện ngay; nghĩa/phiên âm chèn vào khi lấy được. */}
               <div className="flex items-center justify-between mb-3 pr-6">
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col">
@@ -554,9 +521,16 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                       <span className="block text-[10px] font-bold uppercase text-slate-500">
                         Nghĩa
                       </span>
-                      <p className="text-sm font-medium leading-relaxed">
-                        {selectedWord.meaning}
-                      </p>
+                      {selectedWord.loading && !selectedWord.meaning ? (
+                        <p className="flex items-center gap-2 text-sm text-slate-400">
+                          <Loader2 className="animate-spin w-4 h-4 text-blue-400" /> Đang tra
+                          cứu…
+                        </p>
+                      ) : (
+                        <p className="text-sm font-medium leading-relaxed">
+                          {selectedWord.meaning}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -2997,10 +2971,9 @@ function loadYouTubeIframeAPI() {
 }
 
 // Card tra nghĩa 1 từ khi bấm vào (phiên âm + nghĩa + phát âm + Lưu từ học) — dùng cho màn chép
-// chính tả, cùng kiểu popup với menu Phát âm. Tự fetch phiên âm (dictionaryapi.dev) và nghĩa
-// (mymemory), có cache toàn cục để mở lại không phải gọi mạng.
-const wordMeaningCache = {};
-
+// chính tả, cùng kiểu popup với menu Phát âm. Việc tra do lib/vocab lo: ưu tiên cache
+// localStorage → bảng CEFR offline → /api/translate, và trả kết quả DẦN nên không còn cảnh
+// đứng ở "Đang tra cứu..." khi mạng chậm.
 function speakEnglishWord(text) {
   if ("speechSynthesis" in window && text) {
     window.speechSynthesis.cancel();
@@ -3012,55 +2985,25 @@ function speakEnglishWord(text) {
 
 const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) => {
   const clean = cleanDictationWord(word);
-  const [data, setData] = useState(() => wordMeaningCache[clean] || null);
-  const [loading, setLoading] = useState(!wordMeaningCache[clean]);
+  const [data, setData] = useState({ phonetic: "", meaning: "", level: "", source: "" });
+  const [loading, setLoading] = useState(true);
+  const [attempt, setAttempt] = useState(0); // tăng lên để tra lại khi lỗi mạng
   const [isAddingMode, setIsAddingMode] = useState(false);
   const deckOptions = existingDecks.filter((d) => d !== "Tất cả");
   const [targetDeck, setTargetDeck] = useState(deckOptions[0] || "Chung");
 
   useEffect(() => {
-    let cancelled = false;
     speakEnglishWord(clean);
     setIsAddingMode(false);
-    if (wordMeaningCache[clean]) {
-      setData(wordMeaningCache[clean]);
-      setLoading(false);
-      return;
-    }
-    setData(null);
+    setData({ phonetic: "", meaning: "", level: "", source: "" });
     setLoading(true);
-    (async () => {
-      try {
-        const [dictData, transData] = await Promise.all([
-          fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${clean}`).then((r) =>
-            r.ok ? r.json() : null,
-          ),
-          fetch(`https://api.mymemory.translated.net/get?q=${clean}&langpair=en|vi`).then((r) =>
-            r.ok ? r.json() : null,
-          ),
-        ]);
-        const phonetic =
-          dictData?.[0]?.phonetic ||
-          dictData?.[0]?.phonetics?.find((p) => p.text)?.text ||
-          "";
-        const meaning = transData?.responseData?.translatedText || "Không có dữ liệu.";
-        const d = { phonetic, meaning };
-        wordMeaningCache[clean] = d;
-        if (!cancelled) {
-          setData(d);
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setData({ phonetic: "", meaning: "Lỗi kết nối." });
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [clean]);
+    // lookupWord bắn kết quả nhiều lần (tức thì từ cache/CEFR, rồi nghĩa, rồi phiên âm) và
+    // trả về hàm huỷ để không setState sau khi card đã đóng.
+    return lookupWord(clean, (patch) => {
+      setData((prev) => ({ ...prev, ...patch }));
+      if (patch.loading !== undefined) setLoading(patch.loading);
+    });
+  }, [clean, attempt]);
 
   if (!clean) return null;
 
@@ -3080,19 +3023,21 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
         <X size={18} />
       </button>
 
-      {loading ? (
-        <div className="flex flex-col items-center py-6 gap-3">
-          <Loader2 className="animate-spin text-blue-400 w-8 h-8" />
-          <p className="text-xs text-slate-400 tracking-widest uppercase font-bold">
-            Đang tra cứu...
-          </p>
-        </div>
-      ) : (
+      {(
         <>
+          {/* Từ + nút phát âm hiện NGAY, không chờ mạng: học viên nghe lại được liền còn nghĩa
+              thì chèn vào sau khi có. */}
           <div className="flex items-center justify-between mb-3 pr-6">
             <div className="flex items-center gap-3">
               <div className="flex flex-col">
-                <h4 className="text-xl font-bold text-blue-400">{clean}</h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xl font-bold text-blue-400">{clean}</h4>
+                  {data?.level && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300">
+                      {data.level}
+                    </span>
+                  )}
+                </div>
                 {data?.phonetic && (
                   <span className="text-sm text-slate-400 italic font-mono">
                     {data.phonetic}
@@ -3152,11 +3097,25 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
             ) : (
               <div className="flex items-start gap-2">
                 <Languages className="text-blue-400 mt-1 shrink-0" size={14} />
-                <div>
+                <div className="min-w-0">
                   <span className="block text-[10px] font-bold uppercase text-slate-500">
                     Nghĩa
                   </span>
-                  <p className="text-sm font-medium leading-relaxed">{data?.meaning}</p>
+                  {loading && !data?.meaning ? (
+                    <p className="flex items-center gap-2 text-sm text-slate-400">
+                      <Loader2 className="animate-spin w-4 h-4 text-blue-400" /> Đang tra cứu…
+                    </p>
+                  ) : (
+                    <p className="text-sm font-medium leading-relaxed">{data?.meaning}</p>
+                  )}
+                  {data?.source === "error" && (
+                    <button
+                      onClick={() => setAttempt((n) => n + 1)}
+                      className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-400 hover:text-blue-300"
+                    >
+                      <RotateCcw size={12} /> Tra lại
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -3195,7 +3154,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     }
   });
   const [showFullAnswer, setShowFullAnswer] = useState(false);
-  const [lookupWord, setLookupWord] = useState(null); // từ đang được tra nghĩa (bấm vào)
+  const [selectedLookupWord, setSelectedLookupWord] = useState(null); // từ đang được tra nghĩa (bấm vào)
+  const [jumpInput, setJumpInput] = useState("1"); // ô "Câu __/210" để nhảy tới câu bất kỳ
+  const [showVocabPanel, setShowVocabPanel] = useState(true);
 
   const [titleInput, setTitleInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -3355,7 +3316,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setWrongIndices({});
     setRevealedIndices({});
     setShowFullAnswer(false);
-    setLookupWord(null);
+    setSelectedLookupWord(null);
   };
 
   // Chấm điểm — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
@@ -3440,12 +3401,180 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     resetWordProgress();
   };
 
+  // --- Nhảy tới câu bất kỳ ------------------------------------------------------------
+  // Ô số câu luôn bám theo câu đang học, kể cả khi chuyển bằng nút ◀ ▶ hay tự sang câu mới.
+  useEffect(() => {
+    setJumpInput(String(currentIndex + 1));
+  }, [currentIndex, activeVideoId]);
+
+  const jumpTarget = Number.parseInt(jumpInput, 10);
+  const totalSegments = activeVideo?.segments?.length || 0;
+  const isJumpReady =
+    Number.isFinite(jumpTarget) &&
+    jumpTarget >= 1 &&
+    jumpTarget <= totalSegments &&
+    jumpTarget !== currentIndex + 1;
+
+  const submitJump = () => {
+    if (!isJumpReady) {
+      // Số không hợp lệ (rỗng, chữ, ngoài khoảng) — trả ô về đúng câu hiện tại thay vì để
+      // người dùng nhìn một con số vô nghĩa.
+      setJumpInput(String(currentIndex + 1));
+      return;
+    }
+    goToSegment(jumpTarget - 1);
+  };
+
+  // --- Từ vựng trung bình–khó của bài nghe ---------------------------------------------
+  // Quét toàn bộ transcript, loại từ A1/A2 và stopword, giữ lại B1/B2 (trung bình) và từ nằm
+  // ngoài Oxford 3000 (khó). Chấm độ khó chạy offline nên panel hiện tức thì; chỉ những từ
+  // "khó" mới cần gọi /api/translate, và gọi GỘP một lượt cho cả bài.
+  const [vocabMeanings, setVocabMeanings] = useState({});
+  const [vocabLoading, setVocabLoading] = useState(false);
+  const [vocabError, setVocabError] = useState(false);
+  const [vocabRetry, setVocabRetry] = useState(0);
+
+  const studyWords = useMemo(() => {
+    if (!activeVideo?.segments?.length) return [];
+    return collectStudyWords(
+      activeVideo.segments.map((s) => s.text),
+      { limit: 40 },
+    );
+  }, [activeVideo?.segments]);
+
+  useEffect(() => {
+    const missing = studyWords.filter((w) => !w.meaning).map((w) => w.word);
+    setVocabError(false);
+    if (!missing.length) {
+      setVocabLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setVocabLoading(true);
+    translateWords(missing)
+      .then((res) => {
+        if (cancelled) return;
+        setVocabMeanings((prev) => ({ ...prev, ...res }));
+        if (!Object.keys(res).length) setVocabError(true);
+      })
+      .catch(() => {
+        if (!cancelled) setVocabError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setVocabLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [studyWords, vocabRetry]);
+
+  const renderVocabPanel = () => {
+    if (!studyWords.length) return null;
+    const hardCount = studyWords.filter((w) => w.band === "hard").length;
+    const defaultDeck = existingDecks.filter((d) => d !== "Tất cả")[0] || "Chung";
+
+    return (
+      <div className="mb-3 bg-white border-2 border-slate-900 rounded-2xl overflow-hidden">
+        <button
+          onClick={() => setShowVocabPanel((v) => !v)}
+          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50"
+        >
+          <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+          <span className="text-sm font-bold text-slate-800">
+            Từ vựng cần biết ({studyWords.length})
+          </span>
+          <span className="text-[11px] text-slate-400 truncate">
+            {hardCount} khó · {studyWords.length - hardCount} trung bình
+          </span>
+          <span className="ml-auto shrink-0 text-slate-500">
+            {showVocabPanel ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </span>
+        </button>
+
+        {showVocabPanel && (
+          <div className="border-t-2 border-slate-900">
+            <p className="px-3 pt-2 text-[11px] text-slate-500">
+              Xem trước rồi hãy nghe. Bấm 🔊 để nghe từ, bấm dấu + để lưu vào flashcard.
+            </p>
+            <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 mt-1">
+              {studyWords.map((w) => {
+                const meaning = w.meaning || vocabMeanings[w.word] || "";
+                return (
+                  <div key={w.word} className="flex items-start gap-2 px-3 py-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-sm font-bold text-slate-800">{w.word}</span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            w.band === "hard"
+                              ? "bg-rose-100 text-rose-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {w.band === "hard" ? "Khó" : w.level}
+                        </span>
+                        {w.phonetic && (
+                          <span className="text-[11px] text-slate-400 font-mono">{w.phonetic}</span>
+                        )}
+                        {w.count > 1 && (
+                          <span className="text-[10px] text-slate-400">×{w.count}</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 mt-0.5 break-words">
+                        {meaning || (vocabLoading ? "Đang lấy nghĩa…" : "—")}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => speakEnglishWord(w.word)}
+                      aria-label={`Nghe từ ${w.word}`}
+                      className="shrink-0 p-1.5 rounded-full text-teal-700 hover:bg-teal-50 active:scale-90"
+                    >
+                      <Volume2 size={16} />
+                    </button>
+                    {onAddFlashcard && (
+                      <button
+                        onClick={() => meaning && onAddFlashcard(w.word, meaning, defaultDeck)}
+                        disabled={!meaning}
+                        aria-label={`Lưu từ ${w.word} vào flashcard`}
+                        className="shrink-0 p-1.5 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-30 active:scale-90"
+                      >
+                        <BookmarkPlus size={16} />
+                      </button>
+                    )}
+                    {/* Nhảy tới câu đầu tiên chứa từ này để nghe nó trong ngữ cảnh thật. */}
+                    <button
+                      onClick={() => goToSegment(w.segIndex)}
+                      aria-label={`Tới câu ${w.segIndex + 1}`}
+                      className="shrink-0 px-1.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:bg-slate-100"
+                    >
+                      #{w.segIndex + 1}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            {vocabError && (
+              <button
+                onClick={() => setVocabRetry((n) => n + 1)}
+                className="w-full px-3 py-2 text-xs font-bold text-blue-600 border-t border-slate-100 hover:bg-slate-50"
+              >
+                Chưa lấy được nghĩa của một số từ — bấm để thử lại
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const startPractice = (video) => {
     setActiveVideoId(video.id);
     const lastIndex = video.progress?.lastIndex ?? 0;
     const startIdx = lastIndex < video.segments.length ? lastIndex : 0;
     setCurrentIndex(startIdx);
     resetWordProgress();
+    // Mở sẵn panel từ vựng mỗi lần vào bài — mục đích là xem TRƯỚC khi nghe.
+    setShowVocabPanel(true);
     setMode("practice");
   };
 
@@ -3706,12 +3835,42 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           </button>
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-bold text-slate-800 truncate">{activeVideo.title}</h2>
-            <p className="text-xs text-slate-400">
-              Câu {currentIndex + 1}/{total}
-              {activeVideo.progress?.avgAccuracy ? ` · TB ${activeVideo.progress.avgAccuracy}%` : ""}
-            </p>
+            {/* Nhảy thẳng tới câu bất kỳ: gõ số rồi Enter (hoặc bấm "Đi"). Cần cho bài dài —
+                trước đây phải bấm ▶ hàng trăm lần mới quay lại được chỗ đang học dở. */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+              <span>Câu</span>
+              <input
+                type="number"
+                min={1}
+                max={total}
+                value={jumpInput}
+                onChange={(e) => setJumpInput(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    submitJump();
+                  }
+                }}
+                aria-label={`Nhảy tới câu (1-${total})`}
+                className="w-14 px-1.5 py-0.5 text-center text-xs font-bold text-slate-700 bg-white border-2 border-slate-900 rounded-lg outline-none focus:border-teal-600 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+              <span>/{total}</span>
+              <button
+                onClick={submitJump}
+                disabled={!isJumpReady}
+                className="px-2 py-0.5 rounded-lg text-[11px] font-bold border-2 border-slate-900 bg-teal-600 text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Đi
+              </button>
+              {activeVideo.progress?.avgAccuracy ? (
+                <span className="truncate">· TB {activeVideo.progress.avgAccuracy}%</span>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        {renderVocabPanel()}
 
         <div className="mx-auto w-full max-w-[min(100%,44vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
           <div ref={playerContainerRef} className="w-full h-full" />
@@ -3860,7 +4019,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                           {visible && hasLetters ? (
                             <button
                               type="button"
-                              onClick={() => setLookupWord(w)}
+                              onClick={() => setSelectedLookupWord(w)}
                               title="Bấm để tra nghĩa"
                               className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
                             >
@@ -3883,10 +4042,10 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                     Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
                   </p>
 
-                  {lookupWord && (
+                  {selectedLookupWord && (
                     <WordMeaningCard
-                      word={lookupWord}
-                      onClose={() => setLookupWord(null)}
+                      word={selectedLookupWord}
+                      onClose={() => setSelectedLookupWord(null)}
                       onAddFlashcard={onAddFlashcard}
                       existingDecks={existingDecks}
                     />

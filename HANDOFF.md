@@ -21,7 +21,71 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-07-31) — v1.16.3: fix "Nghĩa/Ví dụ xuống dòng bị tách sang field khác"
+## Phiên làm việc gần nhất (2026-08-27) — v1.17.0: sửa tra cứu từ chậm + nhảy tới câu bất kỳ + panel từ vựng trước bài nghe
+
+User báo 3 việc ở tab **Chép chính tả**: (1) tra cứu từ rất chậm, không hiện được nghĩa;
+(2) muốn nhập số câu để bắt đầu (vd "Câu 95/210"); (3) mỗi bài nghe nên liệt kê sẵn từ vựng
+trung bình–khó để xem trước khi nghe.
+
+### 1. Tra cứu từ chậm — `api/translate.js` (mới) + `src/lib/vocab.js` (mới)
+
+- **Nguyên nhân:** cả `LookupPanel` (Phát âm) lẫn `WordMeaningCard` (Chép chính tả) đều gọi
+  THẲNG `api.mymemory.translated.net` từ browser. MyMemory tính quota theo **IP người dùng** →
+  học viên tra vài chục từ là hết quota, request treo rồi trả chuỗi lỗi ⇒ đứng mãi ở
+  "Đang tra cứu…". Cache chỉ nằm trong RAM component nên reload trang là mất sạch.
+- **Cách sửa — tra theo 3 tầng, dừng ngay khi có kết quả** (`src/lib/vocab.js`):
+  1. `localStorage` (`flashlearn_word_meaning_cache_v1`, giới hạn 3000 từ, ghi gộp sau 400ms) —
+     dùng chung cho cả Phát âm lẫn Chép chính tả, sống qua reload.
+  2. Bảng CEFR offline `src/data/cefr-vocab.json` — **3636 từ Oxford A1–B2 kèm nghĩa Việt +
+     IPA**, nén dạng `"level|nghĩa|ipa"`. Phần lớn lần bấm KHÔNG chạm mạng, hiện tức thì.
+  3. `/api/translate` — serverless mới trên Vercel, quota tính theo IP server, có
+     `Cache-Control: s-maxage=2592000` nên từ đã tra một lần thì lần sau CDN trả luôn.
+- **`api/translate.js`:** thử lần lượt `clients5.google.com/translate_a/t?client=dict-chrome-ex`
+  (nhanh nhất, **giữ nguyên xuống dòng** nên gửi N từ ngăn bằng `\n` là nhận đúng N dòng — đo
+  thực tế 60 từ ~800ms) → `translate.googleapis.com` (gtx) → MyMemory. Nhận `GET ?q=` cho 1 từ
+  và `POST {words:[…]}` cho cả lô (tối đa 80 từ). Nếu số dòng trả về **lệch** số từ gửi đi thì
+  bỏ cả lô thay vì gán nhầm nghĩa cho từ khác.
+  ⚠️ Endpoint `gtx` trả **429** từ IP ở nhà — đừng tưởng code hỏng, nó chỉ là nguồn dự phòng.
+- **UI trả kết quả DẦN** thay vì chờ đủ: từ + nút 🔊 + badge level hiện ngay, nghĩa chèn vào
+  sau, phiên âm (dictionaryapi.dev, timeout 4s) chèn vào sau nữa. Lỗi mạng thì hiện nút
+  **"Tra lại"** chứ không treo spinner. Đã bỏ hẳn state `wordCache` trong `PronunciationCoach`.
+
+### 2. Nhảy tới câu bất kỳ — `DictationCoach`
+
+Chỗ hiển thị `Câu 95/210` giờ là **ô nhập số + nút "Đi"**: gõ số rồi Enter (hoặc bấm Đi) là
+nhảy thẳng. Ô tự đồng bộ khi chuyển câu bằng ◀ ▶ / Bỏ qua; số ngoài khoảng thì nút Đi bị khoá
+và Enter trả ô về đúng câu hiện tại. State: `jumpInput`, helper `submitJump` / `isJumpReady`.
+
+### 3. Panel "Từ vựng cần biết" — `collectStudyWords` + `renderVocabPanel`
+
+- Quét toàn bộ transcript của bài, loại stopword và **từ A1/A2** (coi như đã biết), giữ lại:
+  - **"Trung bình"** = có trong Oxford 3000 mức B1/B2 → nghĩa + IPA lấy **offline, hiện ngay**.
+  - **"Khó"** = không có trong Oxford A1–B2 → dịch qua `/api/translate`, **gộp một lượt** cho
+    cả bài (tối đa 40 từ) chứ không N request.
+- Panel nằm ngay trên khung video, **mở sẵn mỗi lần vào bài** (`startPractice`), thu gọn được.
+  Mỗi dòng: từ + badge độ khó + IPA + số lần xuất hiện + nghĩa + nút 🔊 + nút lưu flashcard +
+  nút `#n` nhảy tới câu đầu tiên chứa từ đó.
+- **Bẫy đã gặp:** file Oxford **thiếu vài từ rất dễ** ("because", "always", "anything", "also",
+  "anyone") ⇒ ban đầu bị chấm nhầm là "Khó". Đã bù bằng cách mở rộng `STOPWORDS` trong
+  `vocab.js` — **nếu thấy từ dễ bị gắn nhãn "Khó" thì thêm vào đó**, đừng sửa file dữ liệu.
+  `lemmaCandidates` cũng xử lý chính tả Anh-Anh (`apologised → apologise → apologize`,
+  `colour → color`, `centre → center`, `analyse → analyze`) và các hậu tố s/es/ies/ed/ing/er/est/ly.
+- Dựng lại bảng dữ liệu khi bộ từ Oxford đổi: `node scripts/build-cefr-vocab.mjs`
+  (đọc `scripts/oxford-a1-b2.json` + `scripts/oxford-phonetics.json` → `src/data/cefr-vocab.json`).
+  Bundle tăng ~50 kB gzip.
+
+### Kiểm chứng
+
+Chạy `npx vite --port 5199`, seed một video giả 210 câu vào `localStorage` rồi thao tác thật:
+panel hiện 37 từ (10 khó · 27 trung bình) với nghĩa + IPA B1/B2 đúng; bấm từ `remarkable` ra
+card đầy đủ **trong ~200ms** (offline, không gọi mạng); nhảy tới câu 95 OK, "Bỏ qua" → ô tự lên
+96, nhập 999 → nút Đi khoá và Enter trả về 96. `npx eslint` không thêm lỗi mới (còn đúng 3 lỗi
+có sẵn từ trước). **Không đụng gì tới Supabase trong phiên này.**
+
+⚠️ Lúc test local, các từ "Khó" hiện `—` kèm nút "thử lại" là **bình thường**: `import.meta.env.DEV`
+trỏ API về `https://flashlearn-its7.vercel.app`, mà `/api/translate` chỉ tồn tại sau khi deploy.
+
+## Phiên trước (2026-07-31) — v1.16.3: fix "Nghĩa/Ví dụ xuống dòng bị tách sang field khác"
 
 **Lỗi user báo:** ở tab Thêm từ, gõ nhiều dòng trong ô *Nghĩa của từ* rồi lưu; mở Sửa lên thì
 dòng 2 nhảy sang ô *Ví dụ* (ví dụ thẻ CHART/"Rất mạnh": `dramatically` ở ô Nghĩa, `enormously`
