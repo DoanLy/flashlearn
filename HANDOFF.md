@@ -21,7 +21,27 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-08-27) — v1.17.0: sửa tra cứu từ chậm + nhảy tới câu bất kỳ + panel từ vựng trước bài nghe
+## Phiên làm việc gần nhất (2026-09-18) — v1.18.0: hiện lại hình video ở Chép chính tả
+
+User yêu cầu: ở tab **Chép chính tả**, khung video phải hiện hình thật thay vì màn đen
+"Chỉ nghe, không xem hình" (lớp phủ này được thêm ở commit `e753299`, v1.4.x, theo yêu cầu cũ).
+
+Sửa trong `DictationCoach` (`src/App.jsx`):
+1. Gỡ hẳn `<div className="absolute inset-0 bg-slate-900/95 backdrop-blur-md ...">` đè lên
+   `playerContainerRef`.
+2. `new YT.Player(mountEl, { width: "100%", height: "100%", ... })` — mặc định YT tạo iframe
+   640×390 cố định nên khi không còn lớp phủ, iframe bị cắt/lệch trong khung
+   `max-w-[min(100%,44vh)] aspect-video`. Thêm luôn `[&>iframe]:w-full [&>iframe]:h-full`
+   trên div container để chắc ăn.
+3. Toàn bộ logic phát/dừng theo cue (`playSegment`, watcher 150ms, phím Ctrl nghe lại) giữ
+   nguyên. Nếu sau này muốn "chỉ nghe" trở lại thì khôi phục lớp phủ ở commit `e753299`.
+
+Kiểm chứng: chạy `vite --port 5199` local, nạp 1 video test vào `localStorage`
+(`flashlearn_dictation_videos`, không đụng Supabase), vào màn luyện tập → iframe YouTube
+đo được đúng bằng container (338×190 ở viewport 1366×768), không còn chữ "Chỉ nghe...".
+Đã xoá dữ liệu test và tắt server sau khi xong.
+
+## Phiên trước (2026-08-27) — v1.17.0: sửa tra cứu từ chậm + nhảy tới câu bất kỳ + panel từ vựng trước bài nghe
 
 User báo 3 việc ở tab **Chép chính tả**: (1) tra cứu từ rất chậm, không hiện được nghĩa;
 (2) muốn nhập số câu để bắt đầu (vd "Câu 95/210"); (3) mỗi bài nghe nên liệt kê sẵn từ vựng

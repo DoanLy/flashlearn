@@ -3203,6 +3203,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       playerContainerRef.current.appendChild(mountEl);
       player = new YT.Player(mountEl, {
         videoId: activeVideo.videoId,
+        // Mặc định YT tạo iframe 640x390 cố định → phải ép 100% để lấp đầy khung aspect-video.
+        width: "100%",
+        height: "100%",
         playerVars: { rel: 0, modestbranding: 1 },
         events: {
           onReady: () => {
@@ -3873,11 +3876,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
         {renderVocabPanel()}
 
         <div className="mx-auto w-full max-w-[min(100%,44vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
-          <div ref={playerContainerRef} className="w-full h-full" />
-          <div className="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center gap-2 text-slate-400 pointer-events-none">
-            <Volume2 className="w-8 h-8" />
-            <span className="text-xs font-medium">Chỉ nghe, không xem hình</span>
-          </div>
+          <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
         </div>
 
         <div className="flex items-center justify-between gap-2 mb-4">
