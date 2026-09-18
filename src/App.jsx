@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, Fragment } from "react";
+import React, { useState, useEffect, useRef, Fragment } from "react";
 import { createClient } from "@supabase/supabase-js";
 import {
   Plus,
@@ -33,11 +33,8 @@ import {
   Rewind,
   Upload,
   Eye,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
-import { lookupWord, collectStudyWords, translateWords } from "./lib/vocab";
+import { lookupWord } from "./lib/vocab";
 
 // ============================================================================
 // SUPABASE CLIENT
@@ -3156,7 +3153,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const [showFullAnswer, setShowFullAnswer] = useState(false);
   const [selectedLookupWord, setSelectedLookupWord] = useState(null); // từ đang được tra nghĩa (bấm vào)
   const [jumpInput, setJumpInput] = useState("1"); // ô "Câu __/210" để nhảy tới câu bất kỳ
-  const [showVocabPanel, setShowVocabPanel] = useState(true);
 
   const [titleInput, setTitleInput] = useState("");
   const [urlInput, setUrlInput] = useState("");
@@ -3428,156 +3424,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     goToSegment(jumpTarget - 1);
   };
 
-  // --- Từ vựng trung bình–khó của bài nghe ---------------------------------------------
-  // Quét toàn bộ transcript, loại từ A1/A2 và stopword, giữ lại B1/B2 (trung bình) và từ nằm
-  // ngoài Oxford 3000 (khó). Chấm độ khó chạy offline nên panel hiện tức thì; chỉ những từ
-  // "khó" mới cần gọi /api/translate, và gọi GỘP một lượt cho cả bài.
-  const [vocabMeanings, setVocabMeanings] = useState({});
-  const [vocabLoading, setVocabLoading] = useState(false);
-  const [vocabError, setVocabError] = useState(false);
-  const [vocabRetry, setVocabRetry] = useState(0);
-
-  const studyWords = useMemo(() => {
-    if (!activeVideo?.segments?.length) return [];
-    return collectStudyWords(
-      activeVideo.segments.map((s) => s.text),
-      { limit: 40 },
-    );
-  }, [activeVideo?.segments]);
-
-  useEffect(() => {
-    const missing = studyWords.filter((w) => !w.meaning).map((w) => w.word);
-    setVocabError(false);
-    if (!missing.length) {
-      setVocabLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setVocabLoading(true);
-    translateWords(missing)
-      .then((res) => {
-        if (cancelled) return;
-        setVocabMeanings((prev) => ({ ...prev, ...res }));
-        if (!Object.keys(res).length) setVocabError(true);
-      })
-      .catch(() => {
-        if (!cancelled) setVocabError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setVocabLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [studyWords, vocabRetry]);
-
-  const renderVocabPanel = () => {
-    if (!studyWords.length) return null;
-    const hardCount = studyWords.filter((w) => w.band === "hard").length;
-    const defaultDeck = existingDecks.filter((d) => d !== "Tất cả")[0] || "Chung";
-
-    return (
-      <div className="mb-3 bg-white border-2 border-slate-900 rounded-2xl overflow-hidden">
-        <button
-          onClick={() => setShowVocabPanel((v) => !v)}
-          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-slate-50"
-        >
-          <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-          <span className="text-sm font-bold text-slate-800">
-            Từ vựng cần biết ({studyWords.length})
-          </span>
-          <span className="text-[11px] text-slate-400 truncate">
-            {hardCount} khó · {studyWords.length - hardCount} trung bình
-          </span>
-          <span className="ml-auto shrink-0 text-slate-500">
-            {showVocabPanel ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </span>
-        </button>
-
-        {showVocabPanel && (
-          <div className="border-t-2 border-slate-900">
-            <p className="px-3 pt-2 text-[11px] text-slate-500">
-              Xem trước rồi hãy nghe. Bấm 🔊 để nghe từ, bấm dấu + để lưu vào flashcard.
-            </p>
-            <div className="max-h-64 overflow-y-auto divide-y divide-slate-100 mt-1">
-              {studyWords.map((w) => {
-                const meaning = w.meaning || vocabMeanings[w.word] || "";
-                return (
-                  <div key={w.word} className="flex items-start gap-2 px-3 py-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-sm font-bold text-slate-800">{w.word}</span>
-                        <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            w.band === "hard"
-                              ? "bg-rose-100 text-rose-700"
-                              : "bg-amber-100 text-amber-700"
-                          }`}
-                        >
-                          {w.band === "hard" ? "Khó" : w.level}
-                        </span>
-                        {w.phonetic && (
-                          <span className="text-[11px] text-slate-400 font-mono">{w.phonetic}</span>
-                        )}
-                        {w.count > 1 && (
-                          <span className="text-[10px] text-slate-400">×{w.count}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-slate-600 mt-0.5 break-words">
-                        {meaning || (vocabLoading ? "Đang lấy nghĩa…" : "—")}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => speakEnglishWord(w.word)}
-                      aria-label={`Nghe từ ${w.word}`}
-                      className="shrink-0 p-1.5 rounded-full text-teal-700 hover:bg-teal-50 active:scale-90"
-                    >
-                      <Volume2 size={16} />
-                    </button>
-                    {onAddFlashcard && (
-                      <button
-                        onClick={() => meaning && onAddFlashcard(w.word, meaning, defaultDeck)}
-                        disabled={!meaning}
-                        aria-label={`Lưu từ ${w.word} vào flashcard`}
-                        className="shrink-0 p-1.5 rounded-full text-slate-500 hover:bg-slate-100 disabled:opacity-30 active:scale-90"
-                      >
-                        <BookmarkPlus size={16} />
-                      </button>
-                    )}
-                    {/* Nhảy tới câu đầu tiên chứa từ này để nghe nó trong ngữ cảnh thật. */}
-                    <button
-                      onClick={() => goToSegment(w.segIndex)}
-                      aria-label={`Tới câu ${w.segIndex + 1}`}
-                      className="shrink-0 px-1.5 py-1 rounded-lg text-[10px] font-bold text-slate-500 hover:bg-slate-100"
-                    >
-                      #{w.segIndex + 1}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-            {vocabError && (
-              <button
-                onClick={() => setVocabRetry((n) => n + 1)}
-                className="w-full px-3 py-2 text-xs font-bold text-blue-600 border-t border-slate-100 hover:bg-slate-50"
-              >
-                Chưa lấy được nghĩa của một số từ — bấm để thử lại
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   const startPractice = (video) => {
     setActiveVideoId(video.id);
     const lastIndex = video.progress?.lastIndex ?? 0;
     const startIdx = lastIndex < video.segments.length ? lastIndex : 0;
     setCurrentIndex(startIdx);
     resetWordProgress();
-    // Mở sẵn panel từ vựng mỗi lần vào bài — mục đích là xem TRƯỚC khi nghe.
-    setShowVocabPanel(true);
     setMode("practice");
   };
 
@@ -3873,9 +3725,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           </div>
         </div>
 
-        {renderVocabPanel()}
-
-        <div className="mx-auto w-full max-w-[min(100%,44vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
+        <div className="mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
           <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
         </div>
 

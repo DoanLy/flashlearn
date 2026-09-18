@@ -21,7 +21,28 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-09-18) — v1.18.0: hiện lại hình video ở Chép chính tả
+## Phiên làm việc gần nhất (2026-09-18) — v1.19.0: bỏ panel "Từ vựng cần biết" + phóng to video Chép chính tả
+
+User yêu cầu 2 việc ở tab **Chép chính tả**: (1) bỏ hẳn panel "Từ vựng cần biết" (thêm ở
+v1.17.0); (2) khung video to hơn cho dễ nhìn (giờ đã hiện hình thật từ v1.18.0).
+
+Sửa trong `DictationCoach` (`src/App.jsx`):
+1. Gỡ toàn bộ panel: state `showVocabPanel`/`vocabMeanings`/`vocabLoading`/`vocabError`/
+   `vocabRetry`, memo `studyWords`, effect gọi `translateWords`, hàm `renderVocabPanel` và
+   chỗ gọi nó. Bỏ import `collectStudyWords`, `translateWords`, `Sparkles`, `ChevronUp`,
+   `ChevronDown`, `useMemo` (không còn ai dùng). `src/lib/vocab.js` và `api/translate.js`
+   **giữ nguyên** — `lookupWord` vẫn dùng cho tra từ khi bấm vào từ; `collectStudyWords`
+   còn nằm trong lib phòng khi muốn khôi phục panel (xem commit trước v1.19.0).
+2. Khung video: `max-w-[min(100%,44vh)]` → `max-w-[min(100%,72vh)]`. Đo ở 1366×768:
+   iframe 553×311 (trước là 338×190). Trang dài 1027px nên phải cuộn, nhưng cuộn xuống đáy thì
+   nút "Câu sau" (bottom 600) vẫn trên nav (top 696), không bị che. Chấp nhận cuộn vì user
+   ưu tiên video to; nếu sau này muốn vừa 1 màn thì hạ về ~55vh.
+
+Kiểm chứng như v1.18.0 (video giả trong localStorage, đã xoá sau khi đo). `npx eslint
+src/App.jsx` không phát sinh lỗi mới (3 lỗi còn lại là lỗi cũ có sẵn: regex surrogate pair
+ở ~2402, setState-in-effect ở `WordMeaningCard`).
+
+## Phiên trước (2026-09-18) — v1.18.0: hiện lại hình video ở Chép chính tả
 
 User yêu cầu: ở tab **Chép chính tả**, khung video phải hiện hình thật thay vì màn đen
 "Chỉ nghe, không xem hình" (lớp phủ này được thêm ở commit `e753299`, v1.4.x, theo yêu cầu cũ).
