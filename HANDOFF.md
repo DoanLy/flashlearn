@@ -21,7 +21,15 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-09-18) — v1.19.0: bỏ panel "Từ vựng cần biết" + phóng to video Chép chính tả
+## Phiên làm việc gần nhất (2026-10-03) — v1.20.0: nút "Hiện/Ẩn tất cả các từ" dạng toggle
+
+Tab **Chép chính tả**: nút "Hiện tất cả các từ" trước chỉ hiện được (bấm xong nút biến mất).
+Giờ là toggle: bấm lần 1 hiện hết (vẫn tính các từ chưa gõ là lỗi như cũ), nút đổi thành
+**"Ẩn tất cả các từ"**; bấm lần nữa thì che lại các từ chưa gõ (xoá luôn các từ đã bấm mắt
+hiện riêng lẻ) — lỗi đã tính vẫn giữ nguyên, không hoàn lại điểm. Code: `hideAllWords` /
+`revealAllWords` trong `DictationCoach` (`src/App.jsx`).
+
+## Phiên làm việc trước (2026-09-18) — v1.19.0: bỏ panel "Từ vựng cần biết" + phóng to video Chép chính tả
 
 User yêu cầu 2 việc ở tab **Chép chính tả**: (1) bỏ hẳn panel "Từ vựng cần biết" (thêm ở
 v1.17.0); (2) khung video to hơn cho dễ nhìn (giờ đã hiện hình thật từ v1.18.0).

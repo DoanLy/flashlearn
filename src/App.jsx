@@ -3773,6 +3773,11 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
             setRevealedIndices((prev) => ({ ...prev, [i]: true }));
             setWrongIndices((prev) => ({ ...prev, [i]: true }));
           };
+          // Bấm lần nữa để ẩn lại — lỗi đã tính thì vẫn giữ, chỉ che chữ đi để gõ tiếp.
+          const hideAllWords = () => {
+            setShowFullAnswer(false);
+            setRevealedIndices({});
+          };
           const revealAllWords = () => {
             setShowFullAnswer(true);
             setWrongIndices((prev) => {
@@ -3900,13 +3905,17 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                     />
                   )}
 
-                  {!showFullAnswer && !segmentDone && (
+                  {!segmentDone && (
                     <button
                       type="button"
-                      onClick={revealAllWords}
-                      className="w-full mt-3 py-2 text-sm font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-xl hover:bg-amber-100"
+                      onClick={showFullAnswer ? hideAllWords : revealAllWords}
+                      className={`w-full mt-3 py-2 text-sm font-bold rounded-xl border ${
+                        showFullAnswer
+                          ? "text-slate-600 bg-slate-50 border-slate-300 hover:bg-slate-100"
+                          : "text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100"
+                      }`}
                     >
-                      Hiện tất cả các từ
+                      {showFullAnswer ? "Ẩn tất cả các từ" : "Hiện tất cả các từ"}
                     </button>
                   )}
 
