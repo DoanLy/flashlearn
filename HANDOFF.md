@@ -21,7 +21,34 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-06) — thêm chủ đề "Từ vựng hay gặp trong Listening"
+## Phiên làm việc gần nhất (2026-10-06) — v1.21.0: dropdown chọn chủ đề có ô tìm kiếm
+
+User báo dropdown chọn chủ đề (`<select>` gốc) bung dài hết màn hình, xấu, không tìm được
+chủ đề. Đã thay **toàn bộ** chỗ chọn chủ đề bằng component mới `DeckSelect` (`src/App.jsx`,
+khai báo ngay trên `PronunciationCoach`):
+
+- Panel render qua `createPortal` + `position: fixed` (không bị cắt bởi cột "Thêm Flashcard"
+  có `overflow-y-auto`), cao tối đa 340px, tự lật lên trên khi thiếu chỗ phía dưới, tự tính
+  lại vị trí khi cuộn/resize.
+- Ô **"Tìm chủ đề..."** tự focus, tìm không dấu (`normalizeSearch`: "tu vung" khớp "Từ vựng").
+  Phím ↑/↓/Enter/Esc, mục đang chọn có dấu ✓ và được cuộn tới khi mở.
+- `counts` (tuỳ chọn) hiện số thẻ mỗi chủ đề; `onCreate` (tuỳ chọn) hiện mục
+  **"+ Tạo chủ đề mới..."** ở cuối — nếu đang gõ tên chưa có thì thành `Tạo chủ đề "xxx"` và
+  tạo luôn; nếu không thì chuyển về ô nhập tên chủ đề mới như cũ.
+- `variant="dark"` cho panel nền tối.
+- Chỗ dùng: tab Thêm từ (có counts + onCreate), bộ lọc chủ đề ở Học bài / Chưa thuộc /
+  Đã thuộc (có counts), tab Game (trước là dãy chip cuộn ngang — giờ cũng là dropdown),
+  "Lưu từ học" ở Phát âm và ở card nghĩa từ của Chép chính tả (dark).
+- `DeckFilter` cũ là component khai báo trong thân `App` và dùng `<DeckFilter />` ⇒ bị
+  mount lại mỗi lần App render, dropdown sẽ tự đóng. Đã đổi thành `renderDeckFilter()` —
+  **đừng đổi lại thành JSX component**.
+
+Kiểm chứng trên vite local (chỉ đổi state chọn chủ đề, không ghi Supabase): mở/tìm/chọn bằng
+phím ở tab Thêm từ, 4 tab Học bài/Chưa thuộc/Đã thuộc/Game đều có dropdown mới (21 chủ đề),
+mobile 375px panel nằm gọn trong màn hình, console không lỗi. Bản dark (Phát âm / Chép chính
+tả) dùng chung code nhưng chưa bấm thử trực tiếp vì cần mic/video để mở card tra từ.
+
+## Phiên trước (2026-10-06) — thêm chủ đề "Từ vựng hay gặp trong Listening"
 
 Chỉ thêm dữ liệu, **không đổi code app**. User gửi 11 ảnh từ vựng IELTS Listening
 (ielts-fighter.com: Travel & Transport ×3, University & Campus, Booking & Services ×2,

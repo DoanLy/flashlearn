@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, Fragment } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@supabase/supabase-js";
 import {
   Plus,
@@ -33,6 +34,7 @@ import {
   Rewind,
   Upload,
   Eye,
+  ChevronDown,
 } from "lucide-react";
 import { lookupWord } from "./lib/vocab";
 
@@ -43,6 +45,303 @@ const supabase = createClient(
   "https://qrufhskmxcuowavwokau.supabase.co",
   "sb_publishable_1ET0n4As5q6kN0N3fRDfVA_sgw0uAPK",
 );
+
+// ============================================================================
+// COMPONENT: DeckSelect — dropdown chọn chủ đề có ô tìm kiếm
+// ============================================================================
+// Thay cho <select> gốc: danh sách chủ đề đã lên tới ~20 mục nên <select> của
+// trình duyệt bung dài hết màn hình và không tìm được. Panel render qua portal
+// (position: fixed) để không bị cắt bởi khung cha có overflow (cột "Thêm
+// Flashcard" cuộn riêng), tự lật lên trên khi phía dưới không đủ chỗ.
+// Tìm kiếm không phân biệt dấu ("tu vung" khớp "Từ vựng").
+const normalizeSearch = (s) =>
+  String(s || "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .trim();
+
+const DeckSelect = ({
+  value,
+  options = [],
+  onChange,
+  counts, // { [deck]: số thẻ } — tuỳ chọn, hiện số bên phải
+  onCreate, // (tên gõ trong ô tìm) => void — tuỳ chọn, hiện mục "Tạo chủ đề mới"
+  variant = "light", // "light" | "dark" (dùng trong panel nền tối Phát âm / Chép chính tả)
+  className = "",
+  placeholder = "Chọn chủ đề",
+}) => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pos, setPos] = useState(null);
+  const triggerRef = useRef(null);
+  const panelRef = useRef(null);
+  const searchRef = useRef(null);
+  const listRef = useRef(null);
+  const dark = variant === "dark";
+
+  const q = normalizeSearch(query);
+  const filtered = q
+    ? options.filter((o) => normalizeSearch(o).includes(q))
+    : options;
+  const exactMatch = options.some((o) => normalizeSearch(o) === q);
+  const showCreate = !!onCreate;
+  // Mục "Tạo chủ đề" nằm cuối danh sách, đi được bằng phím mũi tên như mục thường
+  const itemCount = filtered.length + (showCreate ? 1 : 0);
+
+  const updatePosition = () => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const margin = 8;
+    const below = window.innerHeight - r.bottom - margin;
+    const above = r.top - margin;
+    const desired = 340;
+    const placeAbove = below < Math.min(desired, 220) && above > below;
+    const maxHeight = Math.max(160, Math.min(desired, placeAbove ? above : below));
+    const width = Math.max(r.width, 240);
+    const left = Math.min(r.left, window.innerWidth - width - margin);
+    setPos({
+      left: Math.max(margin, left),
+      width,
+      maxHeight,
+      ...(placeAbove
+        ? { bottom: window.innerHeight - r.top + 6 }
+        : { top: r.bottom + 6 }),
+    });
+  };
+
+  const openPanel = () => {
+    updatePosition();
+    setQuery("");
+    const idx = options.indexOf(value);
+    setActiveIndex(idx >= 0 ? idx : 0);
+    setOpen(true);
+  };
+  const closePanel = (refocus = true) => {
+    setOpen(false);
+    if (refocus) triggerRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    searchRef.current?.focus();
+    const onDown = (e) => {
+      if (
+        panelRef.current?.contains(e.target) ||
+        triggerRef.current?.contains(e.target)
+      )
+        return;
+      setOpen(false);
+    };
+    const onReflow = (e) => {
+      // Cuộn bên trong chính danh sách thì không cần tính lại vị trí
+      if (e?.type === "scroll" && panelRef.current?.contains(e.target)) return;
+      updatePosition();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("touchstart", onDown, { passive: true });
+    window.addEventListener("resize", onReflow);
+    window.addEventListener("scroll", onReflow, true);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("touchstart", onDown);
+      window.removeEventListener("resize", onReflow);
+      window.removeEventListener("scroll", onReflow, true);
+    };
+  }, [open]);
+
+  // Giữ mục đang được chọn bằng bàn phím luôn trong tầm nhìn
+  useEffect(() => {
+    if (!open) return;
+    listRef.current
+      ?.querySelector(`[data-idx="${activeIndex}"]`)
+      ?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex, open]);
+
+  const choose = (opt) => {
+    onChange(opt);
+    closePanel();
+  };
+  const create = () => {
+    onCreate(exactMatch ? "" : query.trim());
+    closePanel(false);
+  };
+
+  const onSearchKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(itemCount - 1, i + 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(0, i - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (activeIndex < filtered.length) choose(filtered[activeIndex]);
+      else if (showCreate) create();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closePanel();
+    } else if (e.key === "Tab") {
+      setOpen(false);
+    }
+  };
+
+  const triggerCls = dark
+    ? "bg-slate-700 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm"
+    : "fl-flat bg-white text-slate-800 border-2 border-[#16211f] rounded-xl px-4 py-2.5 text-sm font-medium focus-visible:border-[#2e9e93]";
+  const panelCls = dark
+    ? "bg-slate-800 text-white border border-slate-600 rounded-xl shadow-2xl"
+    : "bg-white text-slate-800 rounded-xl";
+  const searchCls = dark
+    ? "fl-dark-input bg-slate-900 text-white placeholder:text-slate-500 border border-slate-600 focus:border-blue-400"
+    : "bg-white placeholder:text-slate-400";
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => (open ? closePanel() : openPanel())}
+        onKeyDown={(e) => {
+          if (!open && ["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
+            e.preventDefault();
+            openPanel();
+          }
+        }}
+        className={`w-full flex items-center justify-between gap-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${triggerCls} ${className}`}
+      >
+        <span className="truncate">{value || placeholder}</span>
+        <span className="flex items-center gap-2 shrink-0">
+          {counts && value in counts && (
+            <span className={`text-xs ${dark ? "text-slate-400" : "text-slate-400"}`}>
+              {counts[value]}
+            </span>
+          )}
+          <ChevronDown
+            size={16}
+            className={`transition-transform ${open ? "rotate-180" : ""} ${dark ? "text-slate-300" : "text-slate-500"}`}
+          />
+        </span>
+      </button>
+
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={panelRef}
+            style={{
+              position: "fixed",
+              left: pos.left,
+              width: pos.width,
+              top: pos.top,
+              bottom: pos.bottom,
+              maxHeight: pos.maxHeight,
+              zIndex: 1000,
+            }}
+            className={`flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-100 ${panelCls}`}
+          >
+            <div className="p-2 shrink-0">
+              <div className="relative">
+                <Search
+                  size={15}
+                  className={`absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none ${dark ? "text-slate-500" : "text-slate-400"}`}
+                />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setActiveIndex(0);
+                  }}
+                  onKeyDown={onSearchKeyDown}
+                  placeholder="Tìm chủ đề..."
+                  className={`w-full pl-9 pr-3 py-2 rounded-lg text-sm outline-none ${searchCls}`}
+                />
+              </div>
+            </div>
+
+            <ul
+              ref={listRef}
+              role="listbox"
+              className="overflow-y-auto overscroll-contain px-1.5 pb-1.5 min-h-0"
+            >
+              {filtered.length === 0 && (
+                <li className={`px-3 py-3 text-sm text-center ${dark ? "text-slate-400" : "text-slate-400"}`}>
+                  Không tìm thấy chủ đề phù hợp
+                </li>
+              )}
+              {filtered.map((opt, i) => {
+                const selected = opt === value;
+                const active = i === activeIndex;
+                return (
+                  <li
+                    key={opt}
+                    data-idx={i}
+                    role="option"
+                    aria-selected={selected}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => choose(opt)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer select-none ${
+                      active
+                        ? dark
+                          ? "bg-slate-700"
+                          : "bg-[#EAF7F5]"
+                        : ""
+                    } ${selected ? "font-bold" : ""}`}
+                  >
+                    <Check
+                      size={14}
+                      className={`shrink-0 ${selected ? (dark ? "text-blue-300" : "text-blue-600") : "opacity-0"}`}
+                    />
+                    <span className="flex-1 truncate">{opt}</span>
+                    {counts && opt in counts && (
+                      <span className={`text-xs tabular-nums ${dark ? "text-slate-400" : "text-slate-400"}`}>
+                        {counts[opt]}
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {showCreate && (
+              <button
+                type="button"
+                data-idx={filtered.length}
+                onMouseEnter={() => setActiveIndex(filtered.length)}
+                onClick={create}
+                className={`shrink-0 flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-left border-t ${
+                  dark ? "border-slate-700 text-blue-300" : "border-slate-200 text-blue-600"
+                } ${
+                  activeIndex === filtered.length
+                    ? dark
+                      ? "bg-slate-700"
+                      : "bg-[#EAF7F5]"
+                    : ""
+                }`}
+              >
+                <Plus size={15} className="shrink-0" />
+                <span className="truncate">
+                  {query.trim() && !exactMatch
+                    ? `Tạo chủ đề "${query.trim()}"`
+                    : "Tạo chủ đề mới..."}
+                </span>
+              </button>
+            )}
+          </div>,
+          document.body,
+        )}
+    </>
+  );
+};
 
 // ============================================================================
 // COMPONENT: PronunciationCoach
@@ -481,19 +780,14 @@ const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                       Chọn chủ đề
                     </label>
                     <div className="flex gap-2">
-                      <select
-                        value={targetDeck}
-                        onChange={(e) => setTargetDeck(e.target.value)}
-                        className="flex-1 bg-slate-700 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none"
-                      >
-                        {(existingDecks || [])
-                          .filter((d) => d !== "Tất cả")
-                          .map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                      </select>
+                      <div className="flex-1 min-w-0">
+                        <DeckSelect
+                          variant="dark"
+                          value={targetDeck}
+                          onChange={setTargetDeck}
+                          options={(existingDecks || []).filter((d) => d !== "Tất cả")}
+                        />
+                      </div>
                       <button
                         onClick={handleAddSubmit}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500 flex items-center gap-1 transition-colors"
@@ -2281,20 +2575,12 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
         <span className="fl-mark">Trò chơi</span>
       </h2>
 
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {existingDecks.map((d) => (
-          <button
-            key={d}
-            onClick={() => onDeckChange(d)}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-              deckInput === d
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-slate-600 border-slate-200 hover:border-blue-300"
-            }`}
-          >
-            {d}
-          </button>
-        ))}
+      <div className="max-w-sm">
+        <DeckSelect
+          value={deckInput}
+          onChange={onDeckChange}
+          options={existingDecks}
+        />
       </div>
 
       <p className="text-sm text-slate-500">
@@ -3066,17 +3352,14 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
                   Chọn chủ đề
                 </label>
                 <div className="flex gap-2">
-                  <select
-                    value={targetDeck}
-                    onChange={(e) => setTargetDeck(e.target.value)}
-                    className="flex-1 bg-slate-700 text-white text-sm px-3 py-2 rounded-lg border border-slate-600 outline-none"
-                  >
-                    {deckOptions.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex-1 min-w-0">
+                    <DeckSelect
+                      variant="dark"
+                      value={targetDeck}
+                      onChange={setTargetDeck}
+                      options={deckOptions}
+                    />
+                  </div>
                   <button
                     onClick={handleAdd}
                     className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500 flex items-center gap-1 transition-colors"
@@ -4058,6 +4341,17 @@ export default function App() {
     ]),
   );
 
+  // Số thẻ theo chủ đề — hiện bên phải mỗi mục trong dropdown chọn chủ đề
+  const deckCounts = cards.reduce(
+    (acc, c) => {
+      const d = c.deck || "Chung";
+      acc[d] = (acc[d] || 0) + 1;
+      return acc;
+    },
+    { "Tất cả": cards.length },
+  );
+  for (const d of existingDecks) if (!(d in deckCounts)) deckCounts[d] = 0;
+
   // Hàm kiểm tra thẻ có thuộc chủ đề đang chọn không
   const isCardInCurrentDeck = (card) =>
     deckInput === "Tất cả" || (card.deck || "Chung") === deckInput;
@@ -4504,19 +4798,16 @@ export default function App() {
   };
 
   // --- COMPONENT SELECT CHỦ ĐỀ CHUNG CHO CÁC TAB ---
-  const DeckFilter = () => (
+  // Gọi như hàm (renderDeckFilter()), KHÔNG dùng <DeckFilter /> — component khai báo
+  // trong thân App sẽ bị unmount/mount lại mỗi lần App render, làm dropdown tự đóng.
+  const renderDeckFilter = () => (
     <div className="mb-4">
-      <select
+      <DeckSelect
         value={deckInput}
-        onChange={(e) => setDeckInput(e.target.value)}
-        className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm text-slate-700 font-medium shadow-sm"
-      >
-        {existingDecks.map((deck) => (
-          <option key={deck} value={deck}>
-            {deck}
-          </option>
-        ))}
-      </select>
+        onChange={setDeckInput}
+        options={existingDecks}
+        counts={deckCounts}
+      />
     </div>
   );
 
@@ -4588,30 +4879,24 @@ export default function App() {
                   Chủ đề / Nhóm từ đang chọn
                 </label>
                 {deckMode === "select" ? (
-                  <select
+                  <DeckSelect
                     value={deckInput}
-                    onChange={(e) => {
-                      if (e.target.value === "___NEW___") {
+                    onChange={setDeckInput}
+                    options={existingDecks}
+                    counts={deckCounts}
+                    className="py-3"
+                    onCreate={(name) => {
+                      const n = name.trim();
+                      if (n && n !== "Tất cả") {
+                        if (!customDecks.includes(n) && n !== "Chung")
+                          setCustomDecks([...customDecks, n]);
+                        setDeckInput(n);
+                      } else {
                         setDeckMode("new");
                         setDeckInput("");
-                      } else {
-                        setDeckInput(e.target.value);
                       }
                     }}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-all outline-none appearance-none cursor-pointer"
-                  >
-                    {existingDecks.map((deck) => (
-                      <option key={deck} value={deck}>
-                        {deck}
-                      </option>
-                    ))}
-                    <option
-                      value="___NEW___"
-                      className="font-bold text-blue-600"
-                    >
-                      + Tạo chủ đề mới...
-                    </option>
-                  </select>
+                  />
                 ) : (
                   <div className="flex gap-2">
                     <input
@@ -4943,7 +5228,7 @@ export default function App() {
         {/* --- TAB: HỌC TẬP (STUDY) --- */}
         {activeTab === "study" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 flex flex-col items-center">
-            <DeckFilter />
+            {renderDeckFilter()}
             <button
               type="button"
               onClick={handleToggleStudyDirection}
@@ -5136,7 +5421,7 @@ export default function App() {
         {/* --- TAB: TỪ CHƯA BIẾT (UNKNOWN LIST) --- */}
         {activeTab === "unknown" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <DeckFilter />
+            {renderDeckFilter()}
             <div className="flex justify-between items-end mb-4">
               <div>
                 <h2 className="text-lg font-bold text-red-500 flex items-center gap-2">
@@ -5244,7 +5529,7 @@ export default function App() {
         {/* --- TAB: TỪ ĐÃ THUỘC (KNOWN LIST) --- */}
         {activeTab === "known" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            <DeckFilter />
+            {renderDeckFilter()}
             <div className="flex justify-between items-end mb-4">
               <div>
                 <h2 className="text-lg font-bold text-green-600 flex items-center gap-2">
