@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-03) — v1.20.0: nút "Hiện/Ẩn tất cả các từ" dạng toggle
+## Phiên làm việc gần nhất (2026-10-06) — thêm chủ đề "Từ vựng hay gặp trong Listening"
+
+Chỉ thêm dữ liệu, **không đổi code app**. User gửi 11 ảnh từ vựng IELTS Listening
+(ielts-fighter.com: Travel & Transport ×3, University & Campus, Booking & Services ×2,
+Equipment & Outdoor Items, Technology & Communication, People & Jobs, Shopping & Money,
+Daily Life & Home) → nạp thành chủ đề mới **"Từ vựng hay gặp trong Listening"**: **173 thẻ**
+(177 từ trong ảnh, bỏ 4 từ lặp giữa các ảnh: headphones, microphone, receipt, discount).
+
+- Script: `node scripts/import-listening-common.mjs` (dry-run) / `--apply` (ghi thật).
+  id dạng `listening-common-0001…0173`, status `new`, chạy lại không tạo trùng.
+- Thẻ theo chuẩn 3 dòng `Phiên âm / Nghĩa / Ví dụ`. Từ, IPA, nghĩa theo ảnh (sửa vài lỗi gõ
+  IPA trong ảnh); **câu ví dụ + bản dịch do Claude soạn**, không có trong ảnh.
+- Trên Windows, `process.exit(0)` sau dry-run in ra `Assertion failed ... async.c` và exit
+  code ≠ 0 — lỗi libuv vô hại, dữ liệu không bị ảnh hưởng.
+
+## Phiên trước (2026-10-03) — v1.20.0: nút "Hiện/Ẩn tất cả các từ" dạng toggle
 
 Tab **Chép chính tả**: nút "Hiện tất cả các từ" trước chỉ hiện được (bấm xong nút biến mất).
 Giờ là toggle: bấm lần 1 hiện hết (vẫn tính các từ chưa gõ là lỗi như cũ), nút đổi thành
