@@ -24,7 +24,7 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 ## Phiên làm việc gần nhất (2026-10-09) — thêm bộ 20 chủ đề "4000IELTS - …" (4000 thẻ)
 
 Chỉ thêm dữ liệu, **không đổi code app**. User gửi 20 file CSV ForumFlash
-(`D:\ENGLISH\VOCAB TESTINGorumflash-*.csv`, đã copy vào `scripts/data-4000ielts/`), mỗi file
+(`D:\ENGLISH\VOCAB TESTING\forumflash-*.csv`, đã copy vào `scripts/data-4000ielts/`), mỗi file
 200 từ của 1 chủ đề (cột `Term, Definition, Example, Topic`) → 20 chủ đề mới tên
 **`4000IELTS - <Topic>`** giữ nguyên tên Topic trong file, vd `4000IELTS - Media & Advertising`.
 
