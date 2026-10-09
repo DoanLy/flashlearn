@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-06) — v1.21.0: dropdown chọn chủ đề có ô tìm kiếm
+## Phiên làm việc gần nhất (2026-10-09) — thêm bộ 20 chủ đề "4000IELTS - …" (4000 thẻ)
+
+Chỉ thêm dữ liệu, **không đổi code app**. User gửi 20 file CSV ForumFlash
+(`D:\ENGLISH\VOCAB TESTINGorumflash-*.csv`, đã copy vào `scripts/data-4000ielts/`), mỗi file
+200 từ của 1 chủ đề (cột `Term, Definition, Example, Topic`) → 20 chủ đề mới tên
+**`4000IELTS - <Topic>`** giữ nguyên tên Topic trong file, vd `4000IELTS - Media & Advertising`.
+
+- Script: `node scripts/import-4000ielts.mjs` (dry-run) / `--apply` (ghi thật). id dạng
+  `4000ielts-<slug>-0001…0200`, status `new`, chạy lại không tạo trùng. Đã apply: 20 × 200 = 4000 thẻ.
+- Từ trùng giữa các chủ đề (bộ từ chung "adequate, crucial…" và nhiều cụm lặp) được **giữ** —
+  mỗi chủ đề đủ 200 thẻ như file gốc.
+- Thẻ chuẩn 3 dòng `Phiên âm / Nghĩa / Ví dụ`. CSV **không có phiên âm và không có dịch câu ví
+  dụ**: IPA do script tự ghép từng từ (Oxford `_oxford_full_word.json` → eSpeak `_en_UK_ipa.txt`);
+  75/4000 thẻ có từ không tra được nên bỏ dòng Phiên âm. Dòng Ví dụ chỉ có câu tiếng Anh.
+
+## Phiên trước (2026-10-06) — v1.21.0: dropdown chọn chủ đề có ô tìm kiếm
 
 User báo dropdown chọn chủ đề (`<select>` gốc) bung dài hết màn hình, xấu, không tìm được
 chủ đề. Đã thay **toàn bộ** chỗ chọn chủ đề bằng component mới `DeckSelect` (`src/App.jsx`,
