@@ -3447,6 +3447,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const playerContainerRef = useRef(null);
   const playerRef = useRef(null);
   const watcherRef = useRef(null);
+  // Phát hiện người dùng tự tua trên thanh tiến trình YouTube (API không có sự kiện "seek"):
+  // lastPollRef = mốc thời gian video + giờ thật ở lần dò trước; ownSeekUntilRef = hạn chót
+  // bỏ qua bước nhảy do CHÍNH app seekTo gây ra (playSegment).
+  const lastPollRef = useRef(null);
+  const ownSeekUntilRef = useRef(0);
+  const userSeekHandlerRef = useRef(null);
 
   useEffect(() => {
     try {
@@ -3531,6 +3537,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       endTime = next ? next.start : seg.start + 8;
     }
     if (watcherRef.current) clearInterval(watcherRef.current);
+    ownSeekUntilRef.current = Date.now() + 1500;
+    lastPollRef.current = { t: seg.start, wall: Date.now() };
     player.seekTo(seg.start, true);
     player.setPlaybackRate(playbackRate);
     player.playVideo();
@@ -3554,6 +3562,55 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, playerReady, mode]);
+
+  // Người dùng tua video tới thời điểm t → chuyển sang câu chứa t, phát lại câu đó TỪ ĐẦU rồi
+  // dừng như bình thường. t rơi vào khoảng lặng sau một câu → lấy câu sắp tới. Gán lại mỗi
+  // render để luôn thấy activeVideo/currentIndex mới nhất (poller bên dưới chỉ giữ ref).
+  userSeekHandlerRef.current = (t) => {
+    const segs = activeVideo?.segments;
+    if (!segs?.length) return;
+    let idx = 0;
+    for (let i = 0; i < segs.length; i++) {
+      if (segs[i].start <= t + 0.05) idx = i;
+      else break;
+    }
+    const seg = segs[idx];
+    if (
+      idx + 1 < segs.length &&
+      t >= segs[0].start &&
+      seg.end != null &&
+      t > seg.end
+    )
+      idx += 1;
+    // Chặn poller nhận nhầm thêm lần nữa trong lúc chờ React render + playSegment seekTo.
+    ownSeekUntilRef.current = Date.now() + 1500;
+    if (idx !== currentIndex) goToSegment(idx);
+    else playSegment(idx);
+  };
+
+  useEffect(() => {
+    if (mode !== "practice" || !playerReady) return;
+    lastPollRef.current = null;
+    const id = setInterval(() => {
+      const player = playerRef.current;
+      if (!player?.getCurrentTime) return;
+      const t = player.getCurrentTime();
+      const now = Date.now();
+      const last = lastPollRef.current;
+      lastPollRef.current = { t, wall: now };
+      if (!last || now < ownSeekUntilRef.current) return;
+      const playing = player.getPlayerState?.() === 1;
+      const rate = player.getPlaybackRate?.() || 1;
+      const expected = last.t + (playing ? ((now - last.wall) / 1000) * rate : 0);
+      // Phải lệch xa CẢ mốc dự đoán LẪN mốc lần trước: buffering làm t đứng yên (lệch dự đoán
+      // nhưng không lệch mốc trước), timer bị bóp khi tab ẩn làm t nhảy xa (lệch mốc trước
+      // nhưng khớp dự đoán) — hai trường hợp đó không phải tua.
+      if (Math.abs(t - expected) > 1.5 && Math.abs(t - last.t) > 1.5) {
+        userSeekHandlerRef.current?.(t);
+      }
+    }, 300);
+    return () => clearInterval(id);
+  }, [mode, playerReady, activeVideo?.id]);
 
   useEffect(() => {
     if (playerRef.current && playerRef.current.setPlaybackRate) {

@@ -21,7 +21,27 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-09) — thêm bộ 20 chủ đề "4000IELTS - …" (4000 thẻ)
+## Phiên làm việc gần nhất (2026-10-12) — v1.22.0: tua video ở Chép chính tả → câu cần gõ nhảy theo
+
+User muốn: kéo thanh tua của player YouTube tới đâu thì ô gõ chuyển sang câu tương ứng, rồi **phát lại
+câu đó từ đầu và tự dừng** (giống luồng chép bình thường — KHÔNG chạy liên tục kiểu karaoke).
+User cũng hỏi về việc cắt câu chưa trọn (phụ đề auto không dấu câu → cắt theo trần 13 từ) nhưng đã
+chốt **giữ nguyên thuật toán cắt câu**, không sửa `mergeCuesIntoSegments`.
+
+- `DictationCoach`: YouTube IFrame API không có sự kiện "seek", nên thêm một poller 300ms đọc
+  `getCurrentTime()`. Coi là người dùng tua khi `t` lệch > 1.5s so với CẢ mốc dự đoán
+  (`last.t + Δwall × rate` nếu đang phát) LẪN mốc lần dò trước — loại trừ buffering (t đứng yên) và
+  timer bị bóp khi tab ẩn (t nhảy xa nhưng khớp dự đoán).
+- Bước nhảy do chính app gây ra (`playSegment` → `seekTo`) được bỏ qua nhờ `ownSeekUntilRef`
+  (hạn 1.5s, set trong `playSegment` và trong handler).
+- `userSeekHandlerRef` (gán lại mỗi render để thấy state mới): tìm câu cuối có `start <= t`; nếu `t`
+  rơi vào khoảng lặng sau `end` của câu đó → lấy câu kế tiếp. Khác câu hiện tại → `goToSegment`
+  (effect sẵn có tự `playSegment`); cùng câu → `playSegment` phát lại từ đầu.
+- Kiểm chứng trên dev local (video fygRWMg9yt0, transcript SRT test, giả lập tua bằng postMessage
+  `seekTo` vào iframe): tua 1:02 → câu 4; tua 7:12 → câu 5, phát từ 7:10.1 và dừng 7:15.5; tua lùi
+  0:25 → câu 2, phát từ 0:20.3. Console không lỗi.
+
+## Phiên trước (2026-10-09) — thêm bộ 20 chủ đề "4000IELTS - …" (4000 thẻ)
 
 Chỉ thêm dữ liệu, **không đổi code app**. User gửi 20 file CSV ForumFlash
 (`D:\ENGLISH\VOCAB TESTING\forumflash-*.csv`, đã copy vào `scripts/data-4000ielts/`), mỗi file
