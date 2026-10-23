@@ -21,7 +21,24 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-12) — v1.22.0: tua video ở Chép chính tả → câu cần gõ nhảy theo
+## Phiên làm việc gần nhất (2026-10-23) — thêm chủ đề "Collocations IELTS Speaking" (150 thẻ)
+
+Chỉ thêm dữ liệu, **không đổi code app** (không bump version). User dán danh sách 150 collocation
+IELTS (10 nhóm × 15: thói quen, học tập & công việc, sở thích, ăn uống & sức khoẻ, du lịch, công
+nghệ, các mối quan hệ, nhà cửa & quê hương, thời tiết & môi trường, tiền bạc & cảm xúc), mỗi cụm có
+nghĩa + 2 câu mẫu Speaking Part 1 kèm bản dịch → nạp thành chủ đề mới **"Collocations IELTS Speaking"**.
+
+- Script: `node scripts/import-collocations.mjs` (dry-run; thêm `--show` để in dòng Phiên âm của
+  mọi thẻ) / `--apply` (ghi thật). id `collocations-0001…0150`, status `new`, chạy lại không tạo trùng.
+- Mặt trước = cụm tiếng Anh; mặt sau chuẩn 3 dòng, **Ví dụ có 2 dòng** (2 câu mẫu, mỗi câu
+  `"EN" (VI)`) — `parseCardFields` giữ dòng nối tiếp sau `Ví dụ:` nên form Sửa/mặt sau hiện đủ cả 2.
+  Bỏ nhãn chủ đề in nghiêng ("Morning routine:", "Weekends:"…) ở đầu mỗi câu mẫu.
+- Phiên âm `(v phr|n phr|adj phr|prep phr) /IPA/`: ghép IPA từng từ như `import-4000ielts.mjs`, có
+  bảng `FIX` ghi đè các từ chỉ có bản eSpeak (nhấn lệch, ɹ/ɛ) và **dạng yếu** của a/an/the/to/for/
+  of/and/at; "the" trước nguyên âm → /ði/, "to" cuối cụm → /tuː/.
+- Đã verify sau khi ghi: 150 thẻ, 0 thẻ parse lỗi (đủ phiên âm + nghĩa + 2 dòng ví dụ).
+
+## Phiên trước (2026-10-12) — v1.22.0: tua video ở Chép chính tả → câu cần gõ nhảy theo
 
 User muốn: kéo thanh tua của player YouTube tới đâu thì ô gõ chuyển sang câu tương ứng, rồi **phát lại
 câu đó từ đầu và tự dừng** (giống luồng chép bình thường — KHÔNG chạy liên tục kiểu karaoke).
