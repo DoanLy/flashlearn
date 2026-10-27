@@ -4833,6 +4833,13 @@ export default function App() {
     setSwipeOffset(deltaX);
   };
 
+  // Trình duyệt giành cử chỉ (vd cuộn dọc) → huỷ kéo, không lật/không chấm thẻ.
+  const handleDragCancel = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    setSwipeOffset(0);
+  };
+
   const handleDragEnd = () => {
     if (!isDragging) return;
     if (isAdvancingCard) {
@@ -5334,13 +5341,23 @@ export default function App() {
                 {/* Flashcard Component */}
                 <div
                   className="relative w-full aspect-[4/3] max-w-[min(24rem,58vh)] md:max-w-[min(28rem,calc((100vh-29rem)*4/3))] lg:max-w-[min(32rem,calc((100vh-29rem)*4/3))] cursor-pointer select-none [perspective:1000px] mb-5 md:mb-6 touch-pan-y"
-                  onMouseDown={(e) => handleDragStart(e.clientX)}
-                  onMouseMove={(e) => handleDragMove(e.clientX)}
-                  onMouseUp={handleDragEnd}
-                  onMouseLeave={handleDragEnd}
-                  onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-                  onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
-                  onTouchEnd={handleDragEnd}
+                  // Pointer Events thay cho cặp mouse+touch: Safari iPad bắn touchend rồi
+                  // mousedown/mouseup giả lập ngay sau đó → thẻ lật 2 lần, nhìn như không lật.
+                  onPointerDown={(e) => {
+                    if (!e.isPrimary || e.button > 0) return;
+                    if (e.target.closest("button")) return;
+                    handleDragStart(e.clientX);
+                  }}
+                  onPointerMove={(e) => {
+                    if (e.isPrimary) handleDragMove(e.clientX);
+                  }}
+                  onPointerUp={(e) => {
+                    if (e.isPrimary) handleDragEnd();
+                  }}
+                  onPointerLeave={(e) => {
+                    if (e.isPrimary && e.pointerType === "mouse") handleDragEnd();
+                  }}
+                  onPointerCancel={handleDragCancel}
                   style={{
                     transform: `translateX(${swipeOffset}px) rotate(${
                       swipeOffset * 0.05

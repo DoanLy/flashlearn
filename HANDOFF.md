@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-23) — thêm chủ đề "Collocations IELTS Speaking" (150 thẻ)
+## Phiên làm việc gần nhất (2026-10-27) — v1.22.1: sửa lỗi không lật được thẻ trên iPad
+
+User báo ở tab Học bài, chạm vào thẻ trên iPad không lật sang mặt sau.
+
+- Nguyên nhân: thẻ nghe cả `onTouchStart/End` LẪN `onMouseDown/Up`. Safari iPad bắn `touchend` rồi
+  ngay sau đó bắn `mousedown/mouseup` giả lập → `handleDragEnd` chạy 2 lần → `handleCardClick` lật
+  2 lần, thẻ quay về mặt trước (nhìn như không lật).
+- Sửa: thay toàn bộ handler mouse+touch của thẻ bằng **Pointer Events** (`onPointerDown/Move/Up`,
+  `onPointerLeave` chỉ cho chuột, `onPointerCancel` → `handleDragCancel` mới: huỷ kéo, không lật khi
+  trình duyệt giành cử chỉ cuộn dọc). `pointerdown` bắt đầu từ nút loa (`closest("button")`) bị bỏ
+  qua để bấm loa không lật thẻ. Vuốt trái/phải giữ nguyên logic cũ.
+- Kiểm chứng trên dev local bằng sự kiện giả lập chuỗi iPad (pointer → touch → mouse giả lập): chạm
+  touch lật đúng 1 lần, chạm lần nữa lật về; chuột desktop vẫn lật bình thường; bấm loa không lật.
+  **Chưa test trên iPad thật** — cần user xác nhận sau khi Vercel deploy.
+
+## Phiên trước (2026-10-23) — thêm chủ đề "Collocations IELTS Speaking" (150 thẻ)
 
 Chỉ thêm dữ liệu, **không đổi code app** (không bump version). User dán danh sách 150 collocation
 IELTS (10 nhóm × 15: thói quen, học tập & công việc, sở thích, ăn uống & sức khoẻ, du lịch, công
