@@ -2947,6 +2947,16 @@ const scorePronunciation = (target, spoken) => {
   return { words, accuracy };
 };
 
+// iPad: sau khi video đã phát, phiên âm thanh có thể khiến nhận diện không nghe được. Safari 16.4+
+// cho đặt lại loại phiên, máy không có API này thì bỏ qua.
+const setMicAudioSession = (type) => {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = type;
+  } catch (err) {
+    console.error("audioSession error", err);
+  }
+};
+
 // Tab Phát âm: đọc theo câu đang chọn, chấm bằng nhận diện giọng nói thay vì gõ. Video, danh sách
 // và tiến độ do DictationCoach (shadowing) lo; component này chỉ giữ micro + kết quả của câu.
 const ShadowingPanel = ({
@@ -2980,6 +2990,8 @@ const ShadowingPanel = ({
   const audioStartedRef = useRef(false);
   const sessionHasTextRef = useRef(false);
   const emptySessionsRef = useRef(0);
+  // Lượt trước không ra chữ thì lượt sau mở micro bằng getUserMedia trước (xem toggleRecording).
+  const warmupMicRef = useRef(false);
   // Chuỗi sự kiện của lượt đọc, hiện kèm thông báo lỗi để chẩn đoán trên máy không gắn được DevTools.
   const micLogRef = useRef([]);
   const micStartedAtRef = useRef(0);
@@ -3064,12 +3076,14 @@ const ShadowingPanel = ({
         });
       // Safari trên iPad có thể bật rồi tắt micro ngay mà không báo lỗi: phân biệt 2 trường hợp để
       // người dùng thấy rõ, thay vì nút cứ nhấp nháy "đang nghe" mà không có gì.
-      const failNoText = () =>
+      const failNoText = () => {
+        warmupMicRef.current = !warmupMicRef.current;
         failMessage(
           audioStartedRef.current
-            ? "Micro đã bật nhưng chưa ra chữ. iPad có thể trả chữ chậm vài giây: đọc to, đợi chữ hiện ra rồi mới bấm Dừng."
+            ? "Micro đã bật nhưng chưa ra chữ. Bấm Đọc lần nữa (máy sẽ đổi cách mở micro), đọc to cả câu, đợi chữ hiện ra rồi mới bấm Dừng."
             : "Micro chưa mở được. Trên iPad: mở bằng Safari, bật Siri trong Cài đặt, và cho phép trang này dùng micro.",
         );
+      };
 
       recognition.onresult = (event) => {
         logMic("result");
@@ -3119,6 +3133,7 @@ const ShadowingPanel = ({
         isRecordingRef.current = false;
         shouldKeepListeningRef.current = false;
         isManualStopRef.current = false;
+        setMicAudioSession("auto");
 
         if (shouldAnalyze && !spokenTextRef.current?.trim()) {
           failNoText();
@@ -3174,13 +3189,13 @@ const ShadowingPanel = ({
     };
   }, []); // Array rỗng -> Chỉ chạy 1 lần khi mount
 
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     if (!startSessionRef.current) return;
     if (isRecording) {
       isManualStopRef.current = true;
       shouldKeepListeningRef.current = false;
       if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
-      recognitionRef.current.stop(); // Tự động kích hoạt onend
+      recognitionRef.current?.stop(); // Tự động kích hoạt onend
       return;
     }
     // Dừng video trước, không thì micro thu luôn tiếng video và chấm nhầm là người dùng đọc đúng.
@@ -3190,7 +3205,8 @@ const ShadowingPanel = ({
     spokenTextRef.current = "";
     accumulatedTranscriptRef.current = "";
     audioStartedRef.current = false;
-    micLogRef.current = [];
+    const warmup = warmupMicRef.current;
+    micLogRef.current = [warmup ? "getUserMedia + play-and-record" : "play-and-record"];
     micStartedAtRef.current = Date.now();
     sessionHasTextRef.current = false;
     emptySessionsRef.current = 0;
@@ -3198,13 +3214,46 @@ const ShadowingPanel = ({
     setAnalysis(null);
     setError({ index: -1, message: "" });
     setMicOpen(false);
+    setMicAudioSession("play-and-record");
+    const logStep = (line) =>
+      micLogRef.current.push(`${((Date.now() - micStartedAtRef.current) / 1000).toFixed(1)}s ${line}`);
+    const cancelStart = () => {
+      shouldKeepListeningRef.current = false;
+      isManualStopRef.current = false;
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      setMicAudioSession("auto");
+    };
     try {
-      // Giữ start() ngay trong lượt bấm: iPad có thể chặn nếu gọi trễ sau cú chạm.
+      if (warmup) {
+        // Đang chờ await thì nút đã là Dừng, tránh bấm chồng tạo 2 lượt nghe. Lượt cũ đã xong, bỏ
+        // ref để bấm Dừng lúc này không đụng vào nó.
+        recognitionRef.current = null;
+        setIsRecording(true);
+        isRecordingRef.current = true;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream.getTracks().forEach((track) => track.stop());
+          logStep("getUserMedia ok");
+        } catch (err) {
+          logStep(`getUserMedia lỗi: ${err.name}`);
+        }
+        // Bấm Dừng hoặc đổi câu trong lúc chờ.
+        if (!shouldKeepListeningRef.current) {
+          cancelStart();
+          return;
+        }
+      }
+      // Lượt thường giữ start() ngay trong lượt bấm: iPad có thể chặn nếu gọi trễ sau cú chạm.
       startSessionRef.current();
     } catch (err) {
       console.error("Mic start error", err);
-      shouldKeepListeningRef.current = false;
-      setError({ index, message: `Không bật được micro (${err.name}). Thử lại sau vài giây.` });
+      cancelStart();
+      setError({
+        index,
+        message: `Không bật được micro (${err.name}). Thử lại sau vài giây.`,
+        log: micLogRef.current.join(" → "),
+      });
     }
   };
 

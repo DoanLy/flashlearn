@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.6: đã khoanh vùng lỗi micro iPad, thử cách khôi phục
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.7: màn luyện tự thử cách khôi phục micro
+
+User gửi ảnh màn luyện trên iPad (v1.27.6): `0.0s start → 0.0s audiostart → 4.5s audioend → 4.6s error:aborted → 4.6s end`, chưa gửi kết quả
+Cách A/B/C. Log chỉ có 1 lượt và có báo lỗi, tức user tự bấm Dừng ở 4.5s. **Log này không phân biệt được mic hỏng với dừng sớm**, vì lúc chạy
+tốt `speechstart` cũng tới ở 4.0s và 8.1s. Chưa xác nhận được nguyên nhân, chưa biết cách nào chữa được.
+
+- **Đã đổi:** user không phải chạy thẻ chẩn đoán nữa. Mọi lượt Đọc đặt `navigator.audioSession.type = "play-and-record"` đồng bộ trước `start()`,
+  trả về `auto` khi kết thúc (để video phát lại bình thường). Lượt không ra chữ thì lượt sau đổi cách: thêm `getUserMedia` rồi tắt track trước
+  `start()` (`warmupMicRef`, cứ lỗi là đảo). Dòng nhật ký dưới thông báo lỗi bắt đầu bằng tên cách đã dùng.
+- Cách `getUserMedia` gọi `start()` sau `await` nên có thể mất cử chỉ người dùng: nếu vậy log sẽ có lỗi `not-allowed`.
+- **Đọc kết quả trên iPad:** đọc cả câu, đợi tới ~10s rồi mới bấm Dừng. Cách nào ra chữ thì bỏ đảo, giữ cố định cách đó và gỡ `MicDiagnostics` + nhật ký.
+  Cả 2 cách đều không ra chữ thì còn: tải lại trang trước khi đọc, hoặc ghi âm + API nhận diện qua serverless (repo chưa có key nào, có chi phí).
+- Kiểm chứng trên vite local bằng micro giả (đảo cách, bấm Dừng lúc đang chờ `getUserMedia`, trả phiên về `auto`), chỉ chạy nhánh không ra chữ nên
+  không ghi vào DB. **Chưa test trên iPad thật**, nhánh ra chữ + chấm điểm không chạy lại.
+
+## Phiên trước (2026-11-05) — v1.27.6: đã khoanh vùng lỗi micro iPad, thử cách khôi phục
 
 **Phát hiện (ảnh từ iPad thật, cùng code của thẻ Kiểm tra micro):** trang mới tải chưa phát video thì ra chữ (`speechstart`, `result`). Sau khi
 video đã phát ra tiếng thì **không** có `speechstart`/`result`: `start → audiostart → (bấm Dừng) audioend → error:aborted → end`.
