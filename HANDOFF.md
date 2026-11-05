@@ -21,7 +21,19 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.25.0: bỏ danh sách câu, cột phải hiện nghĩa từ khi bấm
+## Phiên làm việc gần nhất (2026-11-05) — v1.26.0: bỏ nút Kiểm tra / Bỏ qua, chữ to hơn
+
+- Ở màn luyện Chép chính tả, user yêu cầu bỏ 2 nút **Kiểm tra** và **Bỏ qua**; đã gỡ cả `handleSkipSegment` vì không còn ai gọi.
+- **Enter vẫn chạy `checkCurrentWord`** (chấm và lộ đáp án nếu bật tuỳ chọn), nên checkbox đổi nhãn thành
+  "Hiện đáp án ngay khi nhấn Enter mà sai". Gõ đúng hết câu vẫn tự chấm như cũ.
+- **Hệ quả:** không còn cách ghi điểm cho câu chưa gõ xong. Bấm "Câu sau" chuyển câu mà không chấm, câu đó không vào
+  `progress.attempts` nên không tính vào "% hoàn thành" (trước đây "Bỏ qua" có tính).
+- "Chỗ text" user nói không rõ là chỗ nào nên tăng cả 2: ô từ `text-sm` → `text-base`, ô gõ thêm `text-lg` (root 15px trên
+  iPad mini nên đo được 15px và 16.875px; ô gõ từ 16px trở lên thì iOS không tự zoom khi focus).
+- Kiểm chứng ở 744×1133 trên video thật của user, chỉ gõ sai rồi Enter (không ghi DB): 2 nút đã hết, Enter hiện "Chưa
+  đúng" và lộ từ. **Chưa test trên iPad thật.**
+
+## Phiên trước (2026-11-05) — v1.25.0: bỏ danh sách câu, cột phải hiện nghĩa từ khi bấm
 
 Sau v1.24.0, user yêu cầu **bỏ danh sách câu**: chưa bấm từ thì giao diện trải hết chiều ngang, bấm vào từ thì xem nghĩa.
 

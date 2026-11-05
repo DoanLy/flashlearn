@@ -3267,7 +3267,7 @@ function deriveTitleFromFilename(filename) {
 const cleanDictationWord = (w) => (w || "").toLowerCase().replace(/[^a-z0-9']/g, "");
 
 // Đếm số từ ở ĐẦU câu mà người dùng đã gõ khớp, tính trực tiếp từ ô nhập — nhờ vậy từ gõ
-// đúng sáng xanh ngay, không cần bấm "Kiểm tra".
+// đúng sáng xanh ngay, không cần nhấn Enter.
 // includePartial = tính cả từ đang gõ dở ở cuối ô (chưa có dấu cách sau nó):
 //   - true  → dùng cho phần HIỂN THỊ, để từ xanh lên ngay khi vừa gõ xong ký tự cuối.
 //   - false → dùng khi GHI NHẬN tiến độ, tránh chốt sớm từ mới trùng một phần (vd đáp án là
@@ -3765,7 +3765,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setSelectedLookupWord(null);
   };
 
-  // Chấm điểm — chỉ chạy khi bấm "Kiểm tra" hoặc Enter, không tự động theo dấu cách.
+  // Chấm điểm — chỉ chạy khi nhấn Enter, không tự động theo dấu cách.
   // Chấm từ đầu ô nhập, cho phép gõ nhiều từ (hoặc cả câu) rồi kiểm tra một lần; KHÔNG xoá
   // hay ghi đè nội dung người dùng đã gõ, kể cả khi sai — chỉ cập nhật số từ đã khớp đúng.
   const checkCurrentWord = () => {
@@ -3799,29 +3799,13 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     }
   };
 
-  // Bỏ qua cả câu hiện tại (tính điểm theo số từ đã gõ đúng tính đến lúc bỏ qua) và chuyển
-  // sang câu tiếp theo, thay vì chỉ bỏ qua một từ.
-  const handleSkipSegment = () => {
-    const seg = activeVideo.segments[currentIndex];
-    if (seg) {
-      const targetWords = seg.text.trim().split(/\s+/);
-      const wrongCount = targetWords.length - confirmedCount;
-      finalizeSegment(targetWords.length, wrongCount);
-    }
-    if (currentIndex < activeVideo.segments.length - 1) {
-      goToSegment(currentIndex + 1);
-    } else {
-      resetWordProgress();
-    }
-  };
-
   const finalizeSegment = (total, wrongCount) => {
     const accuracy = Math.round(((total - wrongCount) / total) * 100);
     updateProgress(currentIndex, accuracy);
   };
 
   // Ghi nhận tiến độ ngay trong lúc gõ: từ nào gõ đúng là chốt luôn, gõ đúng hết cả câu thì
-  // tự chấm điểm và mở nút "Câu sau" — không cần bấm "Kiểm tra".
+  // tự chấm điểm — không cần nhấn Enter.
   // Chỉ tăng, không giảm: từ đã gõ đúng thì xoá bớt chữ cũng không mất trạng thái đúng.
   const handleTyping = (value) => {
     setUserInput(value);
@@ -4148,7 +4132,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       ? typedTokens.length
       : typedTokens.length - 1;
     const liveMismatch = !segmentDone && settledTokens > confirmedCount;
-    // Bấm mắt để xem trước một từ — tính là lỗi, giống khi bấm "Kiểm tra" mà sai.
+    // Bấm mắt để xem trước một từ — tính là lỗi, giống khi nhấn Enter mà sai.
     const revealWord = (i) => {
       setRevealedIndices((prev) => ({ ...prev, [i]: true }));
       setWrongIndices((prev) => ({ ...prev, [i]: true }));
@@ -4262,7 +4246,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   checked={showAnswerImmediately}
                   onChange={(e) => setShowAnswerImmediately(e.target.checked)}
                 />
-                Hiện đáp án ngay khi bấm "Kiểm tra" mà sai
+                Hiện đáp án ngay khi nhấn Enter mà sai
               </label>
             </div>
 
@@ -4290,8 +4274,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                 )}
               </div>
 
-              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần bấm Kiểm
-                  tra); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
+              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần nhấn
+                  Enter); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
               <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 bg-slate-50 rounded-xl">
                 {targetWords.map((w, i) => {
                   const isDone = i < liveCount;
@@ -4327,13 +4311,13 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                           type="button"
                           onClick={() => setSelectedLookupWord(w)}
                           title="Bấm để tra nghĩa"
-                          className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
+                          className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
                         >
                           {w}
                         </button>
                       ) : (
                         <span
-                          className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} ${
+                          className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} ${
                             visible ? "" : "tracking-widest"
                           }`}
                         >
@@ -4366,7 +4350,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                 rows={3}
                 autoFocus
                 placeholder="Gõ lại những gì bạn nghe được..."
-                className="block w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
+                className="block w-full p-3 text-lg bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
               />
               <div className="flex items-center gap-1.5 mt-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
                 {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
@@ -4381,23 +4365,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                 )}
               </div>
             </div>
-
-            {!segmentDone && (
-              <div className="flex gap-2">
-                <button
-                  onClick={checkCurrentWord}
-                  className="flex-1 py-3 font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700"
-                >
-                  Kiểm tra
-                </button>
-                <button
-                  onClick={handleSkipSegment}
-                  className="px-5 py-3 font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
-                >
-                  Bỏ qua
-                </button>
-              </div>
-            )}
 
             <div className="flex justify-between gap-3">
               <button
