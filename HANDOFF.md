@@ -21,7 +21,21 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.4: màn luyện dùng instance nhận diện mới mỗi lượt (iPad)
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.5: iOS gỡ iframe YouTube trong lúc đọc (THỬ NGHIỆM)
+
+v1.27.4 (instance mới mỗi lượt) không hết lỗi: user báo màn luyện trên iPad vẫn không ra chữ, không kèm nhật ký. Giả thuyết còn lại
+mạnh nhất là YouTube giữ phiên âm thanh, **chưa được xác nhận**, nên bản này vừa là thử sửa vừa là phép thử:
+
+- Trên iOS (`isIOSDevice`), bấm Đọc thì `prepareForRecording` gỡ hẳn player và iframe **đồng bộ trước** `start()`, hiện chữ "Video tạm ẩn
+  trong lúc đọc". Hết lượt đọc `resumeAfterRecording` tăng `playerEpoch` để dựng lại player, `skipAutoPlayRef` chặn tự phát lại câu.
+- Máy khác iOS vẫn chỉ `pauseVideo` như cũ.
+- **Cái giá:** player dựng lại mất ~1-2 giây, vị trí video về 0, và iOS có thể cần chạm vào video trước khi phát được.
+- **Đọc kết quả:** ra chữ → xác nhận do YouTube, giữ cách này và cân nhắc gom gọn. Vẫn không ra chữ → không phải do iframe đang tồn tại.
+  Khi đó thử tải lại trang và đọc ngay, không phát video lần nào, để xem video đã phát có để lại ảnh hưởng không; nếu vẫn hỏng thì so
+  khác biệt với `MicDiagnostics`, hoặc chuyển sang ghi âm bằng `getUserMedia` + API nhận diện qua serverless (cần API key, có chi phí).
+- Kiểm chứng bằng micro giả lập và UA iPad giả trên vite local, **chưa test trên iPad thật**.
+
+## Phiên trước (2026-11-05) — v1.27.4: màn luyện dùng instance nhận diện mới mỗi lượt (iPad)
 
 Kết quả thẻ Kiểm tra micro trên iPad thật của user (Safari 26.6.1, iPadOS 18.7), chưa mở video:
 
