@@ -3478,13 +3478,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isPlayingSegment, setIsPlayingSegment] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
-  const [showAnswerImmediately, setShowAnswerImmediately] = useState(() => {
-    try {
-      return localStorage.getItem("flashlearn_dictation_show_immediately") !== "0";
-    } catch {
-      return true;
-    }
-  });
   const [showFullAnswer, setShowFullAnswer] = useState(false);
   const [selectedLookupWord, setSelectedLookupWord] = useState(null); // từ đang được tra nghĩa (bấm vào)
   const [jumpInput, setJumpInput] = useState("1"); // ô "Câu __/210" để nhảy tới câu bất kỳ
@@ -3558,14 +3551,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       // localStorage đầy hoặc bị chặn — bỏ qua, không chặn luyện tập
     }
   }, [videos]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("flashlearn_dictation_show_immediately", showAnswerImmediately ? "1" : "0");
-    } catch {
-      // bỏ qua
-    }
-  }, [showAnswerImmediately]);
 
   const activeVideo = videos.find((v) => v.id === activeVideoId) || null;
 
@@ -4240,14 +4225,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   </button>
                 ))}
               </div>
-              <label className="flex items-center gap-2 text-xs text-slate-500">
-                <input
-                  type="checkbox"
-                  checked={showAnswerImmediately}
-                  onChange={(e) => setShowAnswerImmediately(e.target.checked)}
-                />
-                Hiện đáp án ngay khi nhấn Enter mà sai
-              </label>
             </div>
 
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
@@ -4282,7 +4259,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   const revealThis =
                     showFullAnswer ||
                     revealedIndices[i] ||
-                    (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
+                    (i === confirmedCount && wordStatus === "incorrect");
                   const visible = isDone || revealThis;
                   const hasLetters = /[a-z]/i.test(w);
                   const boxCls = !visible
@@ -4328,9 +4305,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   );
                 })}
               </div>
-              <p className="text-[11px] text-slate-400 mt-1.5">
-                Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
-              </p>
             </div>
 
             <div>

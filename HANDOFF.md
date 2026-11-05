@@ -21,7 +21,14 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.26.0: bỏ nút Kiểm tra / Bỏ qua, chữ to hơn
+## Phiên làm việc gần nhất (2026-11-05) — v1.26.1: bỏ checkbox và dòng ghi chú ở màn luyện
+
+- User yêu cầu bỏ checkbox "Hiện đáp án ngay khi nhấn Enter mà sai" và dòng "Các từ bấm hiện trước sẽ bị tính là lỗi...".
+- Gỡ state `showAnswerImmediately`, cùng effect ghi localStorage `flashlearn_dictation_show_immediately` (key cũ còn trong
+  trình duyệt thì vô hại). **Hành vi cố định theo mặc định cũ (bật):** Enter mà sai thì lộ từ sai đầu tiên.
+- Chỉ bỏ dòng chữ: bấm mắt hoặc "Hiện tất cả" **vẫn tính lỗi** như cũ, chỉ là không còn câu nhắc trên màn hình.
+
+## Phiên trước (2026-11-05) — v1.26.0: bỏ nút Kiểm tra / Bỏ qua, chữ to hơn
 
 - Ở màn luyện Chép chính tả, user yêu cầu bỏ 2 nút **Kiểm tra** và **Bỏ qua**; đã gỡ cả `handleSkipSegment` vì không còn ai gọi.
 - **Enter vẫn chạy `checkCurrentWord`** (chấm và lộ đáp án nếu bật tuỳ chọn), nên checkbox đổi nhãn thành
