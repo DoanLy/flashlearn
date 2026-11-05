@@ -2928,10 +2928,6 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
   );
 };
 
-const isIOSDevice = () =>
-  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
 // So câu mẫu với câu nhận diện được. Token không có chữ/số (">>" trong phụ đề) không tính điểm.
 const scorePronunciation = (target, spoken) => {
   const cleanWord = (w) =>
@@ -2959,7 +2955,6 @@ const ShadowingPanel = ({
   canReplay,
   onReplay,
   onBeforeRecord,
-  onRecordEnd,
   onScored,
   onSelectWord,
 }) => {
@@ -2991,19 +2986,10 @@ const ShadowingPanel = ({
   // SpeechRecognition chỉ khởi tạo 1 lần nên phải đọc câu hiện tại và callback qua ref.
   const targetRef = useRef({ index, text });
   const onScoredRef = useRef(onScored);
-  const onRecordEndRef = useRef(onRecordEnd);
-  const recordActiveRef = useRef(false);
 
   useEffect(() => {
     onScoredRef.current = onScored;
-    onRecordEndRef.current = onRecordEnd;
   });
-
-  const finishRecord = () => {
-    if (!recordActiveRef.current) return;
-    recordActiveRef.current = false;
-    onRecordEndRef.current?.();
-  };
 
   useEffect(() => {
     targetRef.current = { index, text };
@@ -3121,7 +3107,6 @@ const ShadowingPanel = ({
                 setMicOpen(false);
                 isRecordingRef.current = false;
                 failMessage(`Không bật lại được micro (${err.name}). Bấm Đọc để thử lại.`);
-                finishRecord();
               }
             }, 120);
             return;
@@ -3134,7 +3119,6 @@ const ShadowingPanel = ({
         isRecordingRef.current = false;
         shouldKeepListeningRef.current = false;
         isManualStopRef.current = false;
-        finishRecord();
 
         if (shouldAnalyze && !spokenTextRef.current?.trim()) {
           failNoText();
@@ -3176,7 +3160,6 @@ const ShadowingPanel = ({
           setIsRecording(false);
           setMicOpen(false);
           isRecordingRef.current = false;
-          finishRecord();
         }
       };
 
@@ -3202,7 +3185,6 @@ const ShadowingPanel = ({
     }
     // Dừng video trước, không thì micro thu luôn tiếng video và chấm nhầm là người dùng đọc đúng.
     onBeforeRecord?.();
-    recordActiveRef.current = true;
     isManualStopRef.current = false;
     shouldKeepListeningRef.current = true;
     spokenTextRef.current = "";
@@ -3223,7 +3205,6 @@ const ShadowingPanel = ({
       console.error("Mic start error", err);
       shouldKeepListeningRef.current = false;
       setError({ index, message: `Không bật được micro (${err.name}). Thử lại sau vài giây.` });
-      finishRecord();
     }
   };
 
@@ -3341,8 +3322,66 @@ const ShadowingPanel = ({
   );
 };
 
-// TẠM để chẩn đoán lỗi micro trên iPad (xem HANDOFF): thử nhận diện khi trang chưa nạp video YouTube,
-// với continuous tắt/bật. Có kết luận thì gỡ cùng nhật ký micro.
+const runMicDiagnostic = async (variant, setLog, setRunning, recognitionRef) => {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    setLog(["Trình duyệt không có SpeechRecognition", navigator.userAgent]);
+    return;
+  }
+  const startedAt = Date.now();
+  const add = (line) =>
+    setLog((prev) => [...prev, `${((Date.now() - startedAt) / 1000).toFixed(1)}s ${line}`]);
+  setLog([`Cách ${variant}`, navigator.userAgent]);
+
+  if (variant === "B") {
+    if (navigator.audioSession) {
+      add(`audioSession: ${navigator.audioSession.type}`);
+      navigator.audioSession.type = "play-and-record";
+      add(`audioSession: ${navigator.audioSession.type}`);
+    } else {
+      add("không có navigator.audioSession");
+    }
+  }
+  if (variant === "C") {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((track) => track.stop());
+      add("getUserMedia ok");
+    } catch (err) {
+      add(`getUserMedia lỗi: ${err.name}`);
+    }
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach(
+    (name) => {
+      recognition[`on${name}`] = () => add(name);
+    },
+  );
+  recognition.onresult = (event) => {
+    const last = event.results[event.results.length - 1];
+    add(`result: "${last[0].transcript}"${last.isFinal ? " (final)" : ""}`);
+  };
+  recognition.onerror = (event) => add(`error: ${event.error}`);
+  recognition.onend = () => {
+    add("end");
+    setRunning(false);
+    if (variant === "B" && navigator.audioSession) navigator.audioSession.type = "auto";
+  };
+  recognitionRef.current = recognition;
+  try {
+    recognition.start();
+    setRunning(true);
+  } catch (err) {
+    add(`start lỗi: ${err.name}`);
+  }
+};
+
+// TẠM để chẩn đoán lỗi micro trên iPad (xem HANDOFF): sau khi video đã phát, nhận diện không còn ra
+// chữ. Thử 2 cách khôi phục, so với A là đối chứng. Có kết luận thì gỡ cùng nhật ký micro.
 const MicDiagnostics = () => {
   const [log, setLog] = useState([]);
   const [running, setRunning] = useState(false);
@@ -3350,49 +3389,11 @@ const MicDiagnostics = () => {
 
   useEffect(() => () => recognitionRef.current?.abort(), []);
 
-  const run = (continuous) => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setLog(["Trình duyệt không có SpeechRecognition", navigator.userAgent]);
-      return;
-    }
-    const startedAt = Date.now();
-    const add = (line) =>
-      setLog((prev) => [...prev, `${((Date.now() - startedAt) / 1000).toFixed(1)}s ${line}`]);
-    setLog([`continuous=${continuous}`, navigator.userAgent]);
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.continuous = continuous;
-    recognition.interimResults = true;
-    ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach(
-      (name) => {
-        recognition[`on${name}`] = () => add(name);
-      },
-    );
-    recognition.onresult = (event) => {
-      const last = event.results[event.results.length - 1];
-      add(`result: "${last[0].transcript}"${last.isFinal ? " (final)" : ""}`);
-    };
-    recognition.onerror = (event) => add(`error: ${event.error}`);
-    recognition.onend = () => {
-      add("end");
-      setRunning(false);
-    };
-    recognitionRef.current = recognition;
-    try {
-      recognition.start();
-      setRunning(true);
-    } catch (err) {
-      add(`start lỗi: ${err.name}`);
-    }
-  };
-
   return (
     <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
       <p className="font-bold text-slate-800">Kiểm tra micro</p>
       <p className="text-xs text-slate-500 mt-1">
-        Tải lại trang, chưa mở video nào. Bấm Thử, đọc to một câu tiếng Anh, rồi bấm Dừng.
+        Tải lại trang, mở video cho phát ra tiếng, quay lại đây. Bấm một cách, đọc to một câu tiếng Anh, rồi bấm Dừng.
       </p>
       <div className="flex flex-wrap gap-2 mt-3">
         {running ? (
@@ -3404,18 +3405,15 @@ const MicDiagnostics = () => {
           </button>
         ) : (
           <>
-            <button
-              onClick={() => run(false)}
-              className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
-            >
-              Thử 1
-            </button>
-            <button
-              onClick={() => run(true)}
-              className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
-            >
-              Thử 2
-            </button>
+            {["A", "B", "C"].map((variant) => (
+              <button
+                key={variant}
+                onClick={() => runMicDiagnostic(variant, setLog, setRunning, recognitionRef)}
+                className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
+              >
+                Cách {variant}
+              </button>
+            ))}
           </>
         )}
       </div>
@@ -3468,10 +3466,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
 
   const playerContainerRef = useRef(null);
   const playerRef = useRef(null);
-  const createdPlayerRef = useRef(null); // có cả lúc player chưa ready, playerRef thì chưa gán
-  const skipAutoPlayRef = useRef(false);
-  const [playerEpoch, setPlayerEpoch] = useState(0); // tăng lên để dựng lại player
-  const [playerSuspended, setPlayerSuspended] = useState(false);
   const watcherRef = useRef(null);
   // Phát hiện người dùng tự tua trên thanh tiến trình YouTube (API không có sự kiện "seek"):
   // lastPollRef = mốc thời gian video + giờ thật ở lần dò trước; ownSeekUntilRef = hạn chót
@@ -3549,7 +3543,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
       // mà JSX/React đang theo dõi.
       const mountEl = document.createElement("div");
       playerContainerRef.current.appendChild(mountEl);
-      createdPlayerRef.current = player = new YT.Player(mountEl, {
+      player = new YT.Player(mountEl, {
         videoId: activeVideo.videoId,
         // Mặc định YT tạo iframe 640x390 cố định → phải ép 100% để lấp đầy khung aspect-video.
         width: "100%",
@@ -3573,16 +3567,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
     return () => {
       cancelled = true;
       if (watcherRef.current) clearInterval(watcherRef.current);
-      try {
-        if (player && player.destroy) player.destroy();
-      } catch {
-        // đã bị suspendPlayerForMic gỡ trước đó
-      }
+      if (player && player.destroy) player.destroy();
       playerRef.current = null;
       setPlayerReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, activeVideo?.id, playerEpoch]);
+  }, [mode, activeVideo?.id]);
 
   const playSegment = (index) => {
     const player = playerRef.current;
@@ -3622,41 +3612,15 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
     }, 150);
   };
 
-  // Micro trên iPad ra chữ khi trang chưa có video mà không ra chữ ở màn luyện, nên nghi YouTube giữ
-  // phiên âm thanh. Trên iOS gỡ hẳn iframe lúc đọc (đồng bộ, trước khi start() micro) rồi dựng lại.
-  const prepareForRecording = () => {
+  const stopSegment = () => {
     if (watcherRef.current) clearInterval(watcherRef.current);
+    playerRef.current?.pauseVideo?.();
     setIsPlayingSegment(false);
-    if (!isIOSDevice()) {
-      playerRef.current?.pauseVideo?.();
-      return;
-    }
-    try {
-      createdPlayerRef.current?.destroy?.();
-    } catch (err) {
-      console.error("Không gỡ được player:", err);
-    }
-    createdPlayerRef.current = null;
-    playerRef.current = null;
-    playerContainerRef.current?.replaceChildren();
-    setPlayerReady(false);
-    setPlayerSuspended(true);
-  };
-
-  const resumeAfterRecording = () => {
-    if (!isIOSDevice()) return;
-    skipAutoPlayRef.current = true; // đọc xong không tự phát lại câu, để người dùng xem kết quả
-    setPlayerSuspended(false);
-    setPlayerEpoch((n) => n + 1);
   };
 
   // Tự phát đoạn hiện tại mỗi khi player sẵn sàng hoặc chuyển câu
   useEffect(() => {
     if (mode === "practice" && playerReady) {
-      if (skipAutoPlayRef.current) {
-        skipAutoPlayRef.current = false;
-        return;
-      }
       playSegment(currentIndex);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -4235,11 +4199,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
               }`}
             >
               <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
-              {playerSuspended && (
-                <div className="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-white/70">
-                  Video tạm ẩn trong lúc đọc
-                </div>
-              )}
             </div>
 
             <div className="flex items-center justify-between gap-3">
@@ -4266,8 +4225,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
                 text={seg.text}
                 canReplay={playerReady && !isPlayingSegment}
                 onReplay={() => playSegment(currentIndex)}
-                onBeforeRecord={prepareForRecording}
-                onRecordEnd={resumeAfterRecording}
+                onBeforeRecord={stopSegment}
                 onScored={updateProgress}
                 onSelectWord={setSelectedLookupWord}
               />

@@ -21,7 +21,20 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.5: iOS gỡ iframe YouTube trong lúc đọc (THỬ NGHIỆM)
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.6: đã khoanh vùng lỗi micro iPad, thử cách khôi phục
+
+**Phát hiện (ảnh từ iPad thật, cùng code của thẻ Kiểm tra micro):** trang mới tải chưa phát video thì ra chữ (`speechstart`, `result`). Sau khi
+video đã phát ra tiếng thì **không** có `speechstart`/`result`: `start → audiostart → (bấm Dừng) audioend → error:aborted → end`.
+Màn luyện cũng y hệt. Vậy lỗi là **video đã phát làm nhận diện không nghe được**, không phải code màn luyện. Mới có 1 lần đo mỗi bên.
+
+- **Gỡ v1.27.5** (ẩn iframe lúc đọc): iframe đã gỡ mà vẫn hỏng, nên không có tác dụng và làm video phải tải lại.
+- Thẻ `MicDiagnostics` đổi thành 3 cách để so **sau khi video đã phát**: A đối chứng; B đặt `navigator.audioSession.type = "play-and-record"`
+  (Safari 16.4+); C gọi `getUserMedia` rồi tắt track trước khi `start()`. Cách C `start()` sau `await` nên có thể mất cử chỉ người dùng.
+- **Đọc kết quả:** cách nào ra chữ thì đưa vào `toggleRecording` rồi gỡ thẻ. Không cách nào được thì còn: tải lại trang trước khi đọc (trang
+  mới tải thì ra chữ, nhưng phải giữ câu đang học và bấm Đọc lần nữa), hoặc ghi âm + API nhận diện qua serverless (cần key, có chi phí, có thể dính cùng lỗi).
+- Kiểm chứng bằng micro giả lập, **chưa test trên iPad thật**.
+
+## Phiên trước (2026-11-05) — v1.27.5: iOS gỡ iframe YouTube trong lúc đọc (ĐÃ GỠ ở v1.27.6)
 
 v1.27.4 (instance mới mỗi lượt) không hết lỗi: user báo màn luyện trên iPad vẫn không ra chữ, không kèm nhật ký. Giả thuyết còn lại
 mạnh nhất là YouTube giữ phiên âm thanh, **chưa được xác nhận**, nên bản này vừa là thử sửa vừa là phép thử:
