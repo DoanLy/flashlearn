@@ -2988,6 +2988,7 @@ const ShadowingPanel = ({
   // iPad/iPhone: ghi âm + Whisper trên máy thay cho Web Speech (xem lib/whisper.js).
   const captureRef = useRef(null);
   const captureRunRef = useRef(0);
+  const rawMicRef = useRef(false);
   const cancelCaptureRef = useRef(null);
   // Chuỗi sự kiện của lượt đọc, hiện kèm thông báo lỗi để chẩn đoán trên máy không gắn được DevTools.
   const micLogRef = useRef([]);
@@ -3229,13 +3230,14 @@ const ShadowingPanel = ({
     setIsRecording(true);
     isRecordingRef.current = true;
     try {
-      const capture = await openMicCapture();
+      const raw = rawMicRef.current;
+      const capture = await openMicCapture({ raw, onLog: logCapture });
       if (run !== captureRunRef.current) {
         capture.cancel();
         return;
       }
       captureRef.current = capture;
-      logCapture(`mic mở, audio ${capture.contextState}`);
+      logCapture(`mic mở (${raw ? "tắt xử lý" : "mặc định"}), ${capture.info}`);
       setMicOpen(true);
     } catch (err) {
       console.error("Mic capture error", err);
@@ -3258,10 +3260,11 @@ const ShadowingPanel = ({
     if (!capture) return;
     setTranscribing(true);
     try {
-      const { pcm, peak, seconds, state } = await capture.stop();
-      logCapture(`thu ${seconds.toFixed(1)}s, mức ${peak.toFixed(3)}, audio ${state}`);
+      const { pcm, peak, seconds, bytes, trackState } = await capture.stop();
+      logCapture(`thu ${seconds.toFixed(1)}s, ${bytes} byte, mức ${peak.toFixed(3)}, ${trackState}`);
       if (!seconds || peak < 0.005) {
-        failCapture(target.index, "Micro thu được toàn im lặng, không có tiếng để nhận dạng. Thử tải lại trang rồi đọc lại.");
+        rawMicRef.current = !rawMicRef.current;
+        failCapture(target.index, "Micro thu được toàn im lặng, không có tiếng để nhận dạng. Bấm Đọc lần nữa để thử cách thu khác.");
         return;
       }
       const transcript = await transcribePcm(pcm);

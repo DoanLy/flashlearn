@@ -21,7 +21,19 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.28.0: iPad/iPhone ghi âm + Whisper trên máy, bỏ Web Speech
+## Phiên làm việc gần nhất (2026-11-05) — v1.28.1: iOS ghi bằng MediaRecorder thay AudioContext
+
+User báo v1.28.0 trên iPad hiện "Micro thu được toàn im lặng" (không kèm nhật ký). Thông báo này hiện khi `seconds = 0` HOẶC `peak < 0.005`, nên **chưa biết** là
+AudioContext không chạy hay micro thật sự câm. Đây là phép thử + thử sửa, chưa xác nhận nguyên nhân:
+
+- `openMicCapture` đổi sang `MediaRecorder` + giải mã bằng `OfflineAudioContext`, bỏ `AudioContext`/`ScriptProcessor`.
+- Lượt im lặng thì lượt sau đảo `rawMicRef` (tắt echoCancellation/noiseSuppression/autoGainControl).
+- Nhật ký có: `readyState`, `muted`, mimeType, sự kiện mute/unmute của track, số byte, mức.
+- **Đọc kết quả trên iPad:** ra chữ → lỗi ở AudioContext, xong. `muted=true` hoặc có `track mute` → iOS tắt micro, phải tìm cách trả phiên âm thanh (thử gỡ iframe với luồng mới, tải lại trang).
+  `muted=false`, có byte mà `mức 0.000` → iOS đưa dữ liệu rỗng; so sánh cách mặc định với "tắt xử lý", và thử lúc chưa phát video.
+- Kiểm chứng bằng micro giả trên Chrome, **chưa test trên iPad thật**. Phần dưới về `AudioContext` của v1.28.0 không còn đúng.
+
+## Phiên trước (2026-11-05) — v1.28.0: iPad/iPhone ghi âm + Whisper trên máy, bỏ Web Speech
 
 v1.27.7 trên iPad vẫn không ra chữ. **Vẫn chưa biết nguyên nhân gốc** vì sao Web Speech của Safari hỏng, nên đổi hướng thay vì vá tiếp.
 

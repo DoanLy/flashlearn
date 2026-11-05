@@ -59,80 +59,64 @@ export const transcribePcm = async (pcm) => {
   return text.replace(/\[[^\]]*\]|\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
 };
 
-const resampleForWhisper = async (samples, sampleRate) => {
-  if (sampleRate === WHISPER_SAMPLE_RATE) return samples;
-  const length = Math.ceil((samples.length * WHISPER_SAMPLE_RATE) / sampleRate);
-  const offline = new OfflineAudioContext(1, length, WHISPER_SAMPLE_RATE);
-  const buffer = offline.createBuffer(1, samples.length, sampleRate);
-  buffer.copyToChannel(samples, 0);
-  const source = offline.createBufferSource();
-  source.buffer = buffer;
-  source.connect(offline.destination);
-  source.start();
-  const rendered = await offline.startRendering();
-  return rendered.getChannelData(0).slice();
-};
-
-// Phải gọi trong lượt bấm: AudioContext được tạo và resume trước await đầu tiên, không thì iOS giữ suspended.
-export const openMicCapture = async () => {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-  const context = new AudioContextClass();
-  const resuming = context.resume();
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    await resuming;
-  } catch (err) {
-    stream?.getTracks().forEach((track) => track.stop());
-    context.close();
-    throw err;
-  }
+// Ghi bằng MediaRecorder, không qua AudioContext: iOS có thể giữ AudioContext ở trạng thái gián đoạn
+// sau khi video đã phát, khi đó luồng Web Audio toàn im lặng dù micro vẫn thu.
+// raw = tắt xử lý giọng nói của trình duyệt, iOS mở micro theo đường khác.
+export const openMicCapture = async ({ raw = false, onLog } = {}) => {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    audio: raw ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false } : true,
+  });
+  const [track] = stream.getAudioTracks();
+  track.onmute = () => onLog?.("track mute");
+  track.onunmute = () => onLog?.("track unmute");
+  track.onended = () => onLog?.("track ended");
 
   const chunks = [];
-  const source = context.createMediaStreamSource(stream);
-  const processor = context.createScriptProcessor(4096, 1, 1);
-  const silence = context.createGain();
-  silence.gain.value = 0;
-  processor.onaudioprocess = (event) => {
-    chunks.push(new Float32Array(event.inputBuffer.getChannelData(0)));
+  const recorder = new MediaRecorder(stream);
+  recorder.ondataavailable = (event) => {
+    if (event.data.size) chunks.push(event.data);
   };
-  source.connect(processor);
-  processor.connect(silence);
-  silence.connect(context.destination);
+  recorder.onerror = (event) => onLog?.(`recorder lỗi: ${event.error?.name}`);
+  recorder.start();
 
   const release = () => {
-    processor.onaudioprocess = null;
-    source.disconnect();
-    processor.disconnect();
-    silence.disconnect();
-    stream.getTracks().forEach((track) => track.stop());
-    context.close();
+    track.onmute = track.onunmute = track.onended = null;
+    stream.getTracks().forEach((item) => item.stop());
   };
 
   return {
-    contextState: context.state,
-    cancel: release,
-    // peak để phân biệt micro thu toàn im lặng với thu được tiếng mà không nhận ra chữ.
-    stop: async () => {
-      const sampleRate = context.sampleRate;
-      const state = context.state;
+    info: `${track.readyState}, muted=${track.muted}, ${recorder.mimeType}`,
+    cancel: () => {
+      recorder.ondataavailable = null;
+      if (recorder.state !== "inactive") recorder.stop();
       release();
-      const samples = new Float32Array(chunks.reduce((sum, chunk) => sum + chunk.length, 0));
-      let offset = 0;
-      let peak = 0;
-      chunks.forEach((chunk) => {
-        samples.set(chunk, offset);
-        offset += chunk.length;
-        chunk.forEach((value) => {
-          peak = Math.max(peak, Math.abs(value));
-        });
-      });
-      return {
-        pcm: samples.length ? await resampleForWhisper(samples, sampleRate) : samples,
-        peak,
-        seconds: samples.length / sampleRate,
-        state,
-      };
     },
+    // peak để phân biệt micro thu toàn im lặng với thu được tiếng mà không nhận ra chữ.
+    stop: () =>
+      new Promise((resolve, reject) => {
+        recorder.onstop = async () => {
+          const trackState = `${track.readyState}, muted=${track.muted}`;
+          release();
+          const blob = new Blob(chunks, { type: recorder.mimeType });
+          if (!blob.size) {
+            resolve({ pcm: new Float32Array(0), peak: 0, seconds: 0, bytes: 0, trackState });
+            return;
+          }
+          try {
+            // OfflineAudioContext tự đổi về tần số của nó khi giải mã, không cần cử chỉ người dùng.
+            const offline = new OfflineAudioContext(1, 1, WHISPER_SAMPLE_RATE);
+            const decoded = await offline.decodeAudioData(await blob.arrayBuffer());
+            const pcm = decoded.getChannelData(0).slice();
+            let peak = 0;
+            pcm.forEach((value) => {
+              peak = Math.max(peak, Math.abs(value));
+            });
+            resolve({ pcm, peak, seconds: decoded.duration, bytes: blob.size, trackState });
+          } catch (err) {
+            reject(new Error(`giải mã ${blob.size} byte ${blob.type}: ${err.message}`));
+          }
+        };
+        recorder.stop();
+      }),
   };
 };
