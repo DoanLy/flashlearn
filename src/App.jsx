@@ -3348,7 +3348,7 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
   };
 
   return (
-    <div className="mt-4 bg-slate-800 text-white rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-4 relative shadow-xl w-full">
+    <div className="bg-slate-800 text-white rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-4 relative shadow-xl w-full">
       <button
         onClick={onClose}
         className="absolute top-3 right-3 text-slate-400 hover:text-white"
@@ -3360,11 +3360,11 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
         <>
           {/* Từ + nút phát âm hiện NGAY, không chờ mạng: học viên nghe lại được liền còn nghĩa
               thì chèn vào sau khi có. */}
-          <div className="flex items-center justify-between mb-3 pr-6">
-            <div className="flex items-center gap-3">
-              <div className="flex flex-col">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pr-6">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-2">
-                  <h4 className="text-xl font-bold text-blue-400">{clean}</h4>
+                  <h4 className="text-xl font-bold text-blue-400 break-words min-w-0">{clean}</h4>
                   {data?.level && (
                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-700 text-slate-300">
                       {data.level}
@@ -3401,8 +3401,8 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
                 <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2">
                   Chọn chủ đề
                 </label>
-                <div className="flex gap-2">
-                  <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap gap-2">
+                  <div className="flex-1 min-w-[140px]">
                     <DeckSelect
                       variant="dark"
                       value={targetDeck}
@@ -3506,7 +3506,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const ownSeekUntilRef = useRef(0);
   const userSeekHandlerRef = useRef(null);
   const videosRef = useRef(videos);
-  const sentenceListRef = useRef(null);
 
   // Ghi cả video lên DB; thành công thì đánh dấu synced. Lỗi thì bản ở máy vẫn còn, lần mở tab
   // sau mergeDictationVideos sẽ đẩy lại.
@@ -3872,18 +3871,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     goToSegment(jumpTarget - 1);
   };
 
-  // Giữ câu đang học ở giữa danh sách, chỉ cuộn trong khung danh sách chứ không kéo cả trang.
-  useEffect(() => {
-    if (mode !== "practice") return;
-    const list = sentenceListRef.current;
-    const active = list?.querySelector('[aria-current="true"]');
-    if (!active) return;
-    list.scrollTo({
-      top: active.offsetTop - (list.clientHeight - active.offsetHeight) / 2,
-      behavior: "smooth",
-    });
-  }, [mode, currentIndex, activeVideoId]);
-
   const startPractice = (video) => {
     setActiveVideoId(video.id);
     const lastIndex = video.progress?.lastIndex ?? 0;
@@ -4237,9 +4224,17 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           <div className="h-full rounded-full bg-blue-600" style={{ width: `${completedPercent}%` }} />
         </div>
 
-        {/* Từ 700px trở lên chia 2 cột (iPad mini dọc rộng 744px, chưa tới mốc md 768px): bên trái luyện tập, bên phải danh sách câu.
-            Chỉ đổi cột bằng CSS, không render 2 cây riêng — nếu không iframe YouTube sẽ bị tạo lại. */}
-        <div className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] min-[700px]:items-start lg:gap-6">
+        {/* Chưa bấm từ nào: cột luyện tập chiếm hết chiều ngang. Bấm vào từ: từ 700px trở lên (iPad
+            mini dọc rộng 744px, chưa tới mốc md 768px) tách cột phải hiện nghĩa từ; nhỏ hơn thì nổi
+            phía trên thanh nav. Chỉ đổi bằng CSS, không render 2 cây riêng — nếu không iframe
+            YouTube sẽ bị tạo lại. */}
+        <div
+          className={`grid grid-cols-1 gap-4 ${
+            selectedLookupWord
+              ? "min-[700px]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] min-[700px]:items-start lg:gap-6"
+              : ""
+          }`}
+        >
           <div className="min-w-0 flex flex-col gap-3">
             <div className="mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden relative">
               <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
@@ -4352,15 +4347,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               <p className="text-[11px] text-slate-400 mt-1.5">
                 Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
               </p>
-
-              {selectedLookupWord && (
-                <WordMeaningCard
-                  word={selectedLookupWord}
-                  onClose={() => setSelectedLookupWord(null)}
-                  onAddFlashcard={onAddFlashcard}
-                  existingDecks={existingDecks}
-                />
-              )}
             </div>
 
             <div>
@@ -4431,60 +4417,16 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
             </div>
           </div>
 
-          {/* Bài dài có hàng trăm câu: danh sách tự cuộn trong khung, không kéo dài cả trang. */}
-          <aside className="min-w-0 flex flex-col gap-2 min-[700px]:sticky min-[700px]:top-[76px] min-[700px]:h-[calc(100dvh-250px)] min-[700px]:min-h-[320px]">
-            <div className="flex items-center justify-between px-4 py-2.5 bg-white rounded-2xl border border-slate-200">
-              <span className="font-bold text-slate-800">Các câu</span>
-              <span className="text-sm text-slate-400">
-                {currentIndex + 1}/{total}
-              </span>
-            </div>
-            <div
-              ref={sentenceListRef}
-              className="relative flex-1 min-h-0 max-h-80 min-[700px]:max-h-none overflow-y-auto overscroll-contain flex flex-col gap-2 p-0.5"
-            >
-              {activeVideo.segments.map((s, i) => {
-                const isCurrent = i === currentIndex;
-                const score = attempts[i];
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      if (!isCurrent) goToSegment(i);
-                    }}
-                    aria-current={isCurrent ? "true" : undefined}
-                    aria-label={`Câu ${i + 1}`}
-                    className={`shrink-0 w-full flex items-center gap-3 p-2.5 text-left bg-white rounded-2xl border-2 ${
-                      isCurrent ? "border-blue-600" : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <span
-                      className={`shrink-0 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-                        isCurrent
-                          ? "bg-blue-600 text-white"
-                          : score != null
-                            ? "bg-green-100 text-green-700"
-                            : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {i + 1}
-                    </span>
-                    <span className="flex-1 min-w-0 text-xs leading-5 tracking-wider text-slate-400 break-words">
-                      {s.text
-                        .trim()
-                        .split(/\s+/)
-                        .map((w) => "*".repeat(w.length))
-                        .join(" ")}
-                    </span>
-                    {score != null && (
-                      <span className="shrink-0 text-xs font-bold text-green-700">{score}%</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </aside>
+          {selectedLookupWord && (
+            <aside className="fixed inset-x-2 bottom-[118px] z-20 max-h-[50vh] overflow-y-auto min-w-0 min-[700px]:sticky min-[700px]:inset-x-auto min-[700px]:bottom-auto min-[700px]:top-[76px] min-[700px]:z-auto min-[700px]:max-h-none min-[700px]:overflow-visible">
+              <WordMeaningCard
+                word={selectedLookupWord}
+                onClose={() => setSelectedLookupWord(null)}
+                onAddFlashcard={onAddFlashcard}
+                existingDecks={existingDecks}
+              />
+            </aside>
+          )}
         </div>
       </div>
     );

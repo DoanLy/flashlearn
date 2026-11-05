@@ -21,25 +21,32 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.24.0: chia lại layout màn luyện Chép chính tả
+## Phiên làm việc gần nhất (2026-11-05) — v1.25.0: bỏ danh sách câu, cột phải hiện nghĩa từ khi bấm
 
-User gửi ảnh mẫu (app khác, iPad) và yêu cầu đổi layout màn luyện tập cho giống, **giữ nguyên tính năng và nút**,
-chạy được trên iPad mini A17 Pro (viewport **744×1133** dọc, 1133×744 ngang).
+Sau v1.24.0, user yêu cầu **bỏ danh sách câu**: chưa bấm từ thì giao diện trải hết chiều ngang, bấm vào từ thì xem nghĩa.
 
-- **Bố cục (`DictationCoach`, `src/App.jsx`):** đầu trang (nút quay lại, tiêu đề, ô nhảy câu, pill TB %) + thanh tiến
-  độ; cột trái (3fr): video → tốc độ + checkbox → thẻ Nghe lại / Hiện tất cả + bảng từ → ô gõ → Kiểm tra / Bỏ qua →
-  Câu trước / Câu sau; cột phải (2fr): danh sách câu che bằng `*`, tự cuộn trong khung, câu hiện tại tự ra giữa.
+- `DictationCoach`: bỏ danh sách câu, `sentenceListRef` và effect tự cuộn. `WordMeaningCard` chuyển ra `<aside>` chỉ
+  render khi có `selectedLookupWord`. Grid chỉ có 2 cột (3fr/2fr) khi đang có từ được chọn, nên video co lại và các ô từ
+  dịch lên khi mở card (744px dọc: video rộng ~696px → 396px). Đóng card hoặc chuyển câu thì về full.
+- Dưới 700px: `<aside>` là `fixed` nổi phía trên thanh nav (card nằm cuối DOM, để `static` thì sẽ ở dưới nút Câu sau).
+- `WordMeaningCard` thêm `flex-wrap` để vừa cột hẹp, bỏ `mt-4` vì giờ nằm trong cột riêng.
+- Kiểm chứng trên vite local bằng video tạm `claude-test-layout` (đã xoá khỏi DB) ở 744×1133, 1133×744, 375×812: mở/đóng
+  card, chế độ Lưu từ học (không bấm Lưu), iframe không tạo lại, không tràn ngang, console không lỗi. **Chưa test trên iPad thật.**
+
+## Phiên trước (2026-11-05) — v1.24.0: chia lại layout màn luyện Chép chính tả
+
+**Danh sách câu và cột phải cố định ở phiên này đã bị bỏ ở v1.25.0.** Vẫn còn hiệu lực: thứ tự các khối ở cột luyện tập,
+thanh tiến độ, và breakpoint bên dưới.
+
+- User gửi ảnh mẫu (app khác, iPad), yêu cầu đổi layout, **giữ nguyên tính năng và nút**, chạy trên iPad mini A17 Pro
+  (viewport **744×1133** dọc, 1133×744 ngang).
 - **Breakpoint là `min-[700px]`, KHÔNG phải `md`:** iPad mini dọc rộng 744px, chưa tới mốc md 768px. `<main>` vốn là
   `max-w-md` dưới 768px nên có thêm `min-[700px]:max-w-3xl` **chỉ khi ở tab dictation**. Các tab khác trên iPad mini
-  dọc vẫn hẹp 448px như cũ. Dưới 700px xếp 1 cột, danh sách câu nằm dưới cùng (cao tối đa `max-h-80`).
+  dọc vẫn hẹp 448px như cũ.
 - Đổi cột chỉ bằng CSS, một cây JSX duy nhất — để iframe YouTube không bị tạo lại khi xoay máy.
-- **Phần mới so với trước (do layout mẫu cần):** danh sách câu (bấm để nhảy tới câu, chỉ gọi `goToSegment`; câu đã làm
-  có số xanh + %) và thanh tiến độ (`số câu có trong progress.attempts / tổng`). Không ghi thêm gì lên DB.
+- Thanh tiến độ = `số câu có trong progress.attempts / tổng`, tính cả câu đã bấm Bỏ qua. Không ghi thêm gì lên DB.
 - **Cố ý KHÔNG thêm** các thứ trong ảnh mà app chưa có: đồng hồ, Auto stop, nút play riêng, bookmark, cờ, cài đặt, mic.
-  Giữ theme sáng hiện tại, không đổi sang nền đen như ảnh. Nhãn nút vẫn tiếng Việt.
-- Kiểm chứng trên vite local bằng video tạm `claude-test-layout` (đã xoá khỏi DB): đo 744×1133, 1133×744, 375×812,
-  1366×768 không tràn ngang; bấm Bỏ qua → câu 1 xanh, 2% hoàn thành; bấm câu 11 → câu đang học và ô nhảy cập nhật, danh
-  sách tự cuộn; iframe giữ nguyên khi đổi kích thước; console không lỗi. **Chưa test trên iPad thật** (Safari, bàn phím ảo).
+  Giữ theme sáng hiện tại, không đổi sang nền đen như ảnh.
 
 ## Phiên trước (2026-11-05) — v1.23.0: lưu Chép chính tả lên Supabase
 
