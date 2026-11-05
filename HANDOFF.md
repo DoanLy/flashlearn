@@ -21,7 +21,12 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.0: tab Phát âm thành shadowing theo video + script
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.1: bỏ nút Nghe mẫu ở tab Phát âm
+
+User yêu cầu bỏ nút "Nghe mẫu" (giọng máy đọc cả câu) trong `ShadowingPanel`. Nghe câu giờ chỉ qua "Nghe lại" (đoạn trong video).
+`speakEnglishWord` vẫn dùng cho card nghĩa từ.
+
+## Phiên trước (2026-11-05) — v1.27.0: tab Phát âm thành shadowing theo video + script
 
 User muốn tab Phát âm không còn dán văn bản, mà dùng video + script như Chép chính tả, chấm bằng giọng nói thay vì gõ,
 có phiên âm dưới mỗi câu, bấm từ xem nghĩa.

@@ -3131,20 +3131,13 @@ const ShadowingPanel = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+      <div className="flex items-center mb-4">
         <button
           onClick={onReplay}
           disabled={!canReplay || isRecording}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
         >
           <Rewind className="w-4 h-4" /> Nghe lại
-        </button>
-        <button
-          onClick={() => speakEnglishWord(text)}
-          disabled={isRecording}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
-        >
-          <Volume2 className="w-4 h-4" /> Nghe mẫu
         </button>
       </div>
 
