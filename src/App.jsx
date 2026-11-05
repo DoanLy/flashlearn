@@ -2979,6 +2979,8 @@ const ShadowingPanel = ({
   const audioStartedRef = useRef(false);
   const sessionHasTextRef = useRef(false);
   const emptySessionsRef = useRef(0);
+  // Chuỗi sự kiện của lượt đọc, hiện kèm thông báo lỗi để chẩn đoán trên máy không gắn được DevTools.
+  const micLogRef = useRef([]);
   // SpeechRecognition chỉ khởi tạo 1 lần nên phải đọc câu hiện tại và callback qua ref.
   const targetRef = useRef({ index, text });
   const onScoredRef = useRef(onScored);
@@ -3023,18 +3025,30 @@ const ShadowingPanel = ({
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
+    const logMic = (name) => micLogRef.current.push(name);
+    ["soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach((name) => {
+      recognition[`on${name}`] = () => logMic(name);
+    });
+
     recognition.onstart = () => {
+      logMic("start");
       sessionHasTextRef.current = false;
       setIsRecording(true);
       isRecordingRef.current = true;
     };
 
     recognition.onaudiostart = () => {
+      logMic("audiostart");
       audioStartedRef.current = true;
       setMicOpen(true);
     };
 
-    const failMessage = (message) => setError({ index: targetRef.current.index, message });
+    const failMessage = (message) =>
+      setError({
+        index: targetRef.current.index,
+        message,
+        log: micLogRef.current.join(" → "),
+      });
     // Safari trên iPad có thể bật rồi tắt micro ngay mà không báo lỗi: phân biệt 2 trường hợp để
     // người dùng thấy rõ, thay vì nút cứ nhấp nháy "đang nghe" mà không có gì.
     const failNoText = () =>
@@ -3045,6 +3059,7 @@ const ShadowingPanel = ({
       );
 
     recognition.onresult = (event) => {
+      logMic("result");
       let sessionTranscript = "";
       for (let i = 0; i < event.results.length; i++) {
         sessionTranscript += event.results[i][0].transcript;
@@ -3060,6 +3075,7 @@ const ShadowingPanel = ({
     };
 
     recognition.onend = () => {
+      logMic("end");
       const shouldAnalyze = isManualStopRef.current;
       const shouldRestart = shouldKeepListeningRef.current && !shouldAnalyze;
 
@@ -3102,6 +3118,7 @@ const ShadowingPanel = ({
     };
 
     recognition.onerror = (event) => {
+      logMic(`error:${event.error}`);
       console.error("Speech recognition error:", event.error);
       if (event.error === "not-allowed") {
         shouldKeepListeningRef.current = false;
@@ -3157,6 +3174,7 @@ const ShadowingPanel = ({
     spokenTextRef.current = "";
     accumulatedTranscriptRef.current = "";
     audioStartedRef.current = false;
+    micLogRef.current = [];
     sessionHasTextRef.current = false;
     emptySessionsRef.current = 0;
     setSpoken({ index, text: "" });
@@ -3264,6 +3282,9 @@ const ShadowingPanel = ({
           <AlertCircle size={16} className="shrink-0" /> {errorMsg}
         </p>
       )}
+      {errorMsg && error.log && (
+        <p className="mt-1 text-center text-[10px] text-slate-400 break-words">{error.log}</p>
+      )}
 
       <div className="flex flex-col items-center mt-5">
         <button
@@ -3280,6 +3301,95 @@ const ShadowingPanel = ({
           {isRecording ? "Dừng" : "Đọc"}
         </span>
       </div>
+    </div>
+  );
+};
+
+// TẠM để chẩn đoán lỗi micro trên iPad (xem HANDOFF): thử nhận diện khi trang chưa nạp video YouTube,
+// với continuous tắt/bật. Có kết luận thì gỡ cùng nhật ký micro.
+const MicDiagnostics = () => {
+  const [log, setLog] = useState([]);
+  const [running, setRunning] = useState(false);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => () => recognitionRef.current?.abort(), []);
+
+  const run = (continuous) => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setLog(["Trình duyệt không có SpeechRecognition", navigator.userAgent]);
+      return;
+    }
+    const startedAt = Date.now();
+    const add = (line) =>
+      setLog((prev) => [...prev, `${((Date.now() - startedAt) / 1000).toFixed(1)}s ${line}`]);
+    setLog([`continuous=${continuous}`, navigator.userAgent]);
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = continuous;
+    recognition.interimResults = true;
+    ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach(
+      (name) => {
+        recognition[`on${name}`] = () => add(name);
+      },
+    );
+    recognition.onresult = (event) => {
+      const last = event.results[event.results.length - 1];
+      add(`result: "${last[0].transcript}"${last.isFinal ? " (final)" : ""}`);
+    };
+    recognition.onerror = (event) => add(`error: ${event.error}`);
+    recognition.onend = () => {
+      add("end");
+      setRunning(false);
+    };
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      setRunning(true);
+    } catch (err) {
+      add(`start lỗi: ${err.name}`);
+    }
+  };
+
+  return (
+    <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <p className="font-bold text-slate-800">Kiểm tra micro</p>
+      <p className="text-xs text-slate-500 mt-1">
+        Tải lại trang, chưa mở video nào. Bấm Thử, đọc to một câu tiếng Anh, rồi bấm Dừng.
+      </p>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {running ? (
+          <button
+            onClick={() => recognitionRef.current?.stop()}
+            className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl"
+          >
+            Dừng
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => run(false)}
+              className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
+            >
+              Thử 1
+            </button>
+            <button
+              onClick={() => run(true)}
+              className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
+            >
+              Thử 2
+            </button>
+          </>
+        )}
+      </div>
+      {log.length > 0 && (
+        <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600 break-words">
+          {log.map((line, i) => (
+            <p key={i}>{line}</p>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -4299,6 +4409,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
           ))}
         </div>
       )}
+
+      {shadowing && <MicDiagnostics />}
     </div>
   );
 };

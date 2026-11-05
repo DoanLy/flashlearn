@@ -21,7 +21,18 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.2: micro tab Phát âm báo rõ trạng thái và lỗi (iPad)
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.3: công cụ chẩn đoán micro trên iPad (TẠM)
+
+Với v1.27.2, iPad của user báo "Micro đã bật nhưng không nhận ra tiếng nói": có `audiostart` nhưng không ra chữ. **Lỗi chưa sửa.**
+Không gắn được DevTools vào iPad nên thêm 2 thứ để lấy dữ liệu, **có kết luận thì gỡ**:
+
+- Thẻ "Kiểm tra micro" (`MicDiagnostics`) cuối màn danh sách tab Phát âm: thử nhận diện khi chưa nạp YouTube, Thử 1 `continuous=false`,
+  Thử 2 `continuous=true`, in từng sự kiện kèm thời gian và user agent.
+- Màn luyện: thông báo lỗi kèm chuỗi sự kiện của lượt đọc (`micLogRef`).
+- **Cách đọc kết quả:** Thử 1 ra chữ mà màn luyện không → nghi xung đột với YouTube. Thử 2 ra chữ mà Thử 1 không → đổi `continuous`.
+  Cả hai đều không ra chữ → vấn đề ở Safari/cài đặt iPad, không ở video. Không có `soundstart` → micro không nhận tín hiệu.
+
+## Phiên trước (2026-11-05) — v1.27.2: micro tab Phát âm báo rõ trạng thái và lỗi (iPad)
 
 User báo trên iPad bấm đọc mà không thấy thu âm. **Chưa tái hiện được, chưa rõ nguyên nhân gốc** vì không có iPad để test.
 Code cũ có nhiều chỗ thất bại im lặng nên bản này làm cho lỗi hiện ra, chưa khẳng định đã hết lỗi:
