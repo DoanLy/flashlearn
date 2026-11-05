@@ -21,7 +21,23 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.7: màn luyện tự thử cách khôi phục micro
+## Phiên làm việc gần nhất (2026-11-05) — v1.28.0: iPad/iPhone ghi âm + Whisper trên máy, bỏ Web Speech
+
+v1.27.7 trên iPad vẫn không ra chữ. **Vẫn chưa biết nguyên nhân gốc** vì sao Web Speech của Safari hỏng, nên đổi hướng thay vì vá tiếp.
+
+- **iOS (`isIOSDevice`):** `ShadowingPanel` ghi PCM bằng `getUserMedia` + `ScriptProcessor`, bấm Dừng thì đưa cho Whisper (`Xenova/whisper-tiny.en`, q8,
+  `@huggingface/transformers` v3) chạy WASM trong worker (`src/lib/whisper.js`, `whisperWorker.js`). Không cần API key, không tốn phí. Máy khác vẫn dùng Web Speech.
+- **Model khoảng 40MB tải từ Hugging Face khi mở màn luyện trên iOS** (cache trình duyệt, lần sau không tải lại; file WASM của onnxruntime lấy từ jsdelivr).
+  Nút micro khoá tới khi tải xong. Lý do: một lần thử ghi âm trong lúc model đang nạp chỉ ra chữ "So" (chưa chứng minh đó là nguyên nhân, nạp xong thì không lặp lại).
+- `AudioContext` phải tạo trong lượt bấm (`openMicCapture` tạo trước `await` đầu tiên), không thì iOS giữ suspended.
+- **Nhật ký dưới thông báo lỗi có `mức` (peak):** `mức 0.000` = micro thu toàn im lặng, tức iPad chặn cả ghi âm sau khi video phát, Whisper không cứu được.
+  Khi đó còn: tải lại trang trước khi đọc. Mức cao mà sai chữ = model `tiny` yếu, thử `base.en`.
+- Đã gỡ: thẻ `MicDiagnostics`, thử `audioSession`/đảo cách của v1.27.7.
+- Kiểm chứng trên Chrome desktop: file WAV giọng nói (SAPI) qua micro giả → ghi → Whisper ra đúng cả câu; UA iPad giả + micro im lặng → báo đúng lỗi; đổi câu lúc ghi → huỷ.
+  **Chưa chạy trên iPad thật** (chưa biết tốc độ, bộ nhớ, và iOS có thu được tiếng không). **Chưa bấm qua nhánh ghi âm → chấm điểm trên giao diện** vì sẽ ghi vào tiến độ thật
+  (nhánh này gọi cùng `scorePronunciation`/`onScored` như cũ).
+
+## Phiên trước (2026-11-05) — v1.27.7: màn luyện tự thử cách khôi phục micro (KHÔNG hiệu quả, đã gỡ ở v1.28.0)
 
 User gửi ảnh màn luyện trên iPad (v1.27.6): `0.0s start → 0.0s audiostart → 4.5s audioend → 4.6s error:aborted → 4.6s end`, chưa gửi kết quả
 Cách A/B/C. Log chỉ có 1 lượt và có báo lỗi, tức user tự bấm Dừng ở 4.5s. **Log này không phân biệt được mic hỏng với dừng sớm**, vì lúc chạy

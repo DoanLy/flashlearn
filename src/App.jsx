@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { lookupWord } from "./lib/vocab";
 import { loadIpaDict, sentenceToIpa } from "./lib/ipa";
+import { isIOSDevice, onWhisperProgress, openMicCapture, preloadWhisper, transcribePcm } from "./lib/whisper";
 
 // ============================================================================
 // SUPABASE CLIENT
@@ -2947,16 +2948,6 @@ const scorePronunciation = (target, spoken) => {
   return { words, accuracy };
 };
 
-// iPad: sau khi video đã phát, phiên âm thanh có thể khiến nhận diện không nghe được. Safari 16.4+
-// cho đặt lại loại phiên, máy không có API này thì bỏ qua.
-const setMicAudioSession = (type) => {
-  try {
-    if (navigator.audioSession) navigator.audioSession.type = type;
-  } catch (err) {
-    console.error("audioSession error", err);
-  }
-};
-
 // Tab Phát âm: đọc theo câu đang chọn, chấm bằng nhận diện giọng nói thay vì gõ. Video, danh sách
 // và tiến độ do DictationCoach (shadowing) lo; component này chỉ giữ micro + kết quả của câu.
 const ShadowingPanel = ({
@@ -2978,6 +2969,10 @@ const ShadowingPanel = ({
     () => !!(window.SpeechRecognition || window.webkitSpeechRecognition),
   );
   const [ipaDict, setIpaDict] = useState(null);
+  const [useWhisper] = useState(isIOSDevice);
+  const [transcribing, setTranscribing] = useState(false);
+  const [modelState, setModelState] = useState("loading"); // loading | ready | error
+  const [modelPercent, setModelPercent] = useState(0);
 
   const recognitionRef = useRef(null);
   const startSessionRef = useRef(null);
@@ -2990,8 +2985,10 @@ const ShadowingPanel = ({
   const audioStartedRef = useRef(false);
   const sessionHasTextRef = useRef(false);
   const emptySessionsRef = useRef(0);
-  // Lượt trước không ra chữ thì lượt sau mở micro bằng getUserMedia trước (xem toggleRecording).
-  const warmupMicRef = useRef(false);
+  // iPad/iPhone: ghi âm + Whisper trên máy thay cho Web Speech (xem lib/whisper.js).
+  const captureRef = useRef(null);
+  const captureRunRef = useRef(0);
+  const cancelCaptureRef = useRef(null);
   // Chuỗi sự kiện của lượt đọc, hiện kèm thông báo lỗi để chẩn đoán trên máy không gắn được DevTools.
   const micLogRef = useRef([]);
   const micStartedAtRef = useRef(0);
@@ -3011,6 +3008,7 @@ const ShadowingPanel = ({
       isManualStopRef.current = false;
       if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
       recognitionRef.current?.abort();
+      cancelCaptureRef.current?.();
     }
   }, [index, text]);
 
@@ -3076,14 +3074,12 @@ const ShadowingPanel = ({
         });
       // Safari trên iPad có thể bật rồi tắt micro ngay mà không báo lỗi: phân biệt 2 trường hợp để
       // người dùng thấy rõ, thay vì nút cứ nhấp nháy "đang nghe" mà không có gì.
-      const failNoText = () => {
-        warmupMicRef.current = !warmupMicRef.current;
+      const failNoText = () =>
         failMessage(
           audioStartedRef.current
-            ? "Micro đã bật nhưng chưa ra chữ. Bấm Đọc lần nữa (máy sẽ đổi cách mở micro), đọc to cả câu, đợi chữ hiện ra rồi mới bấm Dừng."
-            : "Micro chưa mở được. Trên iPad: mở bằng Safari, bật Siri trong Cài đặt, và cho phép trang này dùng micro.",
+            ? "Micro đã bật nhưng chưa ra chữ. Đọc to cả câu, đợi chữ hiện ra rồi mới bấm Dừng."
+            : "Micro chưa mở được. Hãy cho phép trang này dùng micro.",
         );
-      };
 
       recognition.onresult = (event) => {
         logMic("result");
@@ -3133,7 +3129,6 @@ const ShadowingPanel = ({
         isRecordingRef.current = false;
         shouldKeepListeningRef.current = false;
         isManualStopRef.current = false;
-        setMicAudioSession("auto");
 
         if (shouldAnalyze && !spokenTextRef.current?.trim()) {
           failNoText();
@@ -3189,24 +3184,130 @@ const ShadowingPanel = ({
     };
   }, []); // Array rỗng -> Chỉ chạy 1 lần khi mount
 
-  const toggleRecording = async () => {
-    if (!startSessionRef.current) return;
+  const logCapture = (line) =>
+    micLogRef.current.push(`${((Date.now() - micStartedAtRef.current) / 1000).toFixed(1)}s ${line}`);
+
+  const failCapture = (targetIndex, message) =>
+    setError({ index: targetIndex, message, log: micLogRef.current.join(" → ") });
+
+  const endCapture = () => {
+    captureRunRef.current += 1;
+    captureRef.current = null;
+    setIsRecording(false);
+    setMicOpen(false);
+    isRecordingRef.current = false;
+  };
+
+  useEffect(() => {
+    cancelCaptureRef.current = () => {
+      captureRef.current?.cancel();
+      endCapture();
+    };
+  });
+
+  useEffect(() => () => cancelCaptureRef.current?.(), []);
+
+  const loadModel = () =>
+    preloadWhisper()
+      .then(() => setModelState("ready"))
+      .catch((err) => {
+        console.error("Whisper load error", err);
+        setModelState("error");
+      });
+
+  // Tải xong mới cho đọc: đo trên máy thử, ghi âm trong lúc model đang nạp có thể làm chữ ra cụt.
+  useEffect(() => {
+    if (!useWhisper) return undefined;
+    const unsubscribe = onWhisperProgress(setModelPercent);
+    loadModel();
+    return unsubscribe;
+  }, [useWhisper]);
+
+  const startCapture = async () => {
+    const target = { index, text };
+    const run = ++captureRunRef.current;
+    setIsRecording(true);
+    isRecordingRef.current = true;
+    try {
+      const capture = await openMicCapture();
+      if (run !== captureRunRef.current) {
+        capture.cancel();
+        return;
+      }
+      captureRef.current = capture;
+      logCapture(`mic mở, audio ${capture.contextState}`);
+      setMicOpen(true);
+    } catch (err) {
+      console.error("Mic capture error", err);
+      if (run !== captureRunRef.current) return;
+      endCapture();
+      logCapture(`mic lỗi: ${err.name}`);
+      failCapture(
+        target.index,
+        err.name === "NotAllowedError"
+          ? "Chưa cấp quyền micro. Trên iPad: Cài đặt > Safari > Micro, hoặc bấm biểu tượng aA trên thanh địa chỉ để cho phép."
+          : `Không bật được micro (${err.name}). Thử lại sau vài giây.`,
+      );
+    }
+  };
+
+  const stopCapture = async () => {
+    const capture = captureRef.current;
+    const target = { index, text };
+    endCapture();
+    if (!capture) return;
+    setTranscribing(true);
+    try {
+      const { pcm, peak, seconds, state } = await capture.stop();
+      logCapture(`thu ${seconds.toFixed(1)}s, mức ${peak.toFixed(3)}, audio ${state}`);
+      if (!seconds || peak < 0.005) {
+        failCapture(target.index, "Micro thu được toàn im lặng, không có tiếng để nhận dạng. Thử tải lại trang rồi đọc lại.");
+        return;
+      }
+      const transcript = await transcribePcm(pcm);
+      logCapture(`nhận dạng xong: "${transcript}"`);
+      if (!transcript) {
+        failCapture(target.index, "Micro có thu tiếng nhưng không nhận ra lời nói. Đọc to, rõ cả câu rồi thử lại.");
+        return;
+      }
+      setSpoken({ index: target.index, text: transcript });
+      const scored = scorePronunciation(target.text, transcript);
+      setAnalysis({ index: target.index, ...scored });
+      onScoredRef.current?.(target.index, scored.accuracy);
+    } catch (err) {
+      console.error("Whisper error", err);
+      logCapture(`lỗi: ${err.message}`);
+      failCapture(target.index, "Không chạy được bộ nhận dạng. Thử lại sau vài giây.");
+    } finally {
+      setTranscribing(false);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (!useWhisper && !startSessionRef.current) return;
+    if (useWhisper && modelState === "error") {
+      setModelState("loading");
+      loadModel();
+      return;
+    }
     if (isRecording) {
+      if (useWhisper) {
+        stopCapture();
+        return;
+      }
       isManualStopRef.current = true;
       shouldKeepListeningRef.current = false;
       if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
-      recognitionRef.current?.stop(); // Tự động kích hoạt onend
+      recognitionRef.current.stop(); // Tự động kích hoạt onend
       return;
     }
     // Dừng video trước, không thì micro thu luôn tiếng video và chấm nhầm là người dùng đọc đúng.
     onBeforeRecord?.();
     isManualStopRef.current = false;
-    shouldKeepListeningRef.current = true;
     spokenTextRef.current = "";
     accumulatedTranscriptRef.current = "";
     audioStartedRef.current = false;
-    const warmup = warmupMicRef.current;
-    micLogRef.current = [warmup ? "getUserMedia + play-and-record" : "play-and-record"];
+    micLogRef.current = [];
     micStartedAtRef.current = Date.now();
     sessionHasTextRef.current = false;
     emptySessionsRef.current = 0;
@@ -3214,52 +3315,24 @@ const ShadowingPanel = ({
     setAnalysis(null);
     setError({ index: -1, message: "" });
     setMicOpen(false);
-    setMicAudioSession("play-and-record");
-    const logStep = (line) =>
-      micLogRef.current.push(`${((Date.now() - micStartedAtRef.current) / 1000).toFixed(1)}s ${line}`);
-    const cancelStart = () => {
-      shouldKeepListeningRef.current = false;
-      isManualStopRef.current = false;
-      setIsRecording(false);
-      isRecordingRef.current = false;
-      setMicAudioSession("auto");
-    };
+    if (useWhisper) {
+      startCapture();
+      return;
+    }
+    shouldKeepListeningRef.current = true;
     try {
-      if (warmup) {
-        // Đang chờ await thì nút đã là Dừng, tránh bấm chồng tạo 2 lượt nghe. Lượt cũ đã xong, bỏ
-        // ref để bấm Dừng lúc này không đụng vào nó.
-        recognitionRef.current = null;
-        setIsRecording(true);
-        isRecordingRef.current = true;
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          stream.getTracks().forEach((track) => track.stop());
-          logStep("getUserMedia ok");
-        } catch (err) {
-          logStep(`getUserMedia lỗi: ${err.name}`);
-        }
-        // Bấm Dừng hoặc đổi câu trong lúc chờ.
-        if (!shouldKeepListeningRef.current) {
-          cancelStart();
-          return;
-        }
-      }
-      // Lượt thường giữ start() ngay trong lượt bấm: iPad có thể chặn nếu gọi trễ sau cú chạm.
+      // Giữ start() ngay trong lượt bấm: iPad có thể chặn nếu gọi trễ sau cú chạm.
       startSessionRef.current();
     } catch (err) {
       console.error("Mic start error", err);
-      cancelStart();
-      setError({
-        index,
-        message: `Không bật được micro (${err.name}). Thử lại sau vài giây.`,
-        log: micLogRef.current.join(" → "),
-      });
+      shouldKeepListeningRef.current = false;
+      setError({ index, message: `Không bật được micro (${err.name}). Thử lại sau vài giây.` });
     }
   };
 
   const result = analysis?.index === index ? analysis : null;
   const spokenText = spoken.index === index ? spoken.text : "";
-  const errorMsg = !browserSupported
+  const errorMsg = !browserSupported && !useWhisper
     ? "Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy mở bằng Chrome hoặc Safari."
     : error.index === index
       ? error.message
@@ -3272,7 +3345,7 @@ const ShadowingPanel = ({
       <div className="flex items-center mb-4">
         <button
           onClick={onReplay}
-          disabled={!canReplay || isRecording}
+          disabled={!canReplay || isRecording || transcribing}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
         >
           <Rewind className="w-4 h-4" /> Nghe lại
@@ -3324,21 +3397,23 @@ const ShadowingPanel = ({
         </div>
       )}
 
-      {(isRecording || (result && spokenText.trim())) && (
+      {(isRecording || transcribing || (result && spokenText.trim())) && (
         <div className="mx-auto mt-4 w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
           <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Hệ thống nghe được
           </p>
           <p
             className={`text-sm font-medium leading-relaxed text-slate-700 ${
-              isRecording ? "animate-pulse" : ""
+              isRecording || transcribing ? "animate-pulse" : ""
             }`}
           >
             {spokenText
               ? `“${spokenText}”`
-              : micOpen
-                ? "Micro đã bật, hãy đọc..."
-                : "Đang mở micro..."}
+              : transcribing
+                ? "Đang nhận dạng..."
+                : micOpen
+                  ? "Micro đã bật, hãy đọc..."
+                  : "Đang mở micro..."}
           </p>
         </div>
       )}
@@ -3352,10 +3427,18 @@ const ShadowingPanel = ({
         <p className="mt-1 text-center text-[10px] text-slate-400 break-words">{error.log}</p>
       )}
 
+      {useWhisper && modelState !== "ready" && (
+        <p className="mt-4 text-center text-xs font-medium text-slate-500">
+          {modelState === "loading"
+            ? `Đang tải bộ nhận dạng giọng nói ${modelPercent}% (khoảng 40MB, chỉ lần đầu)...`
+            : "Không tải được bộ nhận dạng. Kiểm tra mạng rồi bấm nút micro để tải lại."}
+        </p>
+      )}
+
       <div className="flex flex-col items-center mt-5">
         <button
           onClick={toggleRecording}
-          disabled={!browserSupported}
+          disabled={(!browserSupported && !useWhisper) || transcribing || (useWhisper && modelState === "loading")}
           aria-label={isRecording ? "Dừng" : "Đọc"}
           className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 disabled:opacity-40 ${
             isRecording ? "bg-red-500 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
@@ -3367,112 +3450,6 @@ const ShadowingPanel = ({
           {isRecording ? "Dừng" : "Đọc"}
         </span>
       </div>
-    </div>
-  );
-};
-
-const runMicDiagnostic = async (variant, setLog, setRunning, recognitionRef) => {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    setLog(["Trình duyệt không có SpeechRecognition", navigator.userAgent]);
-    return;
-  }
-  const startedAt = Date.now();
-  const add = (line) =>
-    setLog((prev) => [...prev, `${((Date.now() - startedAt) / 1000).toFixed(1)}s ${line}`]);
-  setLog([`Cách ${variant}`, navigator.userAgent]);
-
-  if (variant === "B") {
-    if (navigator.audioSession) {
-      add(`audioSession: ${navigator.audioSession.type}`);
-      navigator.audioSession.type = "play-and-record";
-      add(`audioSession: ${navigator.audioSession.type}`);
-    } else {
-      add("không có navigator.audioSession");
-    }
-  }
-  if (variant === "C") {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
-      add("getUserMedia ok");
-    } catch (err) {
-      add(`getUserMedia lỗi: ${err.name}`);
-    }
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach(
-    (name) => {
-      recognition[`on${name}`] = () => add(name);
-    },
-  );
-  recognition.onresult = (event) => {
-    const last = event.results[event.results.length - 1];
-    add(`result: "${last[0].transcript}"${last.isFinal ? " (final)" : ""}`);
-  };
-  recognition.onerror = (event) => add(`error: ${event.error}`);
-  recognition.onend = () => {
-    add("end");
-    setRunning(false);
-    if (variant === "B" && navigator.audioSession) navigator.audioSession.type = "auto";
-  };
-  recognitionRef.current = recognition;
-  try {
-    recognition.start();
-    setRunning(true);
-  } catch (err) {
-    add(`start lỗi: ${err.name}`);
-  }
-};
-
-// TẠM để chẩn đoán lỗi micro trên iPad (xem HANDOFF): sau khi video đã phát, nhận diện không còn ra
-// chữ. Thử 2 cách khôi phục, so với A là đối chứng. Có kết luận thì gỡ cùng nhật ký micro.
-const MicDiagnostics = () => {
-  const [log, setLog] = useState([]);
-  const [running, setRunning] = useState(false);
-  const recognitionRef = useRef(null);
-
-  useEffect(() => () => recognitionRef.current?.abort(), []);
-
-  return (
-    <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <p className="font-bold text-slate-800">Kiểm tra micro</p>
-      <p className="text-xs text-slate-500 mt-1">
-        Tải lại trang, mở video cho phát ra tiếng, quay lại đây. Bấm một cách, đọc to một câu tiếng Anh, rồi bấm Dừng.
-      </p>
-      <div className="flex flex-wrap gap-2 mt-3">
-        {running ? (
-          <button
-            onClick={() => recognitionRef.current?.stop()}
-            className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl"
-          >
-            Dừng
-          </button>
-        ) : (
-          <>
-            {["A", "B", "C"].map((variant) => (
-              <button
-                key={variant}
-                onClick={() => runMicDiagnostic(variant, setLog, setRunning, recognitionRef)}
-                className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
-              >
-                Cách {variant}
-              </button>
-            ))}
-          </>
-        )}
-      </div>
-      {log.length > 0 && (
-        <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600 break-words">
-          {log.map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
@@ -4493,7 +4470,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
         </div>
       )}
 
-      {shadowing && <MicDiagnostics />}
     </div>
   );
 };
