@@ -2959,6 +2959,7 @@ const ShadowingPanel = ({
   onSelectWord,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
+  const [micOpen, setMicOpen] = useState(false); // micro đã thật sự thu (audiostart), khác với vừa bấm
   // Gắn index để đổi câu là kết quả câu cũ tự hết hiệu lực, không cần effect reset.
   const [spoken, setSpoken] = useState({ index: -1, text: "" });
   const [analysis, setAnalysis] = useState(null);
@@ -2975,6 +2976,9 @@ const ShadowingPanel = ({
   const isManualStopRef = useRef(false);
   const shouldKeepListeningRef = useRef(false);
   const restartTimerRef = useRef(null);
+  const audioStartedRef = useRef(false);
+  const sessionHasTextRef = useRef(false);
+  const emptySessionsRef = useRef(0);
   // SpeechRecognition chỉ khởi tạo 1 lần nên phải đọc câu hiện tại và callback qua ref.
   const targetRef = useRef({ index, text });
   const onScoredRef = useRef(onScored);
@@ -3020,9 +3024,25 @@ const ShadowingPanel = ({
     recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
+      sessionHasTextRef.current = false;
       setIsRecording(true);
       isRecordingRef.current = true;
     };
+
+    recognition.onaudiostart = () => {
+      audioStartedRef.current = true;
+      setMicOpen(true);
+    };
+
+    const failMessage = (message) => setError({ index: targetRef.current.index, message });
+    // Safari trên iPad có thể bật rồi tắt micro ngay mà không báo lỗi: phân biệt 2 trường hợp để
+    // người dùng thấy rõ, thay vì nút cứ nhấp nháy "đang nghe" mà không có gì.
+    const failNoText = () =>
+      failMessage(
+        audioStartedRef.current
+          ? "Micro đã bật nhưng không nhận ra tiếng nói. Hãy đọc to, gần micro hơn rồi thử lại."
+          : "Micro chưa mở được. Trên iPad: mở bằng Safari, bật Siri trong Cài đặt, và cho phép trang này dùng micro.",
+      );
 
     recognition.onresult = (event) => {
       let sessionTranscript = "";
@@ -3031,6 +3051,11 @@ const ShadowingPanel = ({
       }
       const fullTranscript = `${accumulatedTranscriptRef.current} ${sessionTranscript}`.trim();
       spokenTextRef.current = fullTranscript;
+      if (sessionTranscript.trim()) {
+        sessionHasTextRef.current = true;
+        emptySessionsRef.current = 0;
+        setMicOpen(true);
+      }
       setSpoken({ index: targetRef.current.index, text: fullTranscript });
     };
 
@@ -3039,25 +3064,36 @@ const ShadowingPanel = ({
       const shouldRestart = shouldKeepListeningRef.current && !shouldAnalyze;
 
       if (shouldRestart) {
-        accumulatedTranscriptRef.current = spokenTextRef.current || "";
-        restartTimerRef.current = window.setTimeout(() => {
-          try {
-            recognition.start();
-          } catch (err) {
-            console.error("Mic restart error", err);
-            setIsRecording(false);
-            isRecordingRef.current = false;
-          }
-        }, 120);
-        return;
+        if (!sessionHasTextRef.current) emptySessionsRef.current += 1;
+        // Nhiều lượt liền không ra chữ thì dừng và báo, không lặp bật/tắt micro mãi.
+        if (emptySessionsRef.current < 3) {
+          accumulatedTranscriptRef.current = spokenTextRef.current || "";
+          restartTimerRef.current = window.setTimeout(() => {
+            try {
+              recognition.start();
+            } catch (err) {
+              console.error("Mic restart error", err);
+              shouldKeepListeningRef.current = false;
+              setIsRecording(false);
+              setMicOpen(false);
+              isRecordingRef.current = false;
+              failMessage(`Không bật lại được micro (${err.name}). Bấm Đọc để thử lại.`);
+            }
+          }, 120);
+          return;
+        }
+        if (!spokenTextRef.current?.trim()) failNoText();
       }
 
       setIsRecording(false);
+      setMicOpen(false);
       isRecordingRef.current = false;
       shouldKeepListeningRef.current = false;
       isManualStopRef.current = false;
 
-      if (shouldAnalyze && spokenTextRef.current?.trim()) {
+      if (shouldAnalyze && !spokenTextRef.current?.trim()) {
+        failNoText();
+      } else if ((shouldAnalyze || shouldRestart) && spokenTextRef.current?.trim()) {
         const target = targetRef.current;
         const result = scorePronunciation(target.text, spokenTextRef.current);
         setAnalysis({ index: target.index, ...result });
@@ -3066,23 +3102,34 @@ const ShadowingPanel = ({
     };
 
     recognition.onerror = (event) => {
-      setIsRecording(false);
-      isRecordingRef.current = false;
       console.error("Speech recognition error:", event.error);
-      const fail = (message) => setError({ index: targetRef.current.index, message });
       if (event.error === "not-allowed") {
         shouldKeepListeningRef.current = false;
-        fail(
-          "Chưa cấp quyền micro hoặc trình duyệt không hỗ trợ. Hãy mở bằng Chrome/Safari gốc (đừng mở trực tiếp từ Zalo/Messenger).",
+        failMessage(
+          "Chưa cấp quyền micro. Trên iPad: Cài đặt > Safari > Micro, hoặc bấm biểu tượng aA trên thanh địa chỉ để cho phép. Đừng mở từ Zalo/Messenger.",
         );
+      } else if (event.error === "service-not-allowed") {
+        shouldKeepListeningRef.current = false;
+        failMessage(
+          "iPad chưa cho dùng nhận diện giọng nói. Hãy mở trang bằng Safari (không phải app khác) và bật Siri trong Cài đặt.",
+        );
+      } else if (event.error === "audio-capture") {
+        shouldKeepListeningRef.current = false;
+        failMessage("Không lấy được tiếng từ micro. Hãy dừng video hoặc app khác đang dùng âm thanh rồi thử lại.");
       } else if (event.error === "no-speech") {
-        if (!shouldKeepListeningRef.current) fail("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
+        if (!shouldKeepListeningRef.current) failMessage("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
       } else if (event.error === "network") {
         shouldKeepListeningRef.current = false;
-        fail("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
+        failMessage("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
       } else if (event.error !== "aborted") {
         shouldKeepListeningRef.current = false;
-        fail(`Lỗi micro: ${event.error}`);
+        failMessage(`Lỗi micro: ${event.error}`);
+      }
+      // Đang tự bật lại thì giữ trạng thái đang đọc, tránh nút nhấp nháy giữa các lượt.
+      if (!shouldKeepListeningRef.current) {
+        setIsRecording(false);
+        setMicOpen(false);
+        isRecordingRef.current = false;
       }
     };
 
@@ -3109,13 +3156,20 @@ const ShadowingPanel = ({
     shouldKeepListeningRef.current = true;
     spokenTextRef.current = "";
     accumulatedTranscriptRef.current = "";
+    audioStartedRef.current = false;
+    sessionHasTextRef.current = false;
+    emptySessionsRef.current = 0;
     setSpoken({ index, text: "" });
     setAnalysis(null);
     setError({ index: -1, message: "" });
+    setMicOpen(false);
     try {
+      // Giữ start() ngay trong lượt bấm: iPad có thể chặn nếu gọi trễ sau cú chạm.
       recognitionRef.current.start();
     } catch (err) {
       console.error("Mic start error", err);
+      shouldKeepListeningRef.current = false;
+      setError({ index, message: `Không bật được micro (${err.name}). Thử lại sau vài giây.` });
     }
   };
 
@@ -3196,7 +3250,11 @@ const ShadowingPanel = ({
               isRecording ? "animate-pulse" : ""
             }`}
           >
-            {spokenText ? `“${spokenText}”` : "Đang lắng nghe..."}
+            {spokenText
+              ? `“${spokenText}”`
+              : micOpen
+                ? "Micro đã bật, hãy đọc..."
+                : "Đang mở micro..."}
           </p>
         </div>
       )}

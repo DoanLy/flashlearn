@@ -21,7 +21,22 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.27.1: bỏ nút Nghe mẫu ở tab Phát âm
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.2: micro tab Phát âm báo rõ trạng thái và lỗi (iPad)
+
+User báo trên iPad bấm đọc mà không thấy thu âm. **Chưa tái hiện được, chưa rõ nguyên nhân gốc** vì không có iPad để test.
+Code cũ có nhiều chỗ thất bại im lặng nên bản này làm cho lỗi hiện ra, chưa khẳng định đã hết lỗi:
+
+- Trạng thái thật: "Đang mở micro..." tới khi có `audiostart` mới thành "Micro đã bật, hãy đọc...".
+- Trước đây micro tự bật lại vô hạn khi không ra chữ, và bấm Dừng mà chưa nghe được gì thì không báo gì. Giờ sau 3 lượt liền
+  không ra chữ thì dừng và báo; thông báo phân biệt "micro chưa mở được" (không có `audiostart`) với "đã bật nhưng không nhận ra tiếng".
+- Thêm thông báo riêng cho `service-not-allowed` và `audio-capture`; `start()` lỗi giờ hiện ra màn hình, không chỉ console.
+- Nguồn tham khảo: Safari cần bật Siri cho Web Speech (release notes Safari 14.1); WKWebView của app khác có thể báo
+  `service-not-allowed` (WebKit bug 225298). Xung đột với âm thanh YouTube **chỉ là giả thuyết**, không tìm thấy tài liệu xác nhận.
+- **Bước tiếp theo:** hỏi user thông báo nào hiện trên iPad. Nếu Web Speech vẫn không dùng được thì phương án thay thế là ghi âm
+  bằng `getUserMedia` rồi gửi lên API nhận diện qua serverless (cần API key, có chi phí).
+- Kiểm chứng bằng micro giả lập trên vite local, **chưa test trên iPad thật**.
+
+## Phiên trước (2026-11-05) — v1.27.1: bỏ nút Nghe mẫu ở tab Phát âm
 
 User yêu cầu bỏ nút "Nghe mẫu" (giọng máy đọc cả câu) trong `ShadowingPanel`. Nghe câu giờ chỉ qua "Nghe lại" (đoạn trong video).
 `speakEnglishWord` vẫn dùng cho card nghĩa từ.
