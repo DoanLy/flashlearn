@@ -4412,7 +4412,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
           (cột Time / Subtitle) để bắt đầu {shadowing ? "luyện đọc theo" : "luyện chép chính tả"}.
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {videos.map((v) => (
             <div
               key={v.id}
@@ -5837,7 +5837,7 @@ export default function App() {
             }`}
           >
             <Plus className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Thêm từ
             </span>
           </button>
@@ -5850,7 +5850,7 @@ export default function App() {
             }`}
           >
             <BookOpen className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Học bài
             </span>
           </button>
@@ -5868,7 +5868,7 @@ export default function App() {
                 <span className="fl-flat absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-slate-900"></span>
               )}
             </div>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Chưa thuộc
             </span>
           </button>
@@ -5881,7 +5881,7 @@ export default function App() {
             }`}
           >
             <CheckCircle className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Đã thuộc
             </span>
           </button>
@@ -5896,7 +5896,7 @@ export default function App() {
             }`}
           >
             <Mic className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Phát âm
             </span>
           </button>
@@ -5911,7 +5911,7 @@ export default function App() {
             }`}
           >
             <Trophy className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Game
             </span>
           </button>
@@ -5926,7 +5926,7 @@ export default function App() {
             }`}
           >
             <Headphones className="w-5 h-5 mb-1" />
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-center line-clamp-1">
+            <span className="text-[9px] leading-tight sm:text-[10px] uppercase sm:tracking-wider text-center line-clamp-2">
               Chép chính tả
             </span>
           </button>

@@ -21,7 +21,17 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.28.2: gỡ Whisper, code về như v1.27.6
+## Phiên làm việc gần nhất (2026-11-05) — v1.28.3: sửa responsive iPhone
+
+User báo lỗi responsive trên iPhone, không kèm ảnh nên tự đo ở 375px và 320px.
+
+- **Danh sách video (Phát âm, Chép chính tả) tràn ngang:** trang rộng 689px trên màn 375px. Cột `grid` ngầm định là `auto` nên tên video dài (`truncate`, không xuống dòng) kéo giãn cả cột.
+  Thêm `grid-cols-1` (là `minmax(0, 1fr)`).
+- **Nhãn thanh nav bị cắt** ("CHƯA...", "ĐÃ...", "CHÉP..."): cho xuống 2 dòng, bỏ giãn chữ trên mobile. Nav cao 78px → 87px, nút "Câu sau" vẫn nằm trên nav khi cuộn hết.
+- Đo cả 7 tab và màn luyện ở 320px và 375px: không còn tràn ngang. Ở 320px nhãn "CHÉP CHÍNH TẢ" vẫn hơi cắt (iPhone từ 375px trở lên thì không).
+- Đo bằng trình duyệt giả lập khổ iPhone, **chưa xem trên iPhone thật**, nên có thể còn lỗi khác mà user đang gặp.
+
+## Phiên trước (2026-11-05) — v1.28.2: gỡ Whisper, code về như v1.27.6
 
 Với v1.28.1, user báo **trang cứ tải lại liên tục** trên thiết bị của user và yêu cầu trả về như cũ, **không sửa thêm phần micro nữa**. Nghi do iOS giết tab vì model Whisper tốn
 bộ nhớ (model nạp ngay khi mở màn luyện), **chưa xác nhận**. Đã revert 3 commit (v1.27.7, v1.28.0, v1.28.1), `src/` giống hệt 59ec717, bỏ dependency `@huggingface/transformers`.
