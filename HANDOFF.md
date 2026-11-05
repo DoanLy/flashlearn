@@ -10,7 +10,7 @@ Ghi lại bối cảnh cho phiên làm việc (người hoặc AI) tiếp theo t
 - Deploy: Vercel, project `flashlearn-its7` — https://flashlearn-its7.vercel.app
 - Dữ liệu: Supabase Postgres (project `qrufhskmxcuowavwokau`, bảng `cards`), migrate khỏi Google Sheets ngày 2026-07-17.
   **Không có staging/DB test riêng** — kể cả chạy `npm run dev` ở local cũng đọc/ghi thẳng vào dữ liệu học thật (key Supabase hardcode trong `App.jsx`). Bất kỳ ai test bằng cách bấm qua UI (đặc biệt các nút như "Đã thuộc"/"Chưa thuộc") đều sửa dữ liệu thật — nên snapshot trạng thái trước khi test, hoặc test logic trực tiếp bằng script Node thay vì thao tác UI.
-- Tính năng "Chép chính tả" (dictation, nghe video YouTube + gõ lại) lưu transcript/segments trong `localStorage` của trình duyệt (`flashlearn_dictation_videos`), **không** lưu trên Supabase.
+- Tính năng "Chép chính tả" (dictation, nghe video YouTube + gõ lại) lưu video/segments/tiến độ ở bảng Supabase `dictation_videos` từ v1.23.0; `localStorage` (`flashlearn_dictation_videos`) chỉ còn là cache.
 
 ## Badge version build (mới thêm — 2026-07-22)
 
@@ -21,7 +21,30 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-10-27) — v1.22.1: sửa lỗi không lật được thẻ trên iPad
+## Phiên làm việc gần nhất (2026-11-05) — v1.23.0: lưu Chép chính tả lên Supabase
+
+User muốn video Chép chính tả nằm trên DB thay vì chỉ trong trình duyệt (dùng chung giữa các thiết bị).
+
+- **Bảng mới `dictation_videos`** (`id, title, video_id, segments jsonb, progress jsonb, created_at bigint`).
+  SQL: `scripts/create-dictation-videos.sql` — user đã tự chạy trong SQL Editor vì key publishable không
+  tạo được bảng. RLS bật với policy mở cho `anon` (app không có đăng nhập), ai có key đều đọc/ghi được.
+- **Code (`DictationCoach`, `src/App.jsx`):** tải từ DB khi mở tab; `localStorage` chỉ là cache để hiện ngay
+  và giữ thay đổi chưa ghi được. Field `synced` trong cache cho biết DB đã có video. `mergeDictationVideos`:
+  - chỉ có ở máy + chưa `synced` (dữ liệu cũ, hoặc thêm bị lỗi mạng) → đẩy lên DB. **Đây là đường migrate
+    dữ liệu cũ:** video chỉ lên DB khi mở tab trên đúng trình duyệt đang giữ nó, không có script migrate.
+  - chỉ có ở máy + đã `synced` → thiết bị khác đã xoá, bỏ theo.
+  - có ở cả hai → lấy bản `progress.updatedAt` mới hơn; máy này mới hơn thì đẩy lên.
+- Tiến độ chỉ `update` cột `progress` sau mỗi câu, không gửi lại `segments`. Xoá phải thành công trên DB mới
+  gỡ khỏi danh sách. Lỗi ghi hiện dòng cảnh báo vàng ở màn danh sách (state `syncError`).
+- `flashlearn_dictation_show_immediately` vẫn là tuỳ chọn riêng từng máy, không lên DB.
+- Giới hạn đã biết: cùng 1 video đã thêm riêng ở nhiều trình duyệt sẽ thành nhiều dòng (id khác nhau), không
+  tự gộp. Hai thiết bị mở cùng lúc thì `progress` của bản ghi sau đè bản trước, không gộp từng câu.
+- **Test bằng cách seed `localStorage` giờ sẽ ghi thật lên DB** — nhớ xoá dòng test sau khi xong.
+- Kiểm chứng trên vite local bằng video tạm `claude-test-1` (đã xoá, bảng về rỗng; `cards` vẫn 11171 dòng):
+  video cũ tự lên DB; gõ đúng câu → `progress` lên DB; video `synced` không có trên DB bị bỏ; tiến độ máy mới
+  hơn được đẩy lên; xoá qua UI → hết trên DB. **Chưa test:** nhánh lỗi mạng và form "Thêm video" thật.
+
+## Phiên trước (2026-10-27) — v1.22.1: sửa lỗi không lật được thẻ trên iPad
 
 User báo ở tab Học bài, chạm vào thẻ trên iPad không lật sang mặt sau.
 
