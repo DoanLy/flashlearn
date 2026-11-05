@@ -3506,6 +3506,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const ownSeekUntilRef = useRef(0);
   const userSeekHandlerRef = useRef(null);
   const videosRef = useRef(videos);
+  const sentenceListRef = useRef(null);
 
   // Ghi cả video lên DB; thành công thì đánh dấu synced. Lỗi thì bản ở máy vẫn còn, lần mở tab
   // sau mergeDictationVideos sẽ đẩy lại.
@@ -3871,6 +3872,18 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     goToSegment(jumpTarget - 1);
   };
 
+  // Giữ câu đang học ở giữa danh sách, chỉ cuộn trong khung danh sách chứ không kéo cả trang.
+  useEffect(() => {
+    if (mode !== "practice") return;
+    const list = sentenceListRef.current;
+    const active = list?.querySelector('[aria-current="true"]');
+    if (!active) return;
+    list.scrollTo({
+      top: active.offsetTop - (list.clientHeight - active.offsetHeight) / 2,
+      behavior: "smooth",
+    });
+  }, [mode, currentIndex, activeVideoId]);
+
   const startPractice = (video) => {
     setActiveVideoId(video.id);
     const lastIndex = video.progress?.lastIndex ?? 0;
@@ -4133,21 +4146,56 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     const total = activeVideo.segments.length;
     const isLast = currentIndex === total - 1;
     const isFirst = currentIndex === 0;
+    const attempts = activeVideo.progress?.attempts || {};
+    const completedPercent = Math.round((Object.keys(attempts).length / total) * 100);
+    const targetWords = seg.text.trim().split(/\s+/);
+    const segmentDone = confirmedCount >= targetWords.length;
+    // Từ đang gõ dở ở cuối ô: khớp là xanh ngay, chưa cần dấu cách.
+    const liveCount = Math.max(
+      confirmedCount,
+      countMatchedWords(userInput, targetWords, true),
+    );
+    // Đã gõ xong (có dấu cách sau) nhiều từ hơn số từ đúng ⇒ đang có từ sai.
+    const typedTokens = userInput.split(/\s+/).filter(Boolean);
+    const settledTokens = /\s$/.test(userInput)
+      ? typedTokens.length
+      : typedTokens.length - 1;
+    const liveMismatch = !segmentDone && settledTokens > confirmedCount;
+    // Bấm mắt để xem trước một từ — tính là lỗi, giống khi bấm "Kiểm tra" mà sai.
+    const revealWord = (i) => {
+      setRevealedIndices((prev) => ({ ...prev, [i]: true }));
+      setWrongIndices((prev) => ({ ...prev, [i]: true }));
+    };
+    // Bấm lần nữa để ẩn lại — lỗi đã tính thì vẫn giữ, chỉ che chữ đi để gõ tiếp.
+    const hideAllWords = () => {
+      setShowFullAnswer(false);
+      setRevealedIndices({});
+    };
+    const revealAllWords = () => {
+      setShowFullAnswer(true);
+      setWrongIndices((prev) => {
+        const next = { ...prev };
+        for (let i = confirmedCount; i < targetWords.length; i++) next[i] = true;
+        return next;
+      });
+    };
 
     return (
-      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-4xl">
-        <div className="flex items-center gap-2 mb-3">
-          <button
-            onClick={backToList}
-            className="p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-full hover:bg-slate-100"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1 min-w-0">
+      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-9 min-[700px]:w-16 shrink-0">
+            <button
+              onClick={backToList}
+              className="p-2 -ml-2 text-slate-500 hover:text-slate-700 rounded-full hover:bg-slate-100"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 min-w-0 text-center">
             <h2 className="text-base font-bold text-slate-800 truncate">{activeVideo.title}</h2>
             {/* Nhảy thẳng tới câu bất kỳ: gõ số rồi Enter (hoặc bấm "Đi"). Cần cho bài dài —
                 trước đây phải bấm ▶ hàng trăm lần mới quay lại được chỗ đang học dở. */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs text-slate-400">
               <span>Câu</span>
               <input
                 type="number"
@@ -4173,76 +4221,149 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               >
                 Đi
               </button>
-              {activeVideo.progress?.avgAccuracy ? (
-                <span className="truncate">· TB {activeVideo.progress.avgAccuracy}%</span>
-              ) : null}
+              <span>· {completedPercent}% hoàn thành</span>
             </div>
           </div>
-        </div>
-
-        <div className="mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden mb-3 relative">
-          <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
-        </div>
-
-        <div className="flex items-center justify-between gap-2 mb-4">
-          <div className="flex gap-1.5">
-            {[0.75, 1].map((rate) => (
-              <button
-                key={rate}
-                onClick={() => setPlaybackRate(rate)}
-                className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
-                  playbackRate === rate
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white text-slate-500 border-slate-200"
-                }`}
-              >
-                {rate}x
-              </button>
-            ))}
+          <div className="min-w-9 min-[700px]:w-16 shrink-0 flex justify-end">
+            {activeVideo.progress?.avgAccuracy ? (
+              <span className="px-2 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 whitespace-nowrap">
+                TB {activeVideo.progress.avgAccuracy}%
+              </span>
+            ) : null}
           </div>
-          <button
-            onClick={() => playSegment(currentIndex)}
-            disabled={!playerReady || isPlayingSegment}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
-          >
-            <Rewind className="w-4 h-4" /> Nghe lại
-          </button>
         </div>
 
-        {(() => {
-          const targetWords = seg.text.trim().split(/\s+/);
-          const segmentDone = confirmedCount >= targetWords.length;
-          // Từ đang gõ dở ở cuối ô: khớp là xanh ngay, chưa cần dấu cách.
-          const liveCount = Math.max(
-            confirmedCount,
-            countMatchedWords(userInput, targetWords, true),
-          );
-          // Đã gõ xong (có dấu cách sau) nhiều từ hơn số từ đúng ⇒ đang có từ sai.
-          const typedTokens = userInput.split(/\s+/).filter(Boolean);
-          const settledTokens = /\s$/.test(userInput)
-            ? typedTokens.length
-            : typedTokens.length - 1;
-          const liveMismatch = !segmentDone && settledTokens > confirmedCount;
-          // Bấm mắt để xem trước một từ — tính là lỗi, giống khi bấm "Kiểm tra" mà sai.
-          const revealWord = (i) => {
-            setRevealedIndices((prev) => ({ ...prev, [i]: true }));
-            setWrongIndices((prev) => ({ ...prev, [i]: true }));
-          };
-          // Bấm lần nữa để ẩn lại — lỗi đã tính thì vẫn giữ, chỉ che chữ đi để gõ tiếp.
-          const hideAllWords = () => {
-            setShowFullAnswer(false);
-            setRevealedIndices({});
-          };
-          const revealAllWords = () => {
-            setShowFullAnswer(true);
-            setWrongIndices((prev) => {
-              const next = { ...prev };
-              for (let i = confirmedCount; i < targetWords.length; i++) next[i] = true;
-              return next;
-            });
-          };
-          return (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-4">
+        <div className="h-1.5 mb-4 rounded-full bg-slate-200 overflow-hidden">
+          <div className="h-full rounded-full bg-blue-600" style={{ width: `${completedPercent}%` }} />
+        </div>
+
+        {/* Từ 700px trở lên chia 2 cột (iPad mini dọc rộng 744px, chưa tới mốc md 768px): bên trái luyện tập, bên phải danh sách câu.
+            Chỉ đổi cột bằng CSS, không render 2 cây riêng — nếu không iframe YouTube sẽ bị tạo lại. */}
+        <div className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] min-[700px]:items-start lg:gap-6">
+          <div className="min-w-0 flex flex-col gap-3">
+            <div className="mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden relative">
+              <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex gap-1.5 shrink-0">
+                {[0.75, 1].map((rate) => (
+                  <button
+                    key={rate}
+                    onClick={() => setPlaybackRate(rate)}
+                    className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
+                      playbackRate === rate
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-white text-slate-500 border-slate-200"
+                    }`}
+                  >
+                    {rate}x
+                  </button>
+                ))}
+              </div>
+              <label className="flex items-center gap-2 text-xs text-slate-500">
+                <input
+                  type="checkbox"
+                  checked={showAnswerImmediately}
+                  onChange={(e) => setShowAnswerImmediately(e.target.checked)}
+                />
+                Hiện đáp án ngay khi bấm "Kiểm tra" mà sai
+              </label>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <button
+                  onClick={() => playSegment(currentIndex)}
+                  disabled={!playerReady || isPlayingSegment}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
+                >
+                  <Rewind className="w-4 h-4" /> Nghe lại
+                </button>
+                {!segmentDone && (
+                  <button
+                    type="button"
+                    onClick={showFullAnswer ? hideAllWords : revealAllWords}
+                    className={`px-3 py-1.5 text-sm font-bold rounded-full border ${
+                      showFullAnswer
+                        ? "text-slate-600 bg-slate-50 border-slate-300 hover:bg-slate-100"
+                        : "text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100"
+                    }`}
+                  >
+                    {showFullAnswer ? "Ẩn tất cả các từ" : "Hiện tất cả các từ"}
+                  </button>
+                )}
+              </div>
+
+              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần bấm Kiểm
+                  tra); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
+              <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 bg-slate-50 rounded-xl">
+                {targetWords.map((w, i) => {
+                  const isDone = i < liveCount;
+                  const revealThis =
+                    showFullAnswer ||
+                    revealedIndices[i] ||
+                    (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
+                  const visible = isDone || revealThis;
+                  const hasLetters = /[a-z]/i.test(w);
+                  const boxCls = !visible
+                    ? "bg-white border-slate-200 text-slate-400"
+                    : wrongIndices[i]
+                      ? "bg-amber-50 border-amber-300 text-amber-700"
+                      : isDone
+                        ? "bg-green-50 border-green-400 text-green-700"
+                        : "bg-white border-slate-300 text-slate-600";
+                  return (
+                    <div key={i} className="flex flex-col items-center gap-0.5">
+                      {!visible && hasLetters ? (
+                        <button
+                          type="button"
+                          onClick={() => revealWord(i)}
+                          title="Hiện từ này (tính là lỗi)"
+                          className="text-slate-400 hover:text-blue-600"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      ) : (
+                        <span className="h-3.5" />
+                      )}
+                      {visible && hasLetters ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLookupWord(w)}
+                          title="Bấm để tra nghĩa"
+                          className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
+                        >
+                          {w}
+                        </button>
+                      ) : (
+                        <span
+                          className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} ${
+                            visible ? "" : "tracking-widest"
+                          }`}
+                        >
+                          {visible ? w : "*".repeat(w.length)}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1.5">
+                Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
+              </p>
+
+              {selectedLookupWord && (
+                <WordMeaningCard
+                  word={selectedLookupWord}
+                  onClose={() => setSelectedLookupWord(null)}
+                  onAddFlashcard={onAddFlashcard}
+                  existingDecks={existingDecks}
+                />
+              )}
+            </div>
+
+            <div>
               <textarea
                 value={userInput}
                 onChange={(e) => handleTyping(e.target.value)}
@@ -4256,153 +4377,114 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   checkCurrentWord();
                 }}
                 readOnly={segmentDone}
-                rows={2}
+                rows={3}
                 autoFocus
                 placeholder="Gõ lại những gì bạn nghe được..."
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
+                className="block w-full p-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
               />
-
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
-                  {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
-                    <>
-                      <AlertCircle className="w-4 h-4" /> Chưa đúng
-                    </>
-                  )}
-                  {segmentDone && (
-                    <span className="text-green-600">
-                      Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
-                    </span>
-                  )}
-                </div>
-                {!segmentDone && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={checkCurrentWord}
-                      className="px-4 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-full hover:bg-blue-700"
-                    >
-                      Kiểm tra
-                    </button>
-                    <button
-                      onClick={handleSkipSegment}
-                      className="px-3 py-1.5 text-sm font-medium text-slate-500 border border-slate-200 rounded-full hover:bg-slate-50"
-                    >
-                      Bỏ qua
-                    </button>
-                  </div>
+              <div className="flex items-center gap-1.5 mt-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
+                {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
+                  <>
+                    <AlertCircle className="w-4 h-4" /> Chưa đúng
+                  </>
+                )}
+                {segmentDone && (
+                  <span className="text-green-600">
+                    Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
+                  </span>
                 )}
               </div>
+            </div>
 
-              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần bấm Kiểm
-                  tra); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
-                  <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 mt-1 bg-slate-50 rounded-xl">
-                    {targetWords.map((w, i) => {
-                      const isDone = i < liveCount;
-                      const revealThis =
-                        showFullAnswer ||
-                        revealedIndices[i] ||
-                        (i === confirmedCount && wordStatus === "incorrect" && showAnswerImmediately);
-                      const visible = isDone || revealThis;
-                      const hasLetters = /[a-z]/i.test(w);
-                      const boxCls = !visible
-                        ? "bg-white border-slate-200 text-slate-400"
-                        : wrongIndices[i]
-                          ? "bg-amber-50 border-amber-300 text-amber-700"
-                          : isDone
-                            ? "bg-green-50 border-green-400 text-green-700"
-                            : "bg-white border-slate-300 text-slate-600";
-                      return (
-                        <div key={i} className="flex flex-col items-center gap-0.5">
-                          {!visible && hasLetters ? (
-                            <button
-                              type="button"
-                              onClick={() => revealWord(i)}
-                              title="Hiện từ này (tính là lỗi)"
-                              className="text-slate-400 hover:text-blue-600"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                          ) : (
-                            <span className="h-3.5" />
-                          )}
-                          {visible && hasLetters ? (
-                            <button
-                              type="button"
-                              onClick={() => setSelectedLookupWord(w)}
-                              title="Bấm để tra nghĩa"
-                              className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
-                            >
-                              {w}
-                            </button>
-                          ) : (
-                            <span
-                              className={`px-2 py-0.5 rounded-lg border text-sm font-bold ${boxCls} ${
-                                visible ? "" : "tracking-widest"
-                              }`}
-                            >
-                              {visible ? w : "*".repeat(w.length)}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5">
-                    Các từ bấm hiện trước sẽ bị tính là lỗi và ảnh hưởng đến điểm của bạn.
-                  </p>
+            {!segmentDone && (
+              <div className="flex gap-2">
+                <button
+                  onClick={checkCurrentWord}
+                  className="flex-1 py-3 font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700"
+                >
+                  Kiểm tra
+                </button>
+                <button
+                  onClick={handleSkipSegment}
+                  className="px-5 py-3 font-medium text-slate-500 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
+                >
+                  Bỏ qua
+                </button>
+              </div>
+            )}
 
-                  {selectedLookupWord && (
-                    <WordMeaningCard
-                      word={selectedLookupWord}
-                      onClose={() => setSelectedLookupWord(null)}
-                      onAddFlashcard={onAddFlashcard}
-                      existingDecks={existingDecks}
-                    />
-                  )}
+            <div className="flex justify-between gap-3">
+              <button
+                onClick={() => goToSegment(currentIndex - 1)}
+                disabled={isFirst}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
+              >
+                <SkipBack className="w-4 h-4" /> Câu trước
+              </button>
+              <button
+                onClick={() => goToSegment(currentIndex + 1)}
+                disabled={isLast}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
+              >
+                Câu sau <SkipForward className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
 
-                  {!segmentDone && (
-                    <button
-                      type="button"
-                      onClick={showFullAnswer ? hideAllWords : revealAllWords}
-                      className={`w-full mt-3 py-2 text-sm font-bold rounded-xl border ${
-                        showFullAnswer
-                          ? "text-slate-600 bg-slate-50 border-slate-300 hover:bg-slate-100"
-                          : "text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100"
+          {/* Bài dài có hàng trăm câu: danh sách tự cuộn trong khung, không kéo dài cả trang. */}
+          <aside className="min-w-0 flex flex-col gap-2 min-[700px]:sticky min-[700px]:top-[76px] min-[700px]:h-[calc(100dvh-250px)] min-[700px]:min-h-[320px]">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-white rounded-2xl border border-slate-200">
+              <span className="font-bold text-slate-800">Các câu</span>
+              <span className="text-sm text-slate-400">
+                {currentIndex + 1}/{total}
+              </span>
+            </div>
+            <div
+              ref={sentenceListRef}
+              className="relative flex-1 min-h-0 max-h-80 min-[700px]:max-h-none overflow-y-auto overscroll-contain flex flex-col gap-2 p-0.5"
+            >
+              {activeVideo.segments.map((s, i) => {
+                const isCurrent = i === currentIndex;
+                const score = attempts[i];
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      if (!isCurrent) goToSegment(i);
+                    }}
+                    aria-current={isCurrent ? "true" : undefined}
+                    aria-label={`Câu ${i + 1}`}
+                    className={`shrink-0 w-full flex items-center gap-3 p-2.5 text-left bg-white rounded-2xl border-2 ${
+                      isCurrent ? "border-blue-600" : "border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <span
+                      className={`shrink-0 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                        isCurrent
+                          ? "bg-blue-600 text-white"
+                          : score != null
+                            ? "bg-green-100 text-green-700"
+                            : "bg-slate-100 text-slate-500"
                       }`}
                     >
-                      {showFullAnswer ? "Ẩn tất cả các từ" : "Hiện tất cả các từ"}
-                    </button>
-                  )}
-
-                  <div className="flex flex-col gap-1.5 mt-3">
-                    <label className="flex items-center gap-2 text-xs text-slate-500">
-                      <input
-                        type="checkbox"
-                        checked={showAnswerImmediately}
-                        onChange={(e) => setShowAnswerImmediately(e.target.checked)}
-                      />
-                      Hiện đáp án ngay khi bấm "Kiểm tra" mà sai
-                    </label>
-                  </div>
+                      {i + 1}
+                    </span>
+                    <span className="flex-1 min-w-0 text-xs leading-5 tracking-wider text-slate-400 break-words">
+                      {s.text
+                        .trim()
+                        .split(/\s+/)
+                        .map((w) => "*".repeat(w.length))
+                        .join(" ")}
+                    </span>
+                    {score != null && (
+                      <span className="shrink-0 text-xs font-bold text-green-700">{score}%</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          );
-        })()}
-
-        <div className="flex justify-between gap-3">
-          <button
-            onClick={() => goToSegment(currentIndex - 1)}
-            disabled={isFirst}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
-          >
-            <SkipBack className="w-4 h-4" /> Câu trước
-          </button>
-          <button
-            onClick={() => goToSegment(currentIndex + 1)}
-            disabled={isLast}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-medium disabled:opacity-40"
-          >
-            Câu sau <SkipForward className="w-4 h-4" />
-          </button>
+          </aside>
         </div>
       </div>
     );
@@ -5052,7 +5134,11 @@ export default function App() {
         </div>
       </header>
 
-      <main className="max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-6">
+      <main
+        className={`max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-6 ${
+          activeTab === "dictation" ? "min-[700px]:max-w-3xl min-[700px]:px-6" : ""
+        }`}
+      >
         {/* --- TAB: QUẢN LÝ TỪ (INPUT) --- */}
         {activeTab === "input" && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 lg:grid lg:grid-cols-[minmax(0,23rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
