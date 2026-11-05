@@ -3322,112 +3322,6 @@ const ShadowingPanel = ({
   );
 };
 
-const runMicDiagnostic = async (variant, setLog, setRunning, recognitionRef) => {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    setLog(["Trình duyệt không có SpeechRecognition", navigator.userAgent]);
-    return;
-  }
-  const startedAt = Date.now();
-  const add = (line) =>
-    setLog((prev) => [...prev, `${((Date.now() - startedAt) / 1000).toFixed(1)}s ${line}`]);
-  setLog([`Cách ${variant}`, navigator.userAgent]);
-
-  if (variant === "B") {
-    if (navigator.audioSession) {
-      add(`audioSession: ${navigator.audioSession.type}`);
-      navigator.audioSession.type = "play-and-record";
-      add(`audioSession: ${navigator.audioSession.type}`);
-    } else {
-      add("không có navigator.audioSession");
-    }
-  }
-  if (variant === "C") {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((track) => track.stop());
-      add("getUserMedia ok");
-    } catch (err) {
-      add(`getUserMedia lỗi: ${err.name}`);
-    }
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  ["start", "audiostart", "soundstart", "speechstart", "speechend", "soundend", "audioend", "nomatch"].forEach(
-    (name) => {
-      recognition[`on${name}`] = () => add(name);
-    },
-  );
-  recognition.onresult = (event) => {
-    const last = event.results[event.results.length - 1];
-    add(`result: "${last[0].transcript}"${last.isFinal ? " (final)" : ""}`);
-  };
-  recognition.onerror = (event) => add(`error: ${event.error}`);
-  recognition.onend = () => {
-    add("end");
-    setRunning(false);
-    if (variant === "B" && navigator.audioSession) navigator.audioSession.type = "auto";
-  };
-  recognitionRef.current = recognition;
-  try {
-    recognition.start();
-    setRunning(true);
-  } catch (err) {
-    add(`start lỗi: ${err.name}`);
-  }
-};
-
-// TẠM để chẩn đoán lỗi micro trên iPad (xem HANDOFF): sau khi video đã phát, nhận diện không còn ra
-// chữ. Thử 2 cách khôi phục, so với A là đối chứng. Có kết luận thì gỡ cùng nhật ký micro.
-const MicDiagnostics = () => {
-  const [log, setLog] = useState([]);
-  const [running, setRunning] = useState(false);
-  const recognitionRef = useRef(null);
-
-  useEffect(() => () => recognitionRef.current?.abort(), []);
-
-  return (
-    <div className="mt-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-      <p className="font-bold text-slate-800">Kiểm tra micro</p>
-      <p className="text-xs text-slate-500 mt-1">
-        Tải lại trang, mở video cho phát ra tiếng, quay lại đây. Bấm một cách, đọc to một câu tiếng Anh, rồi bấm Dừng.
-      </p>
-      <div className="flex flex-wrap gap-2 mt-3">
-        {running ? (
-          <button
-            onClick={() => recognitionRef.current?.stop()}
-            className="px-4 py-2 text-sm font-bold text-white bg-red-500 rounded-xl"
-          >
-            Dừng
-          </button>
-        ) : (
-          <>
-            {["A", "B", "C"].map((variant) => (
-              <button
-                key={variant}
-                onClick={() => runMicDiagnostic(variant, setLog, setRunning, recognitionRef)}
-                className="px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl"
-              >
-                Cách {variant}
-              </button>
-            ))}
-          </>
-        )}
-      </div>
-      {log.length > 0 && (
-        <div className="mt-3 p-3 bg-slate-50 rounded-xl text-xs text-slate-600 break-words">
-          {log.map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 // shadowing = true là tab Phát âm: dùng chung danh sách video, form thêm và player với Chép chính tả,
 // chỉ khác phần luyện (đọc thay vì gõ). Tiến độ riêng nằm ở progress.shadowing.
 const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false }) => {
@@ -4444,7 +4338,6 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false 
         </div>
       )}
 
-      {shadowing && <MicDiagnostics />}
     </div>
   );
 };

@@ -21,7 +21,12 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.28.3: sửa responsive iPhone
+## Phiên làm việc gần nhất (2026-11-05) — v1.28.4: gỡ thẻ Kiểm tra micro
+
+User yêu cầu bỏ thẻ "Kiểm tra micro" ở tab Phát âm. Đã xoá `MicDiagnostics` và `runMicDiagnostic`. Dòng nhật ký nhỏ dưới thông báo lỗi micro (`micLogRef`) vẫn giữ.
+Mọi nhắc tới thẻ này ở các phiên dưới là lịch sử.
+
+## Phiên trước (2026-11-05) — v1.28.3: sửa responsive iPhone
 
 User báo lỗi responsive trên iPhone, không kèm ảnh nên tự đo ở 375px và 320px.
 
