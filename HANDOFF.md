@@ -21,7 +21,30 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.26.1: bỏ checkbox và dòng ghi chú ở màn luyện
+## Phiên làm việc gần nhất (2026-11-05) — v1.27.0: tab Phát âm thành shadowing theo video + script
+
+User muốn tab Phát âm không còn dán văn bản, mà dùng video + script như Chép chính tả, chấm bằng giọng nói thay vì gõ,
+có phiên âm dưới mỗi câu, bấm từ xem nghĩa.
+
+- **Bỏ `PronunciationCoach`.** Tab Phát âm giờ là `<DictationCoach shadowing />`: dùng chung danh sách video, form thêm,
+  player và bảng `dictation_videos`. Thêm/xoá video ở tab này thì tab kia cũng đổi theo.
+- **Tiến độ riêng:** `progress.shadowing = { attempts, avgAccuracy, lastIndex }`, không cần đổi schema DB. `statsOf(video)`
+  chọn nhánh theo tab. Nhánh dictation của `updateProgress` giờ giữ lại các field khác trong `progress`, **đừng bỏ
+  `...video.progress`** kẻo mất tiến độ shadowing.
+- **`ShadowingPanel`:** micro giữ nguyên logic cũ (`continuous=false`, tự bật lại tới khi bấm Dừng). Kết quả gắn `index` câu
+  nên đổi câu là hết hiệu lực. Bấm Đọc thì dừng video trước, tránh micro thu tiếng video. Chấm vẫn theo kiểu cũ: từ có mặt
+  trong câu nhận diện là đúng, không xét thứ tự; token không có chữ/số (`>>`) không tính điểm. Đây là **nhận diện từ, không
+  phải chấm âm vị**: máy nghe ra đúng từ thì tính đúng. Số trong script ("5") không khớp khi máy nghe ra "five".
+- **Phiên âm:** `public/ipa-en.json` (65465 từ, 1.8 MB, gzip ~436 kB), dựng bằng `node scripts/build-ipa-dict.mjs` từ 2 file
+  nguồn đã gitignore; chỉ tải khi vào luyện (`src/lib/ipa.js`). Oxford ưu tiên hơn eSpeak; eSpeak được đưa về ký hiệu Oxford.
+  Từ không tra được (tên riêng, số, viết tắt như QA) giữ nguyên chữ gốc trong dòng phiên âm. Là ghép từng từ nên không có nối âm.
+- Màn ngang video thu còn `50vh` để thấy nút micro không phải cuộn (chỉ tab Phát âm).
+- Kiểm chứng trên vite local bằng video tạm `claude-test-layout` (đã xoá khỏi DB) và **micro giả** gán vào
+  `window.SpeechRecognition` trước khi mở tab: đọc thiếu 2/10 từ → 80%, từ sai đỏ, ghi đúng `progress.shadowing`; gõ đúng ở
+  Chép chính tả không làm mất `progress.shadowing`; đổi câu xoá kết quả cũ; bấm từ mở card nghĩa. Không tràn ngang ở 744×1133,
+  1133×744, 375×812. **Chưa test micro thật, chưa test trên iPad thật** (Safari có thể xung đột âm thanh giữa YouTube và micro).
+
+## Phiên trước (2026-11-05) — v1.26.1: bỏ checkbox và dòng ghi chú ở màn luyện
 
 - User yêu cầu bỏ checkbox "Hiện đáp án ngay khi nhấn Enter mà sai" và dòng "Các từ bấm hiện trước sẽ bị tính là lỗi...".
 - Gỡ state `showAnswerImmediately`, cùng effect ghi localStorage `flashlearn_dictation_show_immediately` (key cũ còn trong

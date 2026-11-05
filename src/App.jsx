@@ -22,8 +22,6 @@ import {
   Play,
   ArrowLeft,
   Square,
-  ChevronLeft,
-  ChevronRight,
   Languages,
   BookmarkPlus,
   Search,
@@ -37,6 +35,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { lookupWord } from "./lib/vocab";
+import { loadIpaDict, sentenceToIpa } from "./lib/ipa";
 
 // ============================================================================
 // SUPABASE CLIENT
@@ -340,533 +339,6 @@ const DeckSelect = ({
           document.body,
         )}
     </>
-  );
-};
-
-// ============================================================================
-// COMPONENT: PronunciationCoach
-// ============================================================================
-const PronunciationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
-  const [mode, setMode] = useState("input");
-  const [fullText, setFullText] = useState(
-    "At a startup, there's no QA team to catch that. No test suite running on every deploy.",
-  );
-  const [sentences, setSentences] = useState([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [spokenText, setSpokenText] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [selectedWord, setSelectedWord] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [browserSupported, setBrowserSupported] = useState(true);
-
-  const [isAddingMode, setIsAddingMode] = useState(false);
-  const [targetDeck, setTargetDeck] = useState("Chung");
-  // Không còn cache riêng ở component: lib/vocab đã cache nghĩa trong localStorage nên kết
-  // quả dùng chung được cho cả màn Phát âm lẫn Chép chính tả và sống qua reload trang.
-
-  const recognitionRef = useRef(null);
-  const spokenTextRef = useRef("");
-  const accumulatedTranscriptRef = useRef("");
-  const sessionTranscriptRef = useRef("");
-  const isRecordingRef = useRef(false);
-  const isManualStopRef = useRef(false);
-  const shouldKeepListeningRef = useRef(false);
-  const restartTimerRef = useRef(null);
-
-  // Ref để lưu câu hiện tại, giúp SpeechRecognition (chỉ khởi tạo 1 lần) luôn truy cập được câu mới nhất
-  const targetSentenceRef = useRef("");
-
-  useEffect(() => {
-    targetSentenceRef.current = sentences[currentIndex];
-  }, [sentences, currentIndex]);
-
-  const handleStartPractice = () => {
-    if (!fullText || !fullText.trim()) return;
-    const splitRegex = /(?<=[.!?])\s+/;
-    let parsed = fullText.split(splitRegex).filter((s) => s.trim().length > 0);
-    if (parsed.length === 0) parsed = [fullText];
-    setSentences(parsed);
-    setCurrentIndex(0);
-    setAnalysisResult(null);
-    setSpokenText("");
-    setSelectedWord(null);
-    setMode("practice");
-  };
-
-  const handleNextSentence = () => {
-    if (currentIndex < sentences.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-      resetPracticeState();
-    }
-  };
-
-  const handlePrevSentence = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-      resetPracticeState();
-    }
-  };
-
-  const resetPracticeState = () => {
-    setAnalysisResult(null);
-    setSpokenText("");
-    setSelectedWord(null);
-    setErrorMsg("");
-    spokenTextRef.current = "";
-    accumulatedTranscriptRef.current = "";
-    sessionTranscriptRef.current = "";
-  };
-
-  // Khởi tạo SpeechRecognition CHỈ 1 LẦN để tránh treo micro trên Mobile
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setBrowserSupported(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
-    // FIX: Đổi continuous thành false. Mobile browser sẽ tự ngắt ghi âm khi người dùng ngừng nói.
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      sessionTranscriptRef.current = "";
-      setAnalysisResult(null);
-      setSelectedWord(null);
-      setErrorMsg("");
-      setIsRecording(true);
-      isRecordingRef.current = true;
-    };
-
-    recognition.onresult = (event) => {
-      let sessionTranscript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        sessionTranscript += event.results[i][0].transcript;
-      }
-      sessionTranscriptRef.current = sessionTranscript;
-      const fullTranscript =
-        `${accumulatedTranscriptRef.current} ${sessionTranscript}`.trim();
-      setSpokenText(fullTranscript);
-      spokenTextRef.current = fullTranscript;
-    };
-
-    recognition.onend = () => {
-      const targetSentence = targetSentenceRef.current;
-      const shouldAnalyze = isManualStopRef.current;
-      const shouldRestart = shouldKeepListeningRef.current && !shouldAnalyze;
-
-      if (shouldRestart) {
-        accumulatedTranscriptRef.current = spokenTextRef.current || "";
-        restartTimerRef.current = window.setTimeout(() => {
-          try {
-            recognition.start();
-          } catch (error) {
-            console.error("Mic restart error", error);
-            setIsRecording(false);
-            isRecordingRef.current = false;
-          }
-        }, 120);
-        return;
-      }
-
-      setIsRecording(false);
-      isRecordingRef.current = false;
-      shouldKeepListeningRef.current = false;
-      isManualStopRef.current = false;
-
-      if (shouldAnalyze && spokenTextRef.current?.trim() && targetSentence) {
-        analyzePronunciation(targetSentence, spokenTextRef.current);
-      }
-    };
-
-    recognition.onerror = (event) => {
-      setIsRecording(false);
-      isRecordingRef.current = false;
-
-      console.error("Speech recognition error:", event.error);
-      if (event.error === "not-allowed") {
-        shouldKeepListeningRef.current = false;
-        setErrorMsg(
-          "Chưa cấp quyền micro hoặc trình duyệt không hỗ trợ. Hãy mở bằng Chrome/Safari gốc (đừng mở trực tiếp từ Zalo/Messenger).",
-        );
-      } else if (event.error === "no-speech") {
-        if (!shouldKeepListeningRef.current) {
-          setErrorMsg("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
-        }
-      } else if (event.error === "network") {
-        shouldKeepListeningRef.current = false;
-        setErrorMsg("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
-      } else if (event.error !== "aborted") {
-        shouldKeepListeningRef.current = false;
-        setErrorMsg(`Lỗi micro: ${event.error}`);
-      }
-    };
-
-    recognitionRef.current = recognition;
-
-    return () => {
-      if (restartTimerRef.current) {
-        window.clearTimeout(restartTimerRef.current);
-      }
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
-    };
-  }, []); // Array rỗng -> Chỉ chạy 1 lần khi mount
-
-  const toggleRecording = () => {
-    if (!browserSupported) {
-      setErrorMsg("Trình duyệt không hỗ trợ nhận diện giọng nói.");
-      return;
-    }
-    if (!recognitionRef.current) return;
-
-    if (isRecording) {
-      isManualStopRef.current = true;
-      shouldKeepListeningRef.current = false;
-      if (restartTimerRef.current) {
-        window.clearTimeout(restartTimerRef.current);
-      }
-      recognitionRef.current.stop(); // Tự động kích hoạt onend
-    } else {
-      isManualStopRef.current = false;
-      shouldKeepListeningRef.current = true;
-      setSpokenText("");
-      spokenTextRef.current = "";
-      accumulatedTranscriptRef.current = "";
-      sessionTranscriptRef.current = "";
-      setAnalysisResult(null);
-      setErrorMsg("");
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        console.error("Mic start error", e);
-      }
-    }
-  };
-
-  const analyzePronunciation = (target, spoken) => {
-    if (!target || !spoken) return;
-    const cleanWord = (w) => (w || "").toLowerCase().replace(/[^a-z0-9']/g, "");
-    const originalWords = target.trim().split(/\s+/);
-    const spokenCleanWords = spoken.trim().split(/\s+/).map(cleanWord);
-    let score = 0;
-
-    // Đảm bảo setAnalysisResult chạy ổn định
-    const result = originalWords.map((origWord) => {
-      const cleanOrig = cleanWord(origWord);
-      const isCorrect = spokenCleanWords.includes(cleanOrig);
-      if (isCorrect) score++;
-      return { display: origWord, clean: cleanOrig, isCorrect: isCorrect };
-    });
-    const accuracy = Math.round((score / originalWords.length) * 100);
-    setAnalysisResult({ words: result, accuracy });
-  };
-
-  const speakText = (text) => {
-    if ("speechSynthesis" in window && text) {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US";
-      window.speechSynthesis.speak(u);
-    }
-  };
-
-  // Tra nghĩa dùng chung lib/vocab (cache localStorage → bảng CEFR offline → /api/translate),
-  // nhận kết quả DẦN nên phần nào có trước hiện trước, không đứng hình chờ mạng.
-  const lookupCancelRef = useRef(null);
-  const handleWordClick = (wordObj) => {
-    if (!wordObj?.clean) return;
-    speakText(wordObj.clean);
-    setIsAddingMode(false);
-
-    lookupCancelRef.current?.();
-    setSelectedWord({ ...wordObj, loading: true, meaning: "", phonetic: "" });
-    lookupCancelRef.current = lookupWord(wordObj.clean, (patch) => {
-      setSelectedWord((prev) =>
-        prev?.clean === wordObj.clean ? { ...prev, ...patch } : prev,
-      );
-    });
-  };
-
-  useEffect(() => () => lookupCancelRef.current?.(), []);
-
-  const handleAddSubmit = () => {
-    if (selectedWord && selectedWord.meaning && onAddFlashcard) {
-      onAddFlashcard(selectedWord.clean, selectedWord.meaning, targetDeck);
-      setIsAddingMode(false);
-    }
-  };
-
-  if (mode === "input") {
-    return (
-      <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-3xl">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl">
-              <BookOpen size={24} />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">
-                Văn bản luyện tập
-              </h2>
-              <p className="text-xs text-slate-500">
-                Nhập đoạn văn để chia nhỏ câu luyện tập.
-              </p>
-            </div>
-          </div>
-          <textarea
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none min-h-[200px] leading-relaxed mb-4"
-            value={fullText}
-            onChange={(e) => setFullText(e.target.value)}
-            placeholder="Dán văn bản tiếng Anh vào đây..."
-          />
-          <button
-            onClick={handleStartPractice}
-            disabled={!fullText || !fullText.trim()}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-full font-bold text-lg hover:bg-blue-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
-          >
-            Bắt đầu luyện đọc <Play size={20} className="fill-current" />
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="animate-in slide-in-from-right-8 duration-300 pb-36 flex flex-col pt-2 mx-auto w-full max-w-3xl">
-      <div className="flex items-center justify-between mb-4 w-full">
-        <button
-          onClick={() => setMode("input")}
-          className="p-2 -ml-2 text-slate-500 hover:text-slate-800 flex items-center gap-1 font-medium transition-colors"
-        >
-          <ArrowLeft size={20} /> <span className="text-sm">Quay lại</span>
-        </button>
-        <div className="bg-slate-200 px-3 py-1 rounded-full text-xs font-bold text-slate-600 tracking-wider">
-          CÂU {currentIndex + 1} / {sentences.length}
-        </div>
-      </div>
-
-      <div className="flex-1 bg-white rounded-3xl shadow-sm border border-slate-200 p-6 relative flex flex-col w-full min-h-[300px]">
-        <div className="absolute top-4 right-4">
-          <button
-            onClick={() => speakText(sentences[currentIndex])}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 text-xs font-bold transition-colors"
-          >
-            <Volume2 size={16} /> Nghe mẫu
-          </button>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center mt-8 mb-6">
-          {!analysisResult ? (
-            <p className="text-2xl font-medium text-slate-800 leading-relaxed text-center">
-              {sentences[currentIndex] || "Kết thúc văn bản."}
-            </p>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex flex-wrap justify-center gap-2">
-                {(analysisResult.words || []).map((wordObj, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleWordClick(wordObj)}
-                    className={`px-3 py-1.5 rounded-lg text-lg font-medium transition-all ${
-                      wordObj.isCorrect
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-600 border border-red-200 shadow-sm"
-                    }`}
-                  >
-                    {wordObj.display}
-                  </button>
-                ))}
-              </div>
-              <div className="flex justify-center">
-                <div
-                  className={`px-4 py-1.5 rounded-full flex items-center gap-2 font-bold text-sm ${
-                    analysisResult.accuracy >= 80
-                      ? "bg-green-100 text-green-700"
-                      : analysisResult.accuracy >= 50
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {analysisResult.accuracy >= 80 ? (
-                    <Check size={16} />
-                  ) : (
-                    <AlertCircle size={16} />
-                  )}
-                  {analysisResult.accuracy}% Chính xác
-                </div>
-              </div>
-              {spokenText?.trim() && (
-                <div className="mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    Hệ thống nghe được
-                  </p>
-                  <p className="text-sm font-medium leading-relaxed text-slate-700">
-                    “{spokenText}”
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {(isRecording || errorMsg) && (
-          <div className="absolute bottom-0 left-0 w-full bg-slate-50 p-4 border-t border-slate-100 flex flex-col items-center">
-            {errorMsg ? (
-              <p className="text-red-500 text-xs font-medium flex items-center gap-2 text-center">
-                <AlertCircle size={16} className="shrink-0" /> {errorMsg}
-              </p>
-            ) : (
-              <p className="text-center text-slate-500 italic text-sm animate-pulse">
-                {spokenText || "Đang lắng nghe..."}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {selectedWord && (
-        <div className="mt-4 bg-slate-800 text-white rounded-2xl p-4 animate-in fade-in slide-in-from-bottom-4 relative shadow-xl w-full">
-          <button
-            onClick={() => setSelectedWord(null)}
-            className="absolute top-3 right-3 text-slate-400 hover:text-white"
-          >
-            <X size={18} />
-          </button>
-
-          {(
-            <>
-              {/* Từ + nút phát âm hiện ngay; nghĩa/phiên âm chèn vào khi lấy được. */}
-              <div className="flex items-center justify-between mb-3 pr-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex flex-col">
-                    <h4 className="text-xl font-bold text-blue-400">
-                      {selectedWord.clean}
-                    </h4>
-                    {selectedWord.phonetic && (
-                      <span className="text-sm text-slate-400 italic font-mono">
-                        {selectedWord.phonetic}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => speakText(selectedWord.clean)}
-                    className="p-2 bg-slate-700 hover:bg-slate-600 rounded-full text-blue-400 transition-all active:scale-90"
-                  >
-                    <Volume2 size={18} />
-                  </button>
-                </div>
-
-                {!isAddingMode && (
-                  <button
-                    onClick={() => setIsAddingMode(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors"
-                  >
-                    <BookmarkPlus size={14} /> Lưu từ học
-                  </button>
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-slate-700/50">
-                {isAddingMode ? (
-                  <div className="animate-in fade-in zoom-in-95 duration-200 py-2">
-                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-2">
-                      Chọn chủ đề
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="flex-1 min-w-0">
-                        <DeckSelect
-                          variant="dark"
-                          value={targetDeck}
-                          onChange={setTargetDeck}
-                          options={(existingDecks || []).filter((d) => d !== "Tất cả")}
-                        />
-                      </div>
-                      <button
-                        onClick={handleAddSubmit}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500 flex items-center gap-1 transition-colors"
-                      >
-                        <Check size={16} /> Lưu
-                      </button>
-                      <button
-                        onClick={() => setIsAddingMode(false)}
-                        className="bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-sm hover:text-white"
-                      >
-                        Hủy
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2">
-                    <Languages
-                      className="text-blue-400 mt-1 shrink-0"
-                      size={14}
-                    />
-                    <div>
-                      <span className="block text-[10px] font-bold uppercase text-slate-500">
-                        Nghĩa
-                      </span>
-                      {selectedWord.loading && !selectedWord.meaning ? (
-                        <p className="flex items-center gap-2 text-sm text-slate-400">
-                          <Loader2 className="animate-spin w-4 h-4 text-blue-400" /> Đang tra
-                          cứu…
-                        </p>
-                      ) : (
-                        <p className="text-sm font-medium leading-relaxed">
-                          {selectedWord.meaning}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      <div className="fixed bottom-20 left-0 w-full bg-gradient-to-t from-slate-50 via-slate-50 to-transparent pt-8 pb-4 px-6 z-10 flex items-center justify-center gap-6">
-        <button
-          onClick={handlePrevSentence}
-          disabled={currentIndex === 0 || isRecording}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-600 disabled:opacity-30 shadow-md border border-slate-100"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        <div className="flex flex-col items-center">
-          <button
-            onClick={toggleRecording}
-            className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 ${
-              isRecording
-                ? "bg-red-500 text-white"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            {isRecording ? (
-              <Square size={24} className="fill-current" />
-            ) : (
-              <Mic size={32} />
-            )}
-          </button>
-          <span className="text-[10px] font-bold text-slate-500 mt-2 uppercase">
-            {isRecording ? "Dừng" : "Đọc"}
-          </span>
-        </div>
-        <button
-          onClick={handleNextSentence}
-          disabled={currentIndex === sentences.length - 1 || isRecording}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-white text-slate-600 disabled:opacity-30 shadow-md border border-slate-100"
-        >
-          <ChevronRight size={24} />
-        </button>
-      </div>
-    </div>
   );
 };
 
@@ -3456,7 +2928,315 @@ const WordMeaningCard = ({ word, onClose, onAddFlashcard, existingDecks = [] }) 
   );
 };
 
-const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
+// So câu mẫu với câu nhận diện được. Token không có chữ/số (">>" trong phụ đề) không tính điểm.
+const scorePronunciation = (target, spoken) => {
+  const cleanWord = (w) =>
+    (w || "").toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9']/g, "");
+  const spokenWords = spoken.trim().split(/\s+/).map(cleanWord);
+  const words = target
+    .trim()
+    .split(/\s+/)
+    .map((display) => {
+      const clean = cleanWord(display);
+      return { display, clean, isCorrect: spokenWords.includes(clean) };
+    });
+  const scored = words.filter((w) => w.clean);
+  const accuracy = scored.length
+    ? Math.round((scored.filter((w) => w.isCorrect).length / scored.length) * 100)
+    : 0;
+  return { words, accuracy };
+};
+
+// Tab Phát âm: đọc theo câu đang chọn, chấm bằng nhận diện giọng nói thay vì gõ. Video, danh sách
+// và tiến độ do DictationCoach (shadowing) lo; component này chỉ giữ micro + kết quả của câu.
+const ShadowingPanel = ({
+  index,
+  text,
+  canReplay,
+  onReplay,
+  onBeforeRecord,
+  onScored,
+  onSelectWord,
+}) => {
+  const [isRecording, setIsRecording] = useState(false);
+  // Gắn index để đổi câu là kết quả câu cũ tự hết hiệu lực, không cần effect reset.
+  const [spoken, setSpoken] = useState({ index: -1, text: "" });
+  const [analysis, setAnalysis] = useState(null);
+  const [error, setError] = useState({ index: -1, message: "" });
+  const [browserSupported] = useState(
+    () => !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+  );
+  const [ipaDict, setIpaDict] = useState(null);
+
+  const recognitionRef = useRef(null);
+  const spokenTextRef = useRef("");
+  const accumulatedTranscriptRef = useRef("");
+  const isRecordingRef = useRef(false);
+  const isManualStopRef = useRef(false);
+  const shouldKeepListeningRef = useRef(false);
+  const restartTimerRef = useRef(null);
+  // SpeechRecognition chỉ khởi tạo 1 lần nên phải đọc câu hiện tại và callback qua ref.
+  const targetRef = useRef({ index, text });
+  const onScoredRef = useRef(onScored);
+
+  useEffect(() => {
+    onScoredRef.current = onScored;
+  });
+
+  useEffect(() => {
+    targetRef.current = { index, text };
+    // Tua video sang câu khác lúc đang đọc: huỷ lượt này, không chấm nhầm vào câu mới.
+    if (isRecordingRef.current) {
+      shouldKeepListeningRef.current = false;
+      isManualStopRef.current = false;
+      if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
+      recognitionRef.current?.abort();
+    }
+  }, [index, text]);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadIpaDict()
+      .then((dict) => {
+        if (!cancelled) setIpaDict(dict);
+      })
+      .catch((err) => console.error("Không tải được từ điển phiên âm:", err));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Khởi tạo SpeechRecognition CHỈ 1 LẦN để tránh treo micro trên Mobile
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    // continuous = false: Mobile browser tự ngắt ghi âm khi người dùng ngừng nói; onend tự bật lại
+    // cho tới khi người dùng bấm Dừng.
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsRecording(true);
+      isRecordingRef.current = true;
+    };
+
+    recognition.onresult = (event) => {
+      let sessionTranscript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        sessionTranscript += event.results[i][0].transcript;
+      }
+      const fullTranscript = `${accumulatedTranscriptRef.current} ${sessionTranscript}`.trim();
+      spokenTextRef.current = fullTranscript;
+      setSpoken({ index: targetRef.current.index, text: fullTranscript });
+    };
+
+    recognition.onend = () => {
+      const shouldAnalyze = isManualStopRef.current;
+      const shouldRestart = shouldKeepListeningRef.current && !shouldAnalyze;
+
+      if (shouldRestart) {
+        accumulatedTranscriptRef.current = spokenTextRef.current || "";
+        restartTimerRef.current = window.setTimeout(() => {
+          try {
+            recognition.start();
+          } catch (err) {
+            console.error("Mic restart error", err);
+            setIsRecording(false);
+            isRecordingRef.current = false;
+          }
+        }, 120);
+        return;
+      }
+
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      shouldKeepListeningRef.current = false;
+      isManualStopRef.current = false;
+
+      if (shouldAnalyze && spokenTextRef.current?.trim()) {
+        const target = targetRef.current;
+        const result = scorePronunciation(target.text, spokenTextRef.current);
+        setAnalysis({ index: target.index, ...result });
+        onScoredRef.current?.(target.index, result.accuracy);
+      }
+    };
+
+    recognition.onerror = (event) => {
+      setIsRecording(false);
+      isRecordingRef.current = false;
+      console.error("Speech recognition error:", event.error);
+      const fail = (message) => setError({ index: targetRef.current.index, message });
+      if (event.error === "not-allowed") {
+        shouldKeepListeningRef.current = false;
+        fail(
+          "Chưa cấp quyền micro hoặc trình duyệt không hỗ trợ. Hãy mở bằng Chrome/Safari gốc (đừng mở trực tiếp từ Zalo/Messenger).",
+        );
+      } else if (event.error === "no-speech") {
+        if (!shouldKeepListeningRef.current) fail("Chưa nghe thấy âm thanh. Vui lòng thử lại.");
+      } else if (event.error === "network") {
+        shouldKeepListeningRef.current = false;
+        fail("Lỗi mạng. Cần có internet để nhận diện giọng nói.");
+      } else if (event.error !== "aborted") {
+        shouldKeepListeningRef.current = false;
+        fail(`Lỗi micro: ${event.error}`);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
+      recognition.abort();
+    };
+  }, []); // Array rỗng -> Chỉ chạy 1 lần khi mount
+
+  const toggleRecording = () => {
+    if (!recognitionRef.current) return;
+    if (isRecording) {
+      isManualStopRef.current = true;
+      shouldKeepListeningRef.current = false;
+      if (restartTimerRef.current) window.clearTimeout(restartTimerRef.current);
+      recognitionRef.current.stop(); // Tự động kích hoạt onend
+      return;
+    }
+    // Dừng video trước, không thì micro thu luôn tiếng video và chấm nhầm là người dùng đọc đúng.
+    onBeforeRecord?.();
+    isManualStopRef.current = false;
+    shouldKeepListeningRef.current = true;
+    spokenTextRef.current = "";
+    accumulatedTranscriptRef.current = "";
+    setSpoken({ index, text: "" });
+    setAnalysis(null);
+    setError({ index: -1, message: "" });
+    try {
+      recognitionRef.current.start();
+    } catch (err) {
+      console.error("Mic start error", err);
+    }
+  };
+
+  const result = analysis?.index === index ? analysis : null;
+  const spokenText = spoken.index === index ? spoken.text : "";
+  const errorMsg = !browserSupported
+    ? "Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy mở bằng Chrome hoặc Safari."
+    : error.index === index
+      ? error.message
+      : "";
+  const words = result?.words || scorePronunciation(text, "").words;
+  const ipa = ipaDict ? sentenceToIpa(text, ipaDict) : "";
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <button
+          onClick={onReplay}
+          disabled={!canReplay || isRecording}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
+        >
+          <Rewind className="w-4 h-4" /> Nghe lại
+        </button>
+        <button
+          onClick={() => speakEnglishWord(text)}
+          disabled={isRecording}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
+        >
+          <Volume2 className="w-4 h-4" /> Nghe mẫu
+        </button>
+      </div>
+
+      {/* Bấm vào từ để xem nghĩa; sau khi chấm thì từ đúng xanh, từ sai đỏ. */}
+      <div className="flex flex-wrap justify-center gap-x-1.5 gap-y-2">
+        {words.map((w, i) =>
+          w.clean ? (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelectWord(w.display)}
+              title="Bấm để tra nghĩa"
+              className={`px-1.5 py-0.5 rounded-lg border text-xl font-medium hover:underline decoration-dotted underline-offset-4 ${
+                !result
+                  ? "border-transparent text-slate-800"
+                  : w.isCorrect
+                    ? "bg-green-50 border-green-200 text-green-700"
+                    : "bg-red-50 border-red-200 text-red-600"
+              }`}
+            >
+              {w.display}
+            </button>
+          ) : (
+            <span key={i} className="px-1.5 py-0.5 text-xl text-slate-400">
+              {w.display}
+            </span>
+          ),
+        )}
+      </div>
+      {ipa && <p className="mt-2 text-center text-base leading-relaxed text-slate-500">{ipa}</p>}
+
+      {result && (
+        <div className="flex justify-center mt-4">
+          <div
+            className={`px-4 py-1.5 rounded-full flex items-center gap-2 font-bold text-sm ${
+              result.accuracy >= 80
+                ? "bg-green-100 text-green-700"
+                : result.accuracy >= 50
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-red-100 text-red-700"
+            }`}
+          >
+            {result.accuracy >= 80 ? <Check size={16} /> : <AlertCircle size={16} />}
+            {result.accuracy}% Chính xác
+          </div>
+        </div>
+      )}
+
+      {(isRecording || (result && spokenText.trim())) && (
+        <div className="mx-auto mt-4 w-full max-w-md rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            Hệ thống nghe được
+          </p>
+          <p
+            className={`text-sm font-medium leading-relaxed text-slate-700 ${
+              isRecording ? "animate-pulse" : ""
+            }`}
+          >
+            {spokenText ? `“${spokenText}”` : "Đang lắng nghe..."}
+          </p>
+        </div>
+      )}
+
+      {errorMsg && (
+        <p className="mt-4 text-red-500 text-xs font-medium flex items-center justify-center gap-2 text-center">
+          <AlertCircle size={16} className="shrink-0" /> {errorMsg}
+        </p>
+      )}
+
+      <div className="flex flex-col items-center mt-5">
+        <button
+          onClick={toggleRecording}
+          disabled={!browserSupported}
+          aria-label={isRecording ? "Dừng" : "Đọc"}
+          className={`flex items-center justify-center w-16 h-16 rounded-full shadow-lg transition-all transform hover:scale-105 active:scale-95 disabled:opacity-40 ${
+            isRecording ? "bg-red-500 text-white" : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
+        >
+          {isRecording ? <Square size={24} className="fill-current" /> : <Mic size={32} />}
+        </button>
+        <span className="text-[10px] font-bold text-slate-500 mt-2 uppercase">
+          {isRecording ? "Dừng" : "Đọc"}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// shadowing = true là tab Phát âm: dùng chung danh sách video, form thêm và player với Chép chính tả,
+// chỉ khác phần luyện (đọc thay vì gõ). Tiến độ riêng nằm ở progress.shadowing.
+const DictationCoach = ({ onAddFlashcard, existingDecks = [], shadowing = false }) => {
+  const statsOf = (video) => (shadowing ? video?.progress?.shadowing : video?.progress) || {};
   const [videos, setVideos] = useState(() => {
     try {
       const raw = localStorage.getItem(DICTATION_STORAGE_KEY);
@@ -3637,6 +3417,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     }, 150);
   };
 
+  const stopSegment = () => {
+    if (watcherRef.current) clearInterval(watcherRef.current);
+    playerRef.current?.pauseVideo?.();
+    setIsPlayingSegment(false);
+  };
+
   // Tự phát đoạn hiện tại mỗi khi player sẵn sàng hoặc chuyển câu
   useEffect(() => {
     if (mode === "practice" && playerReady) {
@@ -3717,11 +3503,14 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const updateProgress = async (index, accuracy) => {
     const video = videosRef.current.find((v) => v.id === activeVideoId);
     if (!video) return;
-    const attempts = { ...(video.progress?.attempts || {}) };
+    const attempts = { ...(statsOf(video).attempts || {}) };
     attempts[index] = Math.max(attempts[index] || 0, accuracy);
     const accVals = Object.values(attempts);
     const avg = Math.round(accVals.reduce((a, b) => a + b, 0) / accVals.length);
-    const progress = { attempts, avgAccuracy: avg, lastIndex: index, updatedAt: Date.now() };
+    const stats = { attempts, avgAccuracy: avg, lastIndex: index };
+    const progress = shadowing
+      ? { ...video.progress, shadowing: stats, updatedAt: Date.now() }
+      : { ...video.progress, ...stats, updatedAt: Date.now() };
     setVideos((prev) => prev.map((v) => (v.id === video.id ? { ...v, progress } : v)));
     if (!video.synced) {
       uploadVideos([{ ...video, progress }]);
@@ -3842,7 +3631,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
 
   const startPractice = (video) => {
     setActiveVideoId(video.id);
-    const lastIndex = video.progress?.lastIndex ?? 0;
+    const lastIndex = statsOf(video).lastIndex ?? 0;
     const startIdx = lastIndex < video.segments.length ? lastIndex : 0;
     setCurrentIndex(startIdx);
     resetWordProgress();
@@ -3993,7 +3782,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-lg font-bold text-slate-800">Thêm video chép chính tả</h2>
+          <h2 className="text-lg font-bold text-slate-800">
+            {shadowing ? "Thêm video luyện phát âm" : "Thêm video chép chính tả"}
+          </h2>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col gap-4">
@@ -4102,7 +3893,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     const total = activeVideo.segments.length;
     const isLast = currentIndex === total - 1;
     const isFirst = currentIndex === 0;
-    const attempts = activeVideo.progress?.attempts || {};
+    const practiceStats = statsOf(activeVideo);
+    const attempts = practiceStats.attempts || {};
     const completedPercent = Math.round((Object.keys(attempts).length / total) * 100);
     const targetWords = seg.text.trim().split(/\s+/);
     const segmentDone = confirmedCount >= targetWords.length;
@@ -4181,9 +3973,9 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
             </div>
           </div>
           <div className="min-w-9 min-[700px]:w-16 shrink-0 flex justify-end">
-            {activeVideo.progress?.avgAccuracy ? (
+            {practiceStats.avgAccuracy ? (
               <span className="px-2 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600 whitespace-nowrap">
-                TB {activeVideo.progress.avgAccuracy}%
+                TB {practiceStats.avgAccuracy}%
               </span>
             ) : null}
           </div>
@@ -4205,7 +3997,12 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
           }`}
         >
           <div className="min-w-0 flex flex-col gap-3">
-            <div className="mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden relative">
+            {/* Phát âm cần thấy nút micro không phải cuộn; màn ngang thấp nên thu video lại. */}
+            <div
+              className={`mx-auto w-full max-w-[min(100%,72vh)] aspect-video bg-black rounded-2xl overflow-hidden relative ${
+                shadowing ? "landscape:max-w-[min(100%,50vh)]" : ""
+              }`}
+            >
               <div ref={playerContainerRef} className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full" />
             </div>
 
@@ -4227,118 +4024,132 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-                <button
-                  onClick={() => playSegment(currentIndex)}
-                  disabled={!playerReady || isPlayingSegment}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
-                >
-                  <Rewind className="w-4 h-4" /> Nghe lại
-                </button>
-                {!segmentDone && (
-                  <button
-                    type="button"
-                    onClick={showFullAnswer ? hideAllWords : revealAllWords}
-                    className={`px-3 py-1.5 text-sm font-bold rounded-full border ${
-                      showFullAnswer
-                        ? "text-slate-600 bg-slate-50 border-slate-300 hover:bg-slate-100"
-                        : "text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100"
-                    }`}
-                  >
-                    {showFullAnswer ? "Ẩn tất cả các từ" : "Hiện tất cả các từ"}
-                  </button>
-                )}
-              </div>
-
-              {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần nhấn
-                  Enter); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
-              <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 bg-slate-50 rounded-xl">
-                {targetWords.map((w, i) => {
-                  const isDone = i < liveCount;
-                  const revealThis =
-                    showFullAnswer ||
-                    revealedIndices[i] ||
-                    (i === confirmedCount && wordStatus === "incorrect");
-                  const visible = isDone || revealThis;
-                  const hasLetters = /[a-z]/i.test(w);
-                  const boxCls = !visible
-                    ? "bg-white border-slate-200 text-slate-400"
-                    : wrongIndices[i]
-                      ? "bg-amber-50 border-amber-300 text-amber-700"
-                      : isDone
-                        ? "bg-green-50 border-green-400 text-green-700"
-                        : "bg-white border-slate-300 text-slate-600";
-                  return (
-                    <div key={i} className="flex flex-col items-center gap-0.5">
-                      {!visible && hasLetters ? (
-                        <button
-                          type="button"
-                          onClick={() => revealWord(i)}
-                          title="Hiện từ này (tính là lỗi)"
-                          className="text-slate-400 hover:text-blue-600"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                      ) : (
-                        <span className="h-3.5" />
-                      )}
-                      {visible && hasLetters ? (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedLookupWord(w)}
-                          title="Bấm để tra nghĩa"
-                          className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
-                        >
-                          {w}
-                        </button>
-                      ) : (
-                        <span
-                          className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} ${
-                            visible ? "" : "tracking-widest"
-                          }`}
-                        >
-                          {visible ? w : "*".repeat(w.length)}
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <textarea
-                value={userInput}
-                onChange={(e) => handleTyping(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key !== "Enter") return;
-                  e.preventDefault();
-                  if (segmentDone) {
-                    if (!isLast) goToSegment(currentIndex + 1);
-                    return;
-                  }
-                  checkCurrentWord();
-                }}
-                readOnly={segmentDone}
-                rows={3}
-                autoFocus
-                placeholder="Gõ lại những gì bạn nghe được..."
-                className="block w-full p-3 text-lg bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
+            {shadowing ? (
+              <ShadowingPanel
+                index={currentIndex}
+                text={seg.text}
+                canReplay={playerReady && !isPlayingSegment}
+                onReplay={() => playSegment(currentIndex)}
+                onBeforeRecord={stopSegment}
+                onScored={updateProgress}
+                onSelectWord={setSelectedLookupWord}
               />
-              <div className="flex items-center gap-1.5 mt-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
-                {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
-                  <>
-                    <AlertCircle className="w-4 h-4" /> Chưa đúng
-                  </>
-                )}
-                {segmentDone && (
-                  <span className="text-green-600">
-                    Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
-                  </span>
-                )}
-              </div>
-            </div>
+            ) : (
+              <>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <button
+                      onClick={() => playSegment(currentIndex)}
+                      disabled={!playerReady || isPlayingSegment}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-full disabled:opacity-50"
+                    >
+                      <Rewind className="w-4 h-4" /> Nghe lại
+                    </button>
+                    {!segmentDone && (
+                      <button
+                        type="button"
+                        onClick={showFullAnswer ? hideAllWords : revealAllWords}
+                        className={`px-3 py-1.5 text-sm font-bold rounded-full border ${
+                          showFullAnswer
+                            ? "text-slate-600 bg-slate-50 border-slate-300 hover:bg-slate-100"
+                            : "text-amber-700 bg-amber-50 border-amber-300 hover:bg-amber-100"
+                        }`}
+                      >
+                        {showFullAnswer ? "Ẩn tất cả các từ" : "Hiện tất cả các từ"}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Bảng từ: mỗi từ một ô. Gõ đúng tới đâu ô xanh tới đó (không cần nhấn
+                      Enter); từ chưa gõ hiện dấu * theo đúng số ký tự, bấm icon mắt để xem trước. */}
+                  <div className="flex flex-wrap items-end gap-x-1.5 gap-y-2 p-3 bg-slate-50 rounded-xl">
+                    {targetWords.map((w, i) => {
+                      const isDone = i < liveCount;
+                      const revealThis =
+                        showFullAnswer ||
+                        revealedIndices[i] ||
+                        (i === confirmedCount && wordStatus === "incorrect");
+                      const visible = isDone || revealThis;
+                      const hasLetters = /[a-z]/i.test(w);
+                      const boxCls = !visible
+                        ? "bg-white border-slate-200 text-slate-400"
+                        : wrongIndices[i]
+                          ? "bg-amber-50 border-amber-300 text-amber-700"
+                          : isDone
+                            ? "bg-green-50 border-green-400 text-green-700"
+                            : "bg-white border-slate-300 text-slate-600";
+                      return (
+                        <div key={i} className="flex flex-col items-center gap-0.5">
+                          {!visible && hasLetters ? (
+                            <button
+                              type="button"
+                              onClick={() => revealWord(i)}
+                              title="Hiện từ này (tính là lỗi)"
+                              className="text-slate-400 hover:text-blue-600"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span className="h-3.5" />
+                          )}
+                          {visible && hasLetters ? (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLookupWord(w)}
+                              title="Bấm để tra nghĩa"
+                              className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} hover:underline decoration-dotted underline-offset-2`}
+                            >
+                              {w}
+                            </button>
+                          ) : (
+                            <span
+                              className={`px-2 py-0.5 rounded-lg border text-base font-bold ${boxCls} ${
+                                visible ? "" : "tracking-widest"
+                              }`}
+                            >
+                              {visible ? w : "*".repeat(w.length)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <textarea
+                    value={userInput}
+                    onChange={(e) => handleTyping(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== "Enter") return;
+                      e.preventDefault();
+                      if (segmentDone) {
+                        if (!isLast) goToSegment(currentIndex + 1);
+                        return;
+                      }
+                      checkCurrentWord();
+                    }}
+                    readOnly={segmentDone}
+                    rows={3}
+                    autoFocus
+                    placeholder="Gõ lại những gì bạn nghe được..."
+                    className="block w-full p-3 text-lg bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none read-only:bg-slate-50"
+                  />
+                  <div className="flex items-center gap-1.5 mt-1.5 text-amber-600 text-sm font-medium min-h-[20px]">
+                    {(wordStatus === "incorrect" || liveMismatch) && !segmentDone && (
+                      <>
+                        <AlertCircle className="w-4 h-4" /> Chưa đúng
+                      </>
+                    )}
+                    {segmentDone && (
+                      <span className="text-green-600">
+                        Xong câu này · {Math.round(((targetWords.length - Object.keys(wrongIndices).length) / targetWords.length) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="flex justify-between gap-3">
               <button
@@ -4378,7 +4189,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     <div className="animate-in fade-in duration-300 pb-24 mx-auto w-full max-w-4xl">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-extrabold text-slate-900">
-          <span className="fl-mark">Chép chính tả</span>
+          <span className="fl-mark">{shadowing ? "Phát âm" : "Chép chính tả"}</span>
         </h2>
         <button
           onClick={() => {
@@ -4403,7 +4214,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center text-sm text-slate-500">
           <Headphones className="w-8 h-8 mx-auto mb-2 text-slate-300" />
           Chưa có video nào. Bấm "Thêm video", dán link YouTube và transcript
-          (cột Time / Subtitle) để bắt đầu luyện chép chính tả.
+          (cột Time / Subtitle) để bắt đầu {shadowing ? "luyện đọc theo" : "luyện chép chính tả"}.
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
@@ -4423,7 +4234,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
                   <p className="font-bold text-slate-800 truncate">{v.title}</p>
                   <p className="text-xs text-slate-400">
                     {v.segments.length} câu
-                    {v.progress?.avgAccuracy ? ` · TB ${v.progress.avgAccuracy}%` : ""}
+                    {statsOf(v).avgAccuracy ? ` · TB ${statsOf(v).avgAccuracy}%` : ""}
                   </p>
                 </div>
               </button>
@@ -4738,7 +4549,7 @@ export default function App() {
     }
   };
 
-  // Hàm thêm thẻ từ PronunciationCoach
+  // Hàm thêm thẻ từ thẻ nghĩa ở Phát âm / Chép chính tả
   const handleSaveFromCoach = (word, meaning, deck) => {
     const newCard = {
       id: Date.now().toString(),
@@ -5019,7 +4830,9 @@ export default function App() {
 
       <main
         className={`max-w-md md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl mx-auto px-4 md:px-6 ${
-          activeTab === "dictation" ? "min-[700px]:max-w-3xl min-[700px]:px-6" : ""
+          activeTab === "dictation" || activeTab === "pronunciation"
+            ? "min-[700px]:max-w-3xl min-[700px]:px-6"
+            : ""
         }`}
       >
         {/* --- TAB: QUẢN LÝ TỪ (INPUT) --- */}
@@ -5789,7 +5602,8 @@ export default function App() {
 
         {/* --- TAB: PRONUNCIATION COACH --- */}
         {activeTab === "pronunciation" && (
-          <PronunciationCoach
+          <DictationCoach
+            shadowing
             onAddFlashcard={handleSaveFromCoach}
             existingDecks={existingDecks}
           />
