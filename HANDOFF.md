@@ -21,7 +21,16 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.28.1: iOS ghi bằng MediaRecorder thay AudioContext
+## Phiên làm việc gần nhất (2026-11-05) — v1.28.2: gỡ Whisper, code về như v1.27.6
+
+Với v1.28.1, user báo **trang cứ tải lại liên tục** trên thiết bị của user và yêu cầu trả về như cũ, **không sửa thêm phần micro nữa**. Nghi do iOS giết tab vì model Whisper tốn
+bộ nhớ (model nạp ngay khi mở màn luyện), **chưa xác nhận**. Đã revert 3 commit (v1.27.7, v1.28.0, v1.28.1), `src/` giống hệt 59ec717, bỏ dependency `@huggingface/transformers`.
+Chỉ số version đi tiếp để badge phân biệt được bản mới.
+
+- **Lỗi micro iPad vẫn còn**, chưa rõ nguyên nhân gốc. Dữ kiện duy nhất từ Whisper: v1.28.0 báo "toàn im lặng" (không có nhật ký nên chưa rõ `AudioContext` hay micro).
+- Thẻ `MicDiagnostics` và nhật ký micro quay lại theo code v1.27.6. **Đừng làm lại phần này nếu user chưa yêu cầu.**
+
+## Phiên trước (2026-11-05) — v1.28.1: iOS ghi bằng MediaRecorder thay AudioContext (ĐÃ GỠ ở v1.28.2)
 
 User báo v1.28.0 trên iPad hiện "Micro thu được toàn im lặng" (không kèm nhật ký). Thông báo này hiện khi `seconds = 0` HOẶC `peak < 0.005`, nên **chưa biết** là
 AudioContext không chạy hay micro thật sự câm. Đây là phép thử + thử sửa, chưa xác nhận nguyên nhân:
@@ -33,7 +42,7 @@ AudioContext không chạy hay micro thật sự câm. Đây là phép thử + t
   `muted=false`, có byte mà `mức 0.000` → iOS đưa dữ liệu rỗng; so sánh cách mặc định với "tắt xử lý", và thử lúc chưa phát video.
 - Kiểm chứng bằng micro giả trên Chrome, **chưa test trên iPad thật**. Phần dưới về `AudioContext` của v1.28.0 không còn đúng.
 
-## Phiên trước (2026-11-05) — v1.28.0: iPad/iPhone ghi âm + Whisper trên máy, bỏ Web Speech
+## Phiên trước (2026-11-05) — v1.28.0: iPad/iPhone ghi âm + Whisper trên máy, bỏ Web Speech (ĐÃ GỠ ở v1.28.2)
 
 v1.27.7 trên iPad vẫn không ra chữ. **Vẫn chưa biết nguyên nhân gốc** vì sao Web Speech của Safari hỏng, nên đổi hướng thay vì vá tiếp.
 
