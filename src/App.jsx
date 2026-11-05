@@ -2661,7 +2661,57 @@ const GameTab = ({ cards, deckInput, existingDecks, onDeckChange }) => {
 // ============================================================================
 // COMPONENT: DictationCoach (Chép chính tả theo video YouTube)
 // ============================================================================
+// Video + tiến độ lưu ở bảng Supabase dictation_videos (dùng chung mọi thiết bị). localStorage chỉ
+// là cache để danh sách hiện ngay và giữ thay đổi chưa ghi được lên DB. synced = DB đã có video.
 const DICTATION_STORAGE_KEY = "flashlearn_dictation_videos";
+const DICTATION_TABLE = "dictation_videos";
+
+const dictationVideoToRow = (v) => ({
+  id: v.id,
+  title: v.title,
+  video_id: v.videoId,
+  segments: v.segments,
+  progress: v.progress || {},
+  created_at: v.createdAt || Date.now(),
+});
+
+const dictationRowToVideo = (r) => ({
+  id: r.id,
+  title: r.title,
+  videoId: r.video_id,
+  segments: r.segments || [],
+  progress: r.progress || {},
+  createdAt: Number(r.created_at),
+  synced: true,
+});
+
+// Gộp cache máy này với DB. Video chỉ có ở máy mà chưa từng synced (dữ liệu localStorage cũ, hoặc
+// lần thêm bị lỗi mạng) → đẩy lên DB; đã synced mà DB không còn → thiết bị khác đã xoá, bỏ theo.
+// Có ở cả hai → lấy bản có tiến độ mới hơn, máy này mới hơn thì đẩy lên.
+function mergeDictationVideos(local, remote) {
+  const remoteById = new Map(remote.map((v) => [v.id, v]));
+  const localIds = new Set(local.map((v) => v.id));
+  const toUpload = [];
+  const kept = [];
+  for (const v of local) {
+    const r = remoteById.get(v.id);
+    if (!r) {
+      if (!v.synced) {
+        kept.push(v);
+        toUpload.push(v);
+      }
+    } else if ((v.progress?.updatedAt || 0) > (r.progress?.updatedAt || 0)) {
+      kept.push(v);
+      toUpload.push(v);
+    } else {
+      kept.push(r);
+    }
+  }
+  const merged = [...kept, ...remote.filter((r) => !localIds.has(r.id))].sort(
+    (a, b) => (b.createdAt || 0) - (a.createdAt || 0),
+  );
+  return { merged, toUpload };
+}
 
 function extractYouTubeId(input) {
   if (!input) return null;
@@ -3415,6 +3465,8 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       return [];
     }
   });
+  const [isLoadingVideos, setIsLoadingVideos] = useState(true);
+  const [syncError, setSyncError] = useState("");
   const [mode, setMode] = useState("list"); // 'list' | 'add' | 'practice'
   const [activeVideoId, setActiveVideoId] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -3453,8 +3505,53 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
   const lastPollRef = useRef(null);
   const ownSeekUntilRef = useRef(0);
   const userSeekHandlerRef = useRef(null);
+  const videosRef = useRef(videos);
+
+  // Ghi cả video lên DB; thành công thì đánh dấu synced. Lỗi thì bản ở máy vẫn còn, lần mở tab
+  // sau mergeDictationVideos sẽ đẩy lại.
+  const uploadVideos = async (list) => {
+    const { error } = await supabase
+      .from(DICTATION_TABLE)
+      .upsert(list.map(dictationVideoToRow), { onConflict: "id" });
+    if (error) {
+      console.error("Lỗi khi lưu video chép chính tả:", error);
+      setSyncError("Chưa lưu được lên máy chủ — tạm giữ trên máy này, sẽ thử lại lần mở sau.");
+      return;
+    }
+    const ids = new Set(list.map((v) => v.id));
+    setVideos((prev) => prev.map((v) => (ids.has(v.id) ? { ...v, synced: true } : v)));
+    setSyncError("");
+  };
 
   useEffect(() => {
+    let cancelled = false;
+    const loadVideos = async () => {
+      const { data, error } = await supabase
+        .from(DICTATION_TABLE)
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      setIsLoadingVideos(false);
+      if (error) {
+        console.error("Lỗi khi tải video chép chính tả:", error);
+        setSyncError("Không tải được từ máy chủ — đang dùng bản lưu trên máy này.");
+        return;
+      }
+      const { merged, toUpload } = mergeDictationVideos(
+        videosRef.current,
+        data.map(dictationRowToVideo),
+      );
+      setVideos(merged);
+      if (toUpload.length > 0) uploadVideos(toUpload);
+    };
+    loadVideos();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    videosRef.current = videos;
     try {
       localStorage.setItem(DICTATION_STORAGE_KEY, JSON.stringify(videos));
     } catch {
@@ -3632,20 +3729,30 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, currentIndex, playbackRate]);
 
-  const updateProgress = (index, accuracy) => {
-    setVideos((prev) =>
-      prev.map((v) => {
-        if (v.id !== activeVideoId) return v;
-        const attempts = { ...(v.progress?.attempts || {}) };
-        attempts[index] = Math.max(attempts[index] || 0, accuracy);
-        const accVals = Object.values(attempts);
-        const avg = Math.round(accVals.reduce((a, b) => a + b, 0) / accVals.length);
-        return {
-          ...v,
-          progress: { attempts, avgAccuracy: avg, lastIndex: index, updatedAt: Date.now() },
-        };
-      }),
-    );
+  const updateProgress = async (index, accuracy) => {
+    const video = videosRef.current.find((v) => v.id === activeVideoId);
+    if (!video) return;
+    const attempts = { ...(video.progress?.attempts || {}) };
+    attempts[index] = Math.max(attempts[index] || 0, accuracy);
+    const accVals = Object.values(attempts);
+    const avg = Math.round(accVals.reduce((a, b) => a + b, 0) / accVals.length);
+    const progress = { attempts, avgAccuracy: avg, lastIndex: index, updatedAt: Date.now() };
+    setVideos((prev) => prev.map((v) => (v.id === video.id ? { ...v, progress } : v)));
+    if (!video.synced) {
+      uploadVideos([{ ...video, progress }]);
+      return;
+    }
+    // Chỉ ghi cột progress, không gửi lại toàn bộ segments sau mỗi câu.
+    const { error } = await supabase
+      .from(DICTATION_TABLE)
+      .update({ progress })
+      .eq("id", video.id);
+    if (error) {
+      console.error("Lỗi khi lưu tiến độ chép chính tả:", error);
+      setSyncError("Chưa lưu được tiến độ lên máy chủ — tạm giữ trên máy này, sẽ thử lại lần mở sau.");
+    } else {
+      setSyncError("");
+    }
   };
 
   const resetWordProgress = () => {
@@ -3773,8 +3880,15 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
     setMode("practice");
   };
 
-  const handleDeleteVideo = (id) => {
+  const handleDeleteVideo = async (id) => {
     if (!window.confirm("Xoá video này khỏi danh sách chép chính tả?")) return;
+    const { error } = await supabase.from(DICTATION_TABLE).delete().eq("id", id);
+    if (error) {
+      console.error("Lỗi khi xoá video chép chính tả:", error);
+      setSyncError("Không xoá được trên máy chủ, thử lại sau.");
+      return;
+    }
+    setSyncError("");
     setVideos((prev) => prev.filter((v) => v.id !== id));
   };
 
@@ -3887,6 +4001,7 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
       progress: { attempts: {}, avgAccuracy: 0, lastIndex: 0 },
     };
     setVideos((prev) => [newVideo, ...prev]);
+    uploadVideos([newVideo]);
     setTitleInput("");
     setUrlInput("");
     setTranscriptInput("");
@@ -4311,7 +4426,15 @@ const DictationCoach = ({ onAddFlashcard, existingDecks = [] }) => {
         </button>
       </div>
 
-      {videos.length === 0 ? (
+      {syncError && (
+        <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-800">
+          {syncError}
+        </div>
+      )}
+
+      {videos.length === 0 && isLoadingVideos ? (
+        <div className="p-6 text-center text-sm text-slate-500">Đang tải danh sách video...</div>
+      ) : videos.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center text-sm text-slate-500">
           <Headphones className="w-8 h-8 mx-auto mb-2 text-slate-300" />
           Chưa có video nào. Bấm "Thêm video", dán link YouTube và transcript
