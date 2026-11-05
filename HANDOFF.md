@@ -21,7 +21,27 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.23.0: lưu Chép chính tả lên Supabase
+## Phiên làm việc gần nhất (2026-11-05) — v1.24.0: chia lại layout màn luyện Chép chính tả
+
+User gửi ảnh mẫu (app khác, iPad) và yêu cầu đổi layout màn luyện tập cho giống, **giữ nguyên tính năng và nút**,
+chạy được trên iPad mini A17 Pro (viewport **744×1133** dọc, 1133×744 ngang).
+
+- **Bố cục (`DictationCoach`, `src/App.jsx`):** đầu trang (nút quay lại, tiêu đề, ô nhảy câu, pill TB %) + thanh tiến
+  độ; cột trái (3fr): video → tốc độ + checkbox → thẻ Nghe lại / Hiện tất cả + bảng từ → ô gõ → Kiểm tra / Bỏ qua →
+  Câu trước / Câu sau; cột phải (2fr): danh sách câu che bằng `*`, tự cuộn trong khung, câu hiện tại tự ra giữa.
+- **Breakpoint là `min-[700px]`, KHÔNG phải `md`:** iPad mini dọc rộng 744px, chưa tới mốc md 768px. `<main>` vốn là
+  `max-w-md` dưới 768px nên có thêm `min-[700px]:max-w-3xl` **chỉ khi ở tab dictation**. Các tab khác trên iPad mini
+  dọc vẫn hẹp 448px như cũ. Dưới 700px xếp 1 cột, danh sách câu nằm dưới cùng (cao tối đa `max-h-80`).
+- Đổi cột chỉ bằng CSS, một cây JSX duy nhất — để iframe YouTube không bị tạo lại khi xoay máy.
+- **Phần mới so với trước (do layout mẫu cần):** danh sách câu (bấm để nhảy tới câu, chỉ gọi `goToSegment`; câu đã làm
+  có số xanh + %) và thanh tiến độ (`số câu có trong progress.attempts / tổng`). Không ghi thêm gì lên DB.
+- **Cố ý KHÔNG thêm** các thứ trong ảnh mà app chưa có: đồng hồ, Auto stop, nút play riêng, bookmark, cờ, cài đặt, mic.
+  Giữ theme sáng hiện tại, không đổi sang nền đen như ảnh. Nhãn nút vẫn tiếng Việt.
+- Kiểm chứng trên vite local bằng video tạm `claude-test-layout` (đã xoá khỏi DB): đo 744×1133, 1133×744, 375×812,
+  1366×768 không tràn ngang; bấm Bỏ qua → câu 1 xanh, 2% hoàn thành; bấm câu 11 → câu đang học và ô nhảy cập nhật, danh
+  sách tự cuộn; iframe giữ nguyên khi đổi kích thước; console không lỗi. **Chưa test trên iPad thật** (Safari, bàn phím ảo).
+
+## Phiên trước (2026-11-05) — v1.23.0: lưu Chép chính tả lên Supabase
 
 User muốn video Chép chính tả nằm trên DB thay vì chỉ trong trình duyệt (dùng chung giữa các thiết bị).
 
