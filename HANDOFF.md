@@ -21,7 +21,18 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-10) — v1.29.0: thêm định nghĩa cho thuật ngữ deck ISTQB CTFL
+## Phiên làm việc gần nhất (2026-11-10) — chủ đề mới "Giao tiếp Testing" (chỉ dữ liệu, không đổi code)
+
+User muốn lọc các từ hay dùng khi giao tiếp trong công việc testing từ 2 deck ISTQB CTFL và ISTQB CTAI, rồi gom thành 1 chủ đề mới tên "Giao tiếp Testing".
+
+- **Đã ghi vào Supabase thật:** deck "Giao tiếp Testing" có 228 thẻ, gồm 133 thẻ từ CTFL và 95 thẻ từ CTAI. Bỏ các từ trùng giữa 2 deck, giữ bản CTFL vì đã có định nghĩa.
+  Thẻ là **bản sao** (copy word + meaning + status), id = `gtt-` + id gốc. **Thẻ gốc giữ nguyên** trong deck cũ.
+  Sửa thẻ gốc thì bản sao không tự đổi theo: chạy lại script để đồng bộ meaning, nhưng script cũng ghi đè status bằng status của thẻ gốc.
+- Danh sách id chia theo nhóm tình huống (báo bug, họp Agile, release, báo cáo test, dữ liệu/mô hình AI, LLM…): `scripts/giao-tiep-testing-ids.json`.
+  Script: `scripts/create-giao-tiep-testing.mjs` (upsert, idempotent, có `--dry`).
+- Xoá chủ đề này: xoá các thẻ có `deck = 'Giao tiếp Testing'` (hoặc id bắt đầu bằng `gtt-`).
+
+## Phiên trước (2026-11-10) — v1.29.0: thêm định nghĩa cho thuật ngữ deck ISTQB CTFL
 
 User yêu cầu: thuật ngữ trong deck "ISTQB CTFL" (906 thẻ) có thêm định nghĩa ngay sau nghĩa tiếng Việt, nằm chung ô Nghĩa. Từ tiếng Anh
 thông thường (ignore, extend…) và tên khung (Scrum, Kanban…) giữ nguyên. User đã duyệt mẫu 12 thẻ trước khi áp toàn bộ.
