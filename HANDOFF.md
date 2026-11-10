@@ -21,7 +21,19 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-05) — v1.28.4: gỡ thẻ Kiểm tra micro
+## Phiên làm việc gần nhất (2026-11-10) — v1.29.0: thêm định nghĩa cho thuật ngữ deck ISTQB CTFL
+
+User yêu cầu: thuật ngữ trong deck "ISTQB CTFL" (906 thẻ) có thêm định nghĩa ngay sau nghĩa tiếng Việt, nằm chung ô Nghĩa. Từ tiếng Anh
+thông thường (ignore, extend…) và tên khung (Scrum, Kanban…) giữ nguyên. User đã duyệt mẫu 12 thẻ trước khi áp toàn bộ.
+
+- **Dữ liệu (đã ghi vào Supabase thật):** 340/906 thẻ thêm dòng `Định nghĩa: …` ngay sau dòng `Nghĩa:`. Định nghĩa viết bằng tiếng Việt, theo glossary/syllabus CTFL v4.
+  Dòng Nghĩa của các thẻ này được bỏ phần chú thích trong ngoặc khi định nghĩa đã bao trọn ý (nghĩa chính giữ nguyên). Phiên âm, Ví dụ, status: không đổi.
+  Dữ liệu: `scripts/ctfl-definitions.json`; script: `scripts/add-ctfl-definitions.mjs` (idempotent, có `--dry`). Backup trước khi sửa: `backups/cards-backup-2026-11-10-pre-ctfl-definitions.json`.
+- **Code:** `splitDefinition()` tách các dòng `Định nghĩa:` ra khỏi trường Nghĩa. Mặt sau thẻ học hiện nghĩa ngắn cỡ lớn + định nghĩa cỡ `text-sm` bên dưới.
+  `pickMeaning()` (game, danh sách thẻ, mặt trước chế độ Nghĩa→Từ) chỉ trả nghĩa ngắn. Form Sửa vẫn hiện đủ cả dòng Định nghĩa trong ô Nghĩa, lưu lại không mất.
+- Kiểm chứng: script parse lại cả 906 thẻ bằng hàm của App.jsx; xem mặt sau thẻ trên vite local (desktop + 375px; ở mobile nội dung dài cuộn trong thẻ). Không bấm Đã thuộc/Chưa thuộc.
+
+## Phiên trước (2026-11-05) — v1.28.4: gỡ thẻ Kiểm tra micro
 
 User yêu cầu bỏ thẻ "Kiểm tra micro" ở tab Phát âm. Đã xoá `MicDiagnostics` và `runMicDiagnostic`. Dòng nhật ký nhỏ dưới thông báo lỗi micro (`micLogRef`) vẫn giữ.
 Mọi nhắc tới thẻ này ở các phiên dưới là lịch sử.

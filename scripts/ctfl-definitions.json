@@ -1,0 +1,2042 @@
+[
+ {
+  "id": "istqb-ctfl-1752400000-3",
+  "word": "error",
+  "nghia": "Sai sót",
+  "dinhnghia": "Hành động sai của con người (hiểu nhầm yêu cầu, gõ nhầm code…), tạo ra defect."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1106",
+  "word": "test implementation",
+  "nghia": "Hiện thực hóa kiểm thử",
+  "dinhnghia": "Hoạt động chuẩn bị mọi thứ cần để chạy test: tạo/thu thập test data, dựng môi trường kiểm thử, sắp xếp test case thành test procedure, test script và test suite."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-860",
+  "word": "iteration",
+  "nghia": "Vòng lặp phát triển (sprint trong Agile)",
+  "dinhnghia": "Một chu kỳ phát triển ngắn, có thời hạn cố định, trong đó team lập kế hoạch, phát triển và kiểm thử một tập tính năng để tạo ra phần sản phẩm chạy được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-927",
+  "word": "unit test",
+  "nghia": "Test đơn vị",
+  "dinhnghia": "Test kiểm tra riêng lẻ từng thành phần nhỏ nhất của code (hàm, class, module), thường do developer viết và chạy tự động; thuộc mức component testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-398",
+  "word": "compatibility",
+  "nghia": "Tính tương thích",
+  "dinhnghia": "Đặc tính chất lượng phi chức năng: mức độ hệ thống trao đổi thông tin và cùng vận hành được với hệ thống, thiết bị, trình duyệt hay môi trường khác mà không gây ảnh hưởng xấu."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-696",
+  "word": "state transition testing",
+  "nghia": "Kiểm thử chuyển trạng thái",
+  "dinhnghia": "Kỹ thuật black-box dựa trên mô hình trạng thái của hệ thống: thiết kế test để đi qua các trạng thái và các chuyển tiếp (hợp lệ, không hợp lệ) do sự kiện kích hoạt."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1140",
+  "word": "regression test",
+  "nghia": "Kiểm thử hồi quy",
+  "dinhnghia": "Test được chạy lại sau khi có thay đổi (sửa lỗi, thêm tính năng, đổi môi trường) để phát hiện thay đổi đó có làm hỏng các phần trước đây vẫn chạy đúng hay không."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-25",
+  "word": "testing",
+  "nghia": "Kiểm thử (phần mềm)",
+  "dinhnghia": "Tập hợp các hoạt động (tĩnh và động) nhằm phát hiện defect và đánh giá chất lượng sản phẩm, gồm cả xác minh yêu cầu và thẩm định nhu cầu người dùng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-268",
+  "word": "acceptance test-driven development",
+  "nghia": "Phát triển hướng kiểm thử chấp nhận (viết tắt ATDD)",
+  "dinhnghia": "Cách tiếp cận test-first: khách hàng, dev và tester cùng viết acceptance test từ acceptance criteria trước khi phát triển user story, rồi dùng chúng để dẫn dắt việc code."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-299",
+  "word": "experience-based test technique",
+  "nghia": "Kỹ thuật kiểm thử dựa trên kinh nghiệm",
+  "dinhnghia": "Nhóm kỹ thuật thiết kế test dựa vào kiến thức, kinh nghiệm và trực giác của tester, như error guessing, exploratory testing và checklist-based testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-0",
+  "word": "coverage",
+  "nghia": "Độ bao phủ",
+  "dinhnghia": "Mức độ (thường tính bằng %) mà các coverage item như dòng code, nhánh, yêu cầu đã được bộ test chạm tới; dùng để đo độ kỹ lưỡng của kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1",
+  "word": "debugging",
+  "nghia": "Gỡ lỗi",
+  "dinhnghia": "Hoạt động phát triển (không phải kiểm thử) nhằm tìm nguyên nhân của failure, phân tích và sửa defect tương ứng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-2",
+  "word": "defect",
+  "nghia": "Khiếm khuyết, lỗi trong sản phẩm (còn gọi là fault/bug)",
+  "dinhnghia": "Điểm sai hoặc thiếu sót nằm trong sản phẩm (code, tài liệu…) khiến nó không đáp ứng yêu cầu; khi được thực thi có thể gây ra failure."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-5",
+  "word": "quality",
+  "nghia": "Chất lượng (của phần mềm)",
+  "dinhnghia": "Mức độ một sản phẩm hoặc work product thỏa mãn các nhu cầu được nêu rõ và ngầm định của các bên liên quan."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-6",
+  "word": "quality assurance",
+  "nghia": "Đảm bảo chất lượng (QA)",
+  "dinhnghia": "Cách tiếp cận hướng vào quy trình và mang tính phòng ngừa: cải tiến cách làm việc để ngăn defect xuất hiện, thay vì đi tìm lỗi trong sản phẩm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-7",
+  "word": "root cause",
+  "nghia": "Nguyên nhân gốc rễ",
+  "dinhnghia": "Lý do cơ bản sâu xa khiến một vấn đề (error, defect) xảy ra; loại bỏ nó sẽ ngăn các lỗi tương tự lặp lại."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-9",
+  "word": "test basis",
+  "nghia": "Cơ sở kiểm thử",
+  "dinhnghia": "Toàn bộ thông tin dùng làm căn cứ cho test analysis và test design, như yêu cầu, user story, tài liệu thiết kế, code hay chính hệ thống."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-10",
+  "word": "test case",
+  "nghia": "Ca kiểm thử",
+  "dinhnghia": "Tập gồm điều kiện tiên quyết, dữ liệu đầu vào, các bước, kết quả mong đợi và điều kiện sau, được thiết kế để kiểm tra một test condition cụ thể."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-11",
+  "word": "test completion",
+  "nghia": "Kết thúc/hoàn tất kiểm thử",
+  "dinhnghia": "Hoạt động diễn ra ở mốc dự án (kết thúc mức test, iteration, release): đóng lại defect còn mở, lưu trữ testware, dọn môi trường, rút kinh nghiệm và lập báo cáo hoàn tất."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-13",
+  "word": "test control",
+  "nghia": "Kiểm soát kiểm thử",
+  "dinhnghia": "Hoạt động đưa ra và thực hiện các hành động điều chỉnh, dựa trên thông tin từ test monitoring, để kiểm thử bám đúng mục tiêu và kế hoạch."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-18",
+  "word": "test monitoring",
+  "nghia": "Giám sát kiểm thử",
+  "dinhnghia": "Hoạt động liên tục thu thập thông tin, đo tiến độ thực tế và so với kế hoạch kiểm thử, đánh giá mức đạt exit criteria để phục vụ báo cáo và test control."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-23",
+  "word": "test process",
+  "nghia": "Quy trình kiểm thử",
+  "dinhnghia": "Tập các hoạt động kiểm thử: test planning, monitoring & control, analysis, design, implementation, execution và completion; được điều chỉnh tùy bối cảnh dự án."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-24",
+  "word": "test result",
+  "nghia": "Kết quả kiểm thử",
+  "dinhnghia": "Kết cục của việc thực thi một test (pass, fail, blocked…), có được sau khi so sánh kết quả thực tế với kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-26",
+  "word": "testware",
+  "nghia": "Sản phẩm phụ trợ của kiểm thử",
+  "dinhnghia": "Mọi work product tạo ra trong quá trình kiểm thử như test plan, test case, script, test data, log, báo cáo; cần được quản lý cấu hình và có thể tái sử dụng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-27",
+  "word": "traceability",
+  "nghia": "Khả năng truy vết",
+  "dinhnghia": "Mối liên kết hai chiều giữa test basis và testware (yêu cầu ↔ test case ↔ kết quả ↔ defect), giúp đánh giá độ bao phủ, phân tích tác động thay đổi và phục vụ audit."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-28",
+  "word": "validation",
+  "nghia": "Thẩm định",
+  "dinhnghia": "Kiểm tra xem hệ thống có đáp ứng nhu cầu thực của người dùng và các bên liên quan trong môi trường vận hành hay không (làm đúng sản phẩm cần làm)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-29",
+  "word": "verification",
+  "nghia": "Xác minh",
+  "dinhnghia": "Kiểm tra, dựa trên bằng chứng khách quan, xem sản phẩm có đáp ứng đúng các yêu cầu đã đặc tả hay không (làm sản phẩm đúng cách)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-43",
+  "word": "requirement",
+  "nghia": "Yêu cầu (chức năng/phi chức năng của hệ thống)",
+  "dinhnghia": "Điều kiện hoặc khả năng mà hệ thống phải có để thỏa mãn nhu cầu của người dùng, hợp đồng, tiêu chuẩn hay quy định; là nguồn test basis chính."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-45",
+  "word": "operational environment",
+  "nghia": "Môi trường vận hành",
+  "dinhnghia": "Môi trường thực tế (phần cứng, phần mềm, mạng, dữ liệu, người dùng) nơi hệ thống được triển khai và sử dụng hằng ngày, khác với môi trường test hay staging."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-46",
+  "word": "dynamic",
+  "nghia": "Động (kiểm thử có chạy phần mềm)",
+  "dinhnghia": "Dynamic testing là kiểm thử có thực thi phần mềm đang test, quan sát kết quả chạy để phát hiện failure."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-47",
+  "word": "static",
+  "nghia": "Tĩnh (kiểm thử không chạy phần mềm)",
+  "dinhnghia": "Static testing là kiểm thử không thực thi phần mềm, gồm review và static analysis các work product (yêu cầu, thiết kế, code) để tìm defect trực tiếp."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-54",
+  "word": "user story",
+  "nghia": "User story (mô tả ngắn một tính năng theo góc nhìn người dùng, hay dùng trong Agile)",
+  "dinhnghia": "Mô tả yêu cầu dạng \"As a…, I want…, so that…\", gồm 3C: Card, Conversation, Confirmation (acceptance criteria); nên đáp ứng tiêu chí INVEST."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-72",
+  "word": "quality control",
+  "nghia": "Kiểm soát chất lượng (QC)",
+  "dinhnghia": "Cách tiếp cận hướng vào sản phẩm và mang tính khắc phục: dùng testing và các hoạt động khác để đánh giá sản phẩm, tìm defect giúp đạt mức chất lượng mong muốn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-79",
+  "word": "release",
+  "nghia": "Bản phát hành / việc phát hành",
+  "dinhnghia": "Một phiên bản cụ thể của sản phẩm (hoặc việc đưa nó ra) được bàn giao cho người dùng hay môi trường vận hành, thường sau khi đạt các tiêu chí kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-90",
+  "word": "fault",
+  "nghia": "Lỗi (đồng nghĩa defect/bug)",
+  "dinhnghia": "Tên gọi khác của defect: điểm sai hoặc thiếu sót nằm trong work product, khi thực thi có thể gây ra failure."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-91",
+  "word": "bug",
+  "nghia": "Bug, con lỗi (cách gọi thông dụng của defect)",
+  "dinhnghia": "Cách gọi không chính thức của defect: một chỗ sai trong code hay tài liệu khiến sản phẩm có thể hoạt động không như yêu cầu."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-116",
+  "word": "component",
+  "nghia": "Thành phần, cấu phần (của hệ thống)",
+  "dinhnghia": "Một phần của hệ thống có thể kiểm thử riêng lẻ (module, class, service…); là đối tượng của component testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-140",
+  "word": "coverage criteria",
+  "nghia": "Tiêu chí bao phủ",
+  "dinhnghia": "Các mục tiêu đo được về độ bao phủ (ví dụ 100% nhánh, mọi yêu cầu có ít nhất một test) dùng để quyết định thiết kế bao nhiêu test và khi nào đủ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-153",
+  "word": "product backlog item",
+  "nghia": "Hạng mục trong product backlog (danh sách việc cần làm của sản phẩm)",
+  "dinhnghia": "Một mục công việc (user story, bug, nâng cấp kỹ thuật…) nằm trong danh sách ưu tiên của sản phẩm, chờ được chọn vào iteration để phát triển và kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-173",
+  "word": "stub",
+  "nghia": "Stub",
+  "dinhnghia": "Thành phần thay thế đơn giản cho một component mà component đang test gọi tới nhưng chưa có hoặc không dùng được, trả về kết quả giả lập."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-174",
+  "word": "driver",
+  "nghia": "Driver",
+  "dinhnghia": "Thành phần thay thế đóng vai bên gọi: gọi tới và điều khiển component đang được test khi component gọi thật chưa có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-175",
+  "word": "simulator",
+  "nghia": "Trình mô phỏng",
+  "dinhnghia": "Thiết bị, chương trình hoặc hệ thống dùng trong kiểm thử, hoạt động giống hệt hệ thống thật khi nhận cùng đầu vào, giúp test an toàn và rẻ hơn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-176",
+  "word": "service virtualization",
+  "nghia": "Ảo hóa dịch vụ",
+  "dinhnghia": "Kỹ thuật tạo bản giả lập hành vi của các dịch vụ phụ thuộc (API, hệ thống bên ngoài) chưa sẵn sàng hoặc khó truy cập, để có thể test sớm và độc lập."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-180",
+  "word": "residual risk",
+  "nghia": "Rủi ro còn sót lại",
+  "dinhnghia": "Mức rủi ro vẫn còn sau khi đã kiểm thử và áp dụng các biện pháp giảm thiểu; được báo cáo để các bên quyết định có chấp nhận release hay không."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-210",
+  "word": "confirmation bias",
+  "nghia": "Thiên kiến xác nhận",
+  "dinhnghia": "Xu hướng chỉ chấp nhận thông tin khớp với niềm tin sẵn có; khiến dev khó chấp nhận code mình có lỗi và tester dễ bỏ qua dấu hiệu trái ý."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-213",
+  "word": "whole team approach",
+  "nghia": "Cách tiếp cận \"cả đội cùng lo chất lượng\"",
+  "dinhnghia": "Cách làm trong đó mọi thành viên có kỹ năng phù hợp đều có thể làm mọi việc và cùng chịu trách nhiệm về chất lượng; tester cộng tác chặt với dev và business."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-221",
+  "word": "independence",
+  "nghia": "Tính độc lập (của người test so với người viết code)",
+  "dinhnghia": "Independence of testing: mức độ tách biệt giữa người test và tác giả sản phẩm (từ tự test đến đội ngoài tổ chức), giúp giảm thiên kiến nhưng có thể gây cô lập, thành nút cổ chai."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-222",
+  "word": "cognitive bias",
+  "nghia": "Thiên kiến nhận thức",
+  "dinhnghia": "Lối tư duy lệch có hệ thống của con người (như confirmation bias) khiến tác giả khó thấy lỗi trong sản phẩm của chính mình; là lý do cần kiểm thử độc lập."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-235",
+  "word": "acceptance testing",
+  "nghia": "Kiểm thử chấp nhận",
+  "dinhnghia": "Mức kiểm thử nhằm xác nhận hệ thống đáp ứng nhu cầu người dùng, yêu cầu nghiệp vụ và sẵn sàng để triển khai; thường do khách hàng/người dùng cuối thực hiện (UAT, OAT, alpha, beta)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-236",
+  "word": "black-box testing",
+  "nghia": "Kiểm thử hộp đen",
+  "dinhnghia": "Kiểm thử dựa trên đặc tả hành vi của hệ thống (đầu vào → đầu ra), không dựa vào cấu trúc code bên trong."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-237",
+  "word": "component integration testing",
+  "nghia": "Kiểm thử tích hợp thành phần",
+  "dinhnghia": "Mức kiểm thử tập trung vào giao diện và tương tác giữa các component; phụ thuộc vào chiến lược tích hợp (top-down, bottom-up, big-bang)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-238",
+  "word": "component testing",
+  "nghia": "Kiểm thử thành phần (còn gọi unit testing)",
+  "dinhnghia": "Mức kiểm thử tập trung vào từng component riêng lẻ, thường do developer thực hiện trong môi trường phát triển, hay cần test harness, stub, driver."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-239",
+  "word": "confirmation testing",
+  "nghia": "Kiểm thử xác nhận",
+  "dinhnghia": "Kiểm thử lại sau khi sửa lỗi để xác nhận defect gốc đã được khắc phục, thường bằng cách chạy lại các test từng fail vì defect đó."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-240",
+  "word": "functional testing",
+  "nghia": "Kiểm thử chức năng",
+  "dinhnghia": "Loại kiểm thử đánh giá các chức năng hệ thống phải thực hiện (\"làm gì\"), xét tính đầy đủ, đúng đắn và phù hợp của chức năng so với đặc tả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-241",
+  "word": "integration testing",
+  "nghia": "Kiểm thử tích hợp",
+  "dinhnghia": "Mức kiểm thử tập trung vào giao diện và tương tác giữa các thành phần hoặc hệ thống khi được ghép lại; gồm component integration testing và system integration testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-242",
+  "word": "maintenance testing",
+  "nghia": "Kiểm thử bảo trì",
+  "dinhnghia": "Kiểm thử hệ thống đang vận hành khi có thay đổi (sửa lỗi, nâng cấp, chuyển đổi môi trường, ngừng sử dụng), gồm kiểm tra thay đổi và regression testing theo phân tích tác động."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-243",
+  "word": "non-functional testing",
+  "nghia": "Kiểm thử phi chức năng",
+  "dinhnghia": "Loại kiểm thử đánh giá hệ thống hoạt động \"tốt đến đâu\": các đặc tính như hiệu năng, bảo mật, độ tin cậy, khả dụng, tương thích, khả năng bảo trì."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-244",
+  "word": "regression testing",
+  "nghia": "Kiểm thử hồi quy",
+  "dinhnghia": "Kiểm thử lại sau khi có thay đổi để đảm bảo thay đổi đó không gây tác dụng phụ xấu lên các phần trước đây vẫn chạy đúng; rất phù hợp để tự động hóa."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-245",
+  "word": "shift left",
+  "nghia": "Dịch trái",
+  "dinhnghia": "Cách tiếp cận đưa hoạt động kiểm thử lên sớm hơn trong vòng đời phát triển (review yêu cầu, viết test trước code…) để phát hiện lỗi sớm và rẻ hơn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-246",
+  "word": "system integration testing",
+  "nghia": "Kiểm thử tích hợp hệ thống",
+  "dinhnghia": "Mức kiểm thử tập trung vào giao diện và tương tác giữa hệ thống đang test với các hệ thống, dịch vụ bên ngoài (cổng thanh toán, API đối tác…)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-247",
+  "word": "system testing",
+  "nghia": "Kiểm thử hệ thống",
+  "dinhnghia": "Mức kiểm thử đánh giá hành vi và khả năng tổng thể của cả hệ thống hoàn chỉnh (chức năng lẫn phi chức năng), thường do đội test độc lập thực hiện trên môi trường gần giống thật."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-248",
+  "word": "test level",
+  "nghia": "Cấp độ kiểm thử",
+  "dinhnghia": "Nhóm hoạt động kiểm thử được tổ chức và quản lý cùng nhau, gắn với một giai đoạn phát triển: component, component integration, system, system integration, acceptance."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-249",
+  "word": "test object",
+  "nghia": "Đối tượng kiểm thử",
+  "dinhnghia": "Work product hoặc phần hệ thống đang được kiểm thử (component, tính năng, tài liệu…), khác nhau theo từng test level."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-250",
+  "word": "test type",
+  "nghia": "Loại kiểm thử",
+  "dinhnghia": "Nhóm hoạt động kiểm thử hướng tới các đặc tính chất lượng cụ thể: functional, non-functional, black-box, white-box; có thể áp dụng ở mọi test level."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-252",
+  "word": "software development lifecycle",
+  "nghia": "Vòng đời phát triển phần mềm (viết tắt SDLC)",
+  "dinhnghia": "Toàn bộ các giai đoạn phần mềm trải qua từ lúc hình thành ý tưởng, phân tích, thiết kế, phát triển, kiểm thử, triển khai đến bảo trì và ngừng sử dụng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-253",
+  "word": "SDLC model",
+  "nghia": "Mô hình vòng đời phát triển phần mềm",
+  "dinhnghia": "Biểu diễn trừu tượng, mức cao của SDLC, mô tả các giai đoạn, hoạt động và mối quan hệ giữa chúng (ví dụ waterfall, V-model, iterative, incremental)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-259",
+  "word": "sequential development model",
+  "nghia": "Mô hình phát triển tuần tự",
+  "dinhnghia": "Nhóm mô hình SDLC chạy tuyến tính, pha sau chỉ bắt đầu khi pha trước xong (waterfall, V-model); phần mềm chạy được thường chỉ có ở các pha cuối."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-260",
+  "word": "waterfall model",
+  "nghia": "Mô hình thác nước",
+  "dinhnghia": "Mô hình tuần tự điển hình: yêu cầu → thiết kế → code → test → triển khai, mỗi pha làm một lần; kiểm thử thường dồn về cuối nên khó đáp ứng thay đổi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-261",
+  "word": "V-model",
+  "nghia": "Mô hình chữ V",
+  "dinhnghia": "Mô hình tuần tự trong đó mỗi pha phát triển (yêu cầu, thiết kế…) ứng với một test level, cho phép lập kế hoạch và thiết kế test sớm ngay từ pha tương ứng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-262",
+  "word": "iterative development model",
+  "nghia": "Mô hình phát triển lặp",
+  "dinhnghia": "Mô hình SDLC trong đó sản phẩm được xây qua nhiều vòng lặp, mỗi vòng đều có đặc tả, thiết kế, code, test và cho ra một bản chạy được để lấy phản hồi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-263",
+  "word": "spiral model",
+  "nghia": "Mô hình xoắn ốc",
+  "dinhnghia": "Mô hình phát triển lặp, mỗi vòng xoắn gồm lập kế hoạch, phân tích rủi ro, phát triển và đánh giá; ưu tiên xử lý rủi ro lớn nhất trước."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-265",
+  "word": "incremental development model",
+  "nghia": "Mô hình phát triển tăng dần",
+  "dinhnghia": "Mô hình SDLC trong đó hệ thống được xây và bàn giao thành từng phần (increment), mỗi phần bổ sung tính năng mới lên các phần đã có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-251",
+  "word": "white-box testing",
+  "nghia": "Kiểm thử hộp trắng",
+  "dinhnghia": "Kiểm thử dựa trên cấu trúc bên trong hoặc cách hiện thực của hệ thống (code, kiến trúc, luồng dữ liệu), đo bằng độ bao phủ như statement, branch coverage."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-276",
+  "word": "test-driven development",
+  "nghia": "Phát triển hướng kiểm thử (viết tắt TDD)",
+  "dinhnghia": "Cách tiếp cận test-first ở mức code: viết test (thường unit test) trước, viết code vừa đủ để test pass, rồi refactor; lặp lại cho từng phần nhỏ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-287",
+  "word": "test analysis",
+  "nghia": "Phân tích kiểm thử",
+  "dinhnghia": "Hoạt động phân tích test basis để xác định các tính năng kiểm thử được và test condition (\"test cái gì\"), đồng thời phát hiện defect trong chính test basis."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-294",
+  "word": "product increment",
+  "nghia": "Phần sản phẩm tăng thêm (kết quả của một iteration)",
+  "dinhnghia": "Phần sản phẩm chạy được, đã kiểm thử và đạt Definition of Done, được tạo ra sau một iteration và cộng dồn vào các increment trước đó."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-309",
+  "word": "acceptance criteria",
+  "nghia": "Tiêu chí chấp nhận",
+  "dinhnghia": "Các điều kiện mà một sản phẩm/user story phải thỏa mãn để được stakeholder chấp nhận; là cơ sở để thiết kế acceptance test và xác định khi nào chức năng được coi là xong."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-310",
+  "word": "refactor",
+  "nghia": "Tái cấu trúc code",
+  "dinhnghia": "Cải thiện cấu trúc bên trong của code (dễ đọc, dễ bảo trì hơn) mà không làm thay đổi hành vi bên ngoài; trong TDD được làm sau khi test đã pass, có regression test bảo vệ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-321",
+  "word": "continuous integration",
+  "nghia": "Tích hợp liên tục (viết tắt CI)",
+  "dinhnghia": "Thực hành trong đó dev merge code vào nhánh chung thường xuyên, mỗi lần merge đều tự động build và chạy test để phát hiện lỗi tích hợp sớm; là nền tảng của DevOps."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-327",
+  "word": "quality characteristic",
+  "nghia": "Đặc tính chất lượng",
+  "dinhnghia": "Một nhóm thuộc tính của sản phẩm dùng để đánh giá chất lượng theo mô hình ISO/IEC 25010, ví dụ functional suitability, performance efficiency, reliability, security, maintainability."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-329",
+  "word": "reliability",
+  "nghia": "Độ tin cậy",
+  "dinhnghia": "Đặc tính chất lượng thể hiện mức độ hệ thống thực hiện đúng chức năng trong điều kiện xác định và trong một khoảng thời gian xác định mà không gặp failure."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-335",
+  "word": "specification",
+  "nghia": "Đặc tả",
+  "dinhnghia": "Tài liệu mô tả yêu cầu, thiết kế, hành vi hoặc đặc tính của một thành phần/hệ thống; thường là test basis để thiết kế test và đối chiếu kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-339",
+  "word": "test harness",
+  "nghia": "Bộ khung kiểm thử",
+  "dinhnghia": "Tập hợp các stub, driver và công cụ cần thiết để chạy test cho một thành phần khi các phần liên quan chưa có sẵn, thường dùng trong component testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-344",
+  "word": "retrospective",
+  "nghia": "Buổi nhìn lại",
+  "dinhnghia": "Buổi họp cuối iteration/release/dự án để cả team thảo luận điều gì làm tốt, điều gì chưa tốt và cách cải thiện; giúp cải tiến liên tục quy trình phát triển và kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-357",
+  "word": "system of systems",
+  "nghia": "Hệ thống của các hệ thống",
+  "dinhnghia": "Tập hợp nhiều hệ thống độc lập (thường do các bên khác nhau phát triển) được tích hợp để cùng cung cấp một năng lực lớn hơn; việc kiểm thử tích hợp giữa chúng phức tạp và nhiều rủi ro."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-362",
+  "word": "unit testing",
+  "nghia": "Kiểm thử đơn vị (tên gọi khác của component testing)",
+  "dinhnghia": "Mức kiểm thử tập trung vào từng thành phần riêng lẻ (hàm, class, module) một cách độc lập, thường do dev thực hiện trong môi trường phát triển với unit test framework và test harness."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-368",
+  "word": "integration strategy",
+  "nghia": "Chiến lược tích hợp",
+  "dinhnghia": "Cách xác định thứ tự ghép các thành phần/hệ thống lại với nhau và kiểm thử tích hợp (top-down, bottom-up, big-bang…), thường dựa trên kiến trúc và rủi ro."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-369",
+  "word": "bottom-up",
+  "nghia": "Từ dưới lên",
+  "dinhnghia": "Cách tích hợp bắt đầu từ các thành phần cấp thấp nhất rồi ghép dần lên cấp cao hơn; cần dùng driver để gọi thay cho các thành phần cấp trên chưa có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-370",
+  "word": "top-down",
+  "nghia": "Từ trên xuống",
+  "dinhnghia": "Cách tích hợp bắt đầu từ thành phần cấp cao nhất rồi ghép dần xuống các cấp thấp hơn; cần dùng stub thay thế cho các thành phần cấp dưới chưa có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-371",
+  "word": "big-bang",
+  "nghia": "Kiểu vụ nổ lớn",
+  "dinhnghia": "Cách tích hợp ghép tất cả thành phần cùng một lúc rồi mới kiểm thử; ít tốn công chuẩn bị nhưng khi có failure thì rất khó khoanh vùng nguyên nhân."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-376",
+  "word": "system under test",
+  "nghia": "Hệ thống đang được kiểm thử (viết tắt SUT)",
+  "dinhnghia": "Hệ thống đóng vai trò test object, tức đối tượng đang được kiểm thử trong một hoạt động kiểm thử cụ thể."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-385",
+  "word": "operational acceptance testing",
+  "nghia": "Kiểm thử chấp nhận vận hành",
+  "dinhnghia": "Kiểm thử chấp nhận do đội vận hành/quản trị hệ thống thực hiện, xác nhận hệ thống sẵn sàng vận hành: backup và khôi phục, cài đặt, nâng cấp, bảo trì, giám sát, khôi phục sau thảm họa."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-386",
+  "word": "contractual acceptance testing",
+  "nghia": "Kiểm thử chấp nhận theo hợp đồng",
+  "dinhnghia": "Kiểm thử chấp nhận đối chiếu với các tiêu chí chấp nhận đã ghi trong hợp đồng giữa khách hàng và bên phát triển, thường áp dụng khi phần mềm được làm theo đơn đặt hàng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-387",
+  "word": "regulatory acceptance testing",
+  "nghia": "Kiểm thử chấp nhận theo quy định pháp lý",
+  "dinhnghia": "Kiểm thử chấp nhận nhằm xác nhận hệ thống tuân thủ luật, quy định hoặc tiêu chuẩn an toàn của cơ quan quản lý (ví dụ ngân hàng, y tế, hàng không)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-388",
+  "word": "alpha testing",
+  "nghia": "Kiểm thử alpha",
+  "dinhnghia": "Kiểm thử chấp nhận do người dùng/khách hàng tiềm năng hoặc đội test độc lập thực hiện tại môi trường của tổ chức phát triển, trước khi phát hành ra bên ngoài."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-389",
+  "word": "beta testing",
+  "nghia": "Kiểm thử beta",
+  "dinhnghia": "Kiểm thử chấp nhận do người dùng thật thực hiện tại môi trường của chính họ (ngoài tổ chức phát triển), nhằm thu phản hồi và phát hiện failure trước khi phát hành chính thức."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-393",
+  "word": "functional completeness",
+  "nghia": "Tính đầy đủ chức năng",
+  "dinhnghia": "Đặc tính con của functional suitability (ISO 25010): mức độ các chức năng của hệ thống bao phủ toàn bộ tác vụ và mục tiêu người dùng đã được xác định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-394",
+  "word": "functional correctness",
+  "nghia": "Tính đúng đắn chức năng",
+  "dinhnghia": "Đặc tính con của functional suitability (ISO 25010): mức độ hệ thống cho ra kết quả đúng, với độ chính xác cần thiết."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-395",
+  "word": "functional appropriateness",
+  "nghia": "Tính phù hợp chức năng",
+  "dinhnghia": "Đặc tính con của functional suitability (ISO 25010): mức độ các chức năng giúp người dùng hoàn thành tác vụ và mục tiêu một cách thuận tiện, không thừa bước."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-400",
+  "word": "interaction capability",
+  "nghia": "Khả năng tương tác (tên gọi khác của usability)",
+  "dinhnghia": "Đặc tính chất lượng (tên mới của usability trong ISO 25010:2023): mức độ người dùng có thể tương tác với sản phẩm để hoàn thành tác vụ một cách hiệu quả, dễ học và dễ dùng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-399",
+  "word": "usability",
+  "nghia": "Tính khả dụng, dễ dùng",
+  "dinhnghia": "Đặc tính chất lượng thể hiện mức độ người dùng xác định có thể sử dụng sản phẩm để đạt mục tiêu một cách hiệu quả, hiệu suất và hài lòng; nay được gọi là interaction capability."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-403",
+  "word": "portability",
+  "nghia": "Tính khả chuyển",
+  "dinhnghia": "Đặc tính chất lượng thể hiện mức độ dễ dàng chuyển hệ thống sang phần cứng, phần mềm hoặc môi trường vận hành khác (cài đặt, thích ứng, thay thế); nay được gọi là flexibility."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-404",
+  "word": "flexibility",
+  "nghia": "Tính linh hoạt (tên gọi khác của portability)",
+  "dinhnghia": "Đặc tính chất lượng (tên mới của portability trong ISO 25010:2023): khả năng sản phẩm thích ứng với thay đổi yêu cầu, bối cảnh sử dụng hoặc môi trường hệ thống."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-405",
+  "word": "safety",
+  "nghia": "Tính an toàn",
+  "dinhnghia": "Đặc tính chất lượng (mới trong ISO 25010:2023): khả năng sản phẩm tránh gây nguy hiểm cho tính mạng, sức khỏe, tài sản hoặc môi trường trong điều kiện xác định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-424",
+  "word": "impact analysis",
+  "nghia": "Phân tích tác động",
+  "dinhnghia": "Việc xác định các phần của hệ thống có thể bị ảnh hưởng bởi một thay đổi và hệ quả của nó; dùng để quyết định phạm vi regression testing, đặc biệt trong maintenance testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-426",
+  "word": "regression test suite",
+  "nghia": "Bộ kiểm thử hồi quy",
+  "dinhnghia": "Tập hợp test case được chạy lại sau mỗi thay đổi để phát hiện tác dụng phụ ngoài ý muốn ở phần không đổi; được chạy nhiều lần nên rất hợp để tự động hóa."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-434",
+  "word": "hotfix",
+  "nghia": "Bản vá nóng",
+  "dinhnghia": "Bản sửa lỗi khẩn cấp được phát hành ngoài kế hoạch cho hệ thống đang vận hành để khắc phục nhanh sự cố nghiêm trọng; cần confirmation và regression testing dù thời gian rất gấp."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-450",
+  "word": "anomaly",
+  "nghia": "Điểm bất thường, sai lệch (chưa chắc là defect, cần phân tích thêm)",
+  "dinhnghia": "Bất kỳ điều kiện nào khác với mong đợi dựa trên yêu cầu, đặc tả, tiêu chuẩn hay kinh nghiệm; được ghi nhận trong review hoặc khi chạy test rồi phân tích xem có phải defect thật không."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-451",
+  "word": "dynamic testing",
+  "nghia": "Kiểm thử động",
+  "dinhnghia": "Kiểm thử bằng cách thực thi phần mềm đang được kiểm thử để quan sát hành vi, gây ra failure và đánh giá các đặc tính như hiệu năng; bổ sung cho static testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-452",
+  "word": "formal review",
+  "nghia": "Review chính thức",
+  "dinhnghia": "Loại review tuân theo quy trình được định nghĩa, có vai trò rõ ràng, tiêu chí đầu vào/ra và kết quả được ghi thành tài liệu; ví dụ technical review, inspection."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-453",
+  "word": "informal review",
+  "nghia": "Review không chính thức",
+  "dinhnghia": "Loại review không theo quy trình định sẵn và không bắt buộc ghi lại kết quả; mục tiêu chính là phát hiện anomaly nhanh, ví dụ nhờ đồng nghiệp xem qua code."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-454",
+  "word": "inspection",
+  "nghia": "Inspection",
+  "dinhnghia": "Loại review chính thức nhất, theo quy trình đầy đủ với các vai trò và metrics; nhằm tìm tối đa anomaly, đồng thời đánh giá chất lượng và cải tiến quy trình. Author không được làm review leader hay scribe."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-455",
+  "word": "review",
+  "nghia": "Rà soát, xem xét work product",
+  "dinhnghia": "Một dạng static testing trong đó một hoặc nhiều người kiểm tra work product (yêu cầu, thiết kế, code, test…) để phát hiện anomaly, đánh giá chất lượng và tạo hiểu biết chung."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-456",
+  "word": "static analysis",
+  "nghia": "Phân tích tĩnh",
+  "dinhnghia": "Hoạt động dùng công cụ để đánh giá code hoặc work product có cú pháp hình thức mà không thực thi chúng, giúp phát hiện defect như biến chưa khai báo, code không chạy tới, lỗ hổng bảo mật."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-457",
+  "word": "static testing",
+  "nghia": "Kiểm thử tĩnh",
+  "dinhnghia": "Kiểm thử work product mà không thực thi phần mềm, gồm review (thủ công) và static analysis (dùng tool); giúp phát hiện defect sớm, kể cả trong tài liệu không chạy được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-458",
+  "word": "technical review",
+  "nghia": "Review kỹ thuật",
+  "dinhnghia": "Loại review chính thức do các reviewer có chuyên môn kỹ thuật thực hiện, có moderator dẫn dắt; nhằm đạt đồng thuận và ra quyết định về vấn đề kỹ thuật, đồng thời phát hiện anomaly."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-459",
+  "word": "walkthrough",
+  "nghia": "Walkthrough",
+  "dinhnghia": "Loại review do author dẫn dắt, trình bày work product cho người tham gia; mục tiêu có thể là đào tạo, tạo đồng thuận, sinh ý tưởng hoặc phát hiện anomaly."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-461",
+  "word": "software under test",
+  "nghia": "Phần mềm đang được kiểm thử",
+  "dinhnghia": "Phần mềm đóng vai trò test object trong một hoạt động kiểm thử, tức thành phần hoặc hệ thống mà test đang nhắm tới."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-462",
+  "word": "work product",
+  "nghia": "Sản phẩm công việc",
+  "dinhnghia": "Bất kỳ kết quả nào được tạo ra trong quá trình phát triển hoặc kiểm thử, như tài liệu yêu cầu, thiết kế, code, test plan, test case, báo cáo; đều có thể được review."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-467",
+  "word": "test objective",
+  "nghia": "Mục tiêu kiểm thử",
+  "dinhnghia": "Lý do hoặc mục đích của việc kiểm thử, ví dụ phát hiện defect, xác nhận yêu cầu được đáp ứng, tạo niềm tin vào chất lượng, giảm rủi ro hoặc cung cấp thông tin để ra quyết định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-479",
+  "word": "Product Owner",
+  "nghia": "Product Owner",
+  "dinhnghia": "Vai trò đại diện khách hàng/nghiệp vụ trong team Agile, chịu trách nhiệm quản lý và ưu tiên product backlog, làm rõ user story và acceptance criteria để tối đa giá trị sản phẩm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-481",
+  "word": "example mapping",
+  "nghia": "Example mapping",
+  "dinhnghia": "Kỹ thuật cộng tác (thường gồm business, dev, tester) dùng thẻ để phân rã user story thành các rule, ví dụ cụ thể và câu hỏi mở; giúp làm rõ acceptance criteria."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-484",
+  "word": "backlog refinement",
+  "nghia": "Backlog refinement",
+  "dinhnghia": "Hoạt động định kỳ trong Agile để team cùng làm rõ, ước lượng, chia nhỏ và sắp xếp ưu tiên các hạng mục trong product backlog, giúp story đạt Definition of Ready."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-485",
+  "word": "Definition of Ready",
+  "nghia": "Definition of Ready",
+  "dinhnghia": "Bộ tiêu chí team thống nhất mà một user story phải thỏa mãn mới được đưa vào iteration (rõ ràng, có acceptance criteria, đã ước lượng…); đóng vai trò entry criteria."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-493",
+  "word": "maintainability",
+  "nghia": "Khả năng bảo trì",
+  "dinhnghia": "Đặc tính chất lượng thể hiện mức độ dễ dàng chỉnh sửa sản phẩm để sửa lỗi, cải tiến hoặc thích ứng thay đổi; gồm modularity, reusability, analysability, modifiability, testability."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-494",
+  "word": "security",
+  "nghia": "Bảo mật, an ninh",
+  "dinhnghia": "Đặc tính chất lượng thể hiện mức độ hệ thống bảo vệ thông tin và dữ liệu, để người dùng hay hệ thống chỉ truy cập được đúng phạm vi quyền của mình; gồm bảo mật, toàn vẹn, xác thực…"
+ },
+ {
+  "id": "istqb-ctfl-1752400000-501",
+  "word": "test charter",
+  "nghia": "Test charter",
+  "dinhnghia": "Tài liệu ngắn mô tả mục tiêu, phạm vi và định hướng cho một phiên exploratory testing có giới hạn thời gian (session-based), giúp tester tập trung và báo cáo kết quả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-507",
+  "word": "SDLC",
+  "nghia": "SDLC — vòng đời phát triển phần mềm (Software Development Lifecycle)",
+  "dinhnghia": "Chuỗi các giai đoạn mà phần mềm trải qua từ ý tưởng, yêu cầu, thiết kế, lập trình, kiểm thử đến triển khai, vận hành và loại bỏ; có nhiều mô hình như waterfall, V-model, Agile."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-508",
+  "word": "early testing",
+  "nghia": "Kiểm thử sớm",
+  "dinhnghia": "Nguyên tắc kiểm thử: bắt đầu các hoạt động test (static và dynamic) càng sớm càng tốt trong SDLC, vì defect phát hiện sớm thì rẻ hơn và tránh được lỗi lan truyền về sau."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-509",
+  "word": "unreachable code",
+  "nghia": "Code không bao giờ chạy tới (unreachable/dead code)",
+  "dinhnghia": "Đoạn code không thể được thực thi trong bất kỳ trường hợp nào do logic điều khiển; là loại defect điển hình mà static analysis phát hiện được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-517",
+  "word": "failure",
+  "nghia": "Sự cố, thất bại khi chạy",
+  "dinhnghia": "Hệ thống/thành phần chạy ra kết quả khác với mong đợi — biểu hiện bên ngoài của một defect khi bị kích hoạt."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-521",
+  "word": "performance efficiency",
+  "nghia": "Hiệu năng",
+  "dinhnghia": "Đặc tính chất lượng thể hiện hiệu năng so với lượng tài nguyên sử dụng trong điều kiện xác định, gồm thời gian phản hồi, mức dùng tài nguyên và capacity; chỉ đánh giá được khi chạy code."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-562",
+  "word": "review initiation",
+  "nghia": "Khởi tạo review",
+  "dinhnghia": "Bước trong quy trình review đảm bảo mọi thứ sẵn sàng để bắt đầu: người tham gia được truy cập work product, hiểu vai trò, trách nhiệm và nhận đủ tài liệu cần thiết."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-565",
+  "word": "individual review",
+  "nghia": "Review cá nhân",
+  "dinhnghia": "Bước trong quy trình review mỗi reviewer tự đánh giá work product, áp dụng một hoặc nhiều review technique, rồi ghi lại các anomaly, đề xuất và câu hỏi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-566",
+  "word": "reviewer",
+  "nghia": "Người review, người rà soát",
+  "dinhnghia": "Vai trò trong review: người thực hiện rà soát work product để tìm anomaly; có thể là chuyên gia lĩnh vực, người làm dự án, stakeholder hay người có nền tảng kỹ thuật/nghiệp vụ khác."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-569",
+  "word": "checklist-based reviewing",
+  "nghia": "Review dựa trên checklist",
+  "dinhnghia": "Kỹ thuật review trong đó reviewer phát hiện anomaly dựa trên danh sách câu hỏi/điểm kiểm tra rút ra từ kinh nghiệm và các loại defect thường gặp; checklist cần được cập nhật định kỳ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-570",
+  "word": "scenario-based reviewing",
+  "nghia": "Review dựa trên kịch bản (scenario)",
+  "dinhnghia": "Kỹ thuật review trong đó reviewer được hướng dẫn đi qua work product theo các kịch bản sử dụng cụ thể (như use case), giúp phát hiện defect mà checklist dễ bỏ sót."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-572",
+  "word": "communication and analysis",
+  "nghia": "Trao đổi và phân tích",
+  "dinhnghia": "Bước trong quy trình review nơi các anomaly được trao đổi (thường trong buổi họp), phân tích, gán trạng thái, người chịu trách nhiệm và hành động cần làm; đồng thời quyết định chất lượng work product."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-577",
+  "word": "manager",
+  "nghia": "Quản lý",
+  "dinhnghia": "Vai trò trong review: người quyết định cái gì cần được review và cung cấp nguồn lực như nhân sự, thời gian cho việc review."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-579",
+  "word": "author",
+  "nghia": "Author",
+  "dinhnghia": "Vai trò trong review: người tạo ra work product đang được review và chịu trách nhiệm sửa chữa nó theo các anomaly được ghi nhận."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-580",
+  "word": "moderator",
+  "nghia": "Moderator",
+  "dinhnghia": "Vai trò trong review (còn gọi là facilitator): người đảm bảo các buổi họp review diễn ra hiệu quả, gồm hòa giải bất đồng, quản lý thời gian và tạo môi trường an toàn để mọi người phát biểu."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-581",
+  "word": "facilitator",
+  "nghia": "Người điều phối (tên gọi khác của moderator)",
+  "dinhnghia": "Vai trò trong review: người điều phối để buổi review hiệu quả, dàn xếp bất đồng, giữ thời gian và đảm bảo mọi người có thể thoải mái đóng góp ý kiến."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-583",
+  "word": "scribe",
+  "nghia": "Scribe",
+  "dinhnghia": "Vai trò trong review (còn gọi là recorder): người tổng hợp anomaly từ các reviewer và ghi lại thông tin của buổi review như quyết định và anomaly mới phát hiện trong buổi họp."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-584",
+  "word": "recorder",
+  "nghia": "Người ghi chép (tên gọi khác của scribe)",
+  "dinhnghia": "Vai trò trong review: người gom các anomaly từ reviewer và ghi chép thông tin buổi review, như quyết định đưa ra và anomaly mới tìm thấy."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-587",
+  "word": "review leader",
+  "nghia": "Review leader",
+  "dinhnghia": "Vai trò trong review: người chịu trách nhiệm tổng thể cho buổi review, như quyết định ai tham gia, tổ chức thời gian và địa điểm review."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-612",
+  "word": "test technique",
+  "nghia": "Kỹ thuật kiểm thử",
+  "dinhnghia": "Cách tiếp cận có hệ thống giúp tester phân tích test basis, xác định test condition và thiết kế test case; gồm nhóm black-box, white-box và experience-based."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-667",
+  "word": "boundary value",
+  "nghia": "Giá trị biên",
+  "dinhnghia": "Giá trị nhỏ nhất hoặc lớn nhất của một phân vùng tương đương có thứ tự; là nơi lỗi lập trình hay xuất hiện nên được kiểm tra riêng trong BVA."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-614",
+  "word": "test design",
+  "nghia": "Thiết kế kiểm thử",
+  "dinhnghia": "Hoạt động biến các test condition thành test case: xác định coverage item, dữ liệu test, môi trường cần thiết; trả lời câu hỏi 'test như thế nào'."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-619",
+  "word": "coverage item",
+  "nghia": "Hạng mục độ bao phủ",
+  "dinhnghia": "Thuộc tính hoặc tổ hợp thuộc tính suy ra từ test condition bằng một kỹ thuật kiểm thử (vd một phân vùng, một giá trị biên, một nhánh), dùng làm đơn vị để đo coverage."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-636",
+  "word": "equivalence partition",
+  "nghia": "Phân vùng tương đương",
+  "dinhnghia": "Tập con các giá trị của một phần tử dữ liệu mà đối tượng kiểm thử được kỳ vọng xử lý giống nhau, nên chỉ cần test một giá trị đại diện cho cả nhóm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-622",
+  "word": "black-box test technique",
+  "nghia": "Kỹ thuật kiểm thử hộp đen",
+  "dinhnghia": "Kỹ thuật kiểm thử dựa trên phân tích hành vi đã đặc tả của đối tượng kiểm thử, không tham chiếu cấu trúc bên trong; còn gọi là kỹ thuật dựa trên đặc tả (vd EP, BVA, bảng quyết định)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-628",
+  "word": "white-box test technique",
+  "nghia": "Kỹ thuật kiểm thử hộp trắng",
+  "dinhnghia": "Kỹ thuật kiểm thử dựa trên phân tích cấu trúc bên trong và cách xử lý của đối tượng kiểm thử (code, luồng điều khiển); còn gọi là kỹ thuật dựa trên cấu trúc, vd statement testing, branch testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-634",
+  "word": "equivalence partitioning",
+  "nghia": "Phân vùng tương đương",
+  "dinhnghia": "Kỹ thuật hộp đen chia dữ liệu thành các phân vùng mà mọi phần tử trong đó được xử lý giống nhau, rồi chọn ít nhất một giá trị cho mỗi phân vùng (hợp lệ lẫn không hợp lệ) để giảm test trùng lặp."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-653",
+  "word": "valid partition",
+  "nghia": "Phân vùng hợp lệ",
+  "dinhnghia": "Phân vùng chứa các giá trị mà đối tượng kiểm thử phải chấp nhận và xử lý bình thường theo đặc tả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-654",
+  "word": "invalid partition",
+  "nghia": "Phân vùng không hợp lệ",
+  "dinhnghia": "Phân vùng chứa các giá trị mà đối tượng kiểm thử phải từ chối hoặc bỏ qua; dùng để kiểm tra khả năng xử lý lỗi của hệ thống."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-662",
+  "word": "coverage criterion",
+  "nghia": "Tiêu chí bao phủ",
+  "dinhnghia": "Quy tắc xác định những coverage item nào phải được chạy qua để coi việc kiểm thử theo một kỹ thuật là đủ, vd mỗi phân vùng ít nhất một lần."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-663",
+  "word": "Each Choice coverage",
+  "nghia": "Bao phủ Each Choice",
+  "dinhnghia": "Tiêu chí bao phủ yêu cầu mỗi phân vùng của mỗi tập phân vùng được chạy qua ít nhất một lần, không xét đến tổ hợp giữa các phân vùng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-665",
+  "word": "boundary value analysis",
+  "nghia": "Phân tích giá trị biên",
+  "dinhnghia": "Kỹ thuật hộp đen dựa trên việc chạy qua các giá trị biên của phân vùng có thứ tự (biến thể 2 giá trị hoặc 3 giá trị), vì lỗi lập trình hay xảy ra ở biên."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-676",
+  "word": "decision table testing",
+  "nghia": "Kiểm thử bảng quyết định",
+  "dinhnghia": "Kỹ thuật hộp đen dùng bảng quyết định để kiểm tra cách hệ thống xử lý các tổ hợp điều kiện khác nhau; mỗi cột (luật quyết định) thường trở thành một test case."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-677",
+  "word": "decision table",
+  "nghia": "Bảng quyết định",
+  "dinhnghia": "Bảng biểu diễn các tổ hợp điều kiện (hàng điều kiện) và các hành động tương ứng mà hệ thống phải thực hiện (hàng hành động); mỗi cột là một luật quyết định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-682",
+  "word": "limited-entry decision table",
+  "nghia": "Bảng quyết định mục hạn chế",
+  "dinhnghia": "Bảng quyết định trong đó điều kiện và hành động chỉ nhận giá trị Boolean (T/F đối với điều kiện, X/trống đối với hành động)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-683",
+  "word": "extended-entry decision table",
+  "nghia": "Bảng quyết định mục mở rộng",
+  "dinhnghia": "Bảng quyết định trong đó điều kiện hoặc hành động có thể nhận nhiều giá trị (dải số, phân vùng, giá trị rời rạc) thay vì chỉ đúng/sai."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-689",
+  "word": "full decision table",
+  "nghia": "Bảng quyết định đầy đủ",
+  "dinhnghia": "Bảng quyết định liệt kê mọi tổ hợp có thể của các điều kiện; số cột tăng theo cấp số nhân với số điều kiện nên thường được rút gọn bằng cách bỏ cột bất khả thi, gộp cột."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-695",
+  "word": "risk-based approach",
+  "nghia": "Cách tiếp cận dựa trên rủi ro",
+  "dinhnghia": "Cách tiếp cận trong đó việc lựa chọn, ưu tiên và phân bổ công sức kiểm thử được quyết định dựa trên phân tích rủi ro (khả năng xảy ra và mức tác động)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-681",
+  "word": "decision rule",
+  "nghia": "Luật quyết định",
+  "dinhnghia": "Một cột trong bảng quyết định, gồm một tổ hợp giá trị điều kiện cụ thể cùng các hành động tương ứng; là coverage item của kiểm thử bảng quyết định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-697",
+  "word": "state diagram",
+  "nghia": "Sơ đồ trạng thái",
+  "dinhnghia": "Mô hình biểu diễn các trạng thái có thể có của hệ thống và các chuyển tiếp giữa chúng do sự kiện kích hoạt; là cơ sở của kiểm thử chuyển đổi trạng thái."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-699",
+  "word": "transition",
+  "nghia": "Sự chuyển tiếp (giữa hai trạng thái)",
+  "dinhnghia": "Sự thay đổi từ trạng thái này sang trạng thái khác do một sự kiện kích hoạt, có thể kèm điều kiện canh và một hành động; được gắn nhãn dạng 'event [guard] / action'."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-702",
+  "word": "guard condition",
+  "nghia": "Điều kiện canh",
+  "dinhnghia": "Điều kiện logic gắn với một transition, phải đúng thì transition mới xảy ra khi sự kiện tương ứng diễn ra."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-706",
+  "word": "state table",
+  "nghia": "Bảng trạng thái",
+  "dinhnghia": "Dạng bảng tương đương sơ đồ trạng thái: hàng là trạng thái, cột là sự kiện (kèm guard nếu có), ô chứa trạng thái đích và hành động; ô trống thể hiện chuyển không hợp lệ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-708",
+  "word": "invalid transition",
+  "nghia": "Chuyển trạng thái không hợp lệ",
+  "dinhnghia": "Chuyển trạng thái không được phép theo đặc tả, tức sự kiện xảy ra ở trạng thái không có transition tương ứng; hệ thống phải từ chối hoặc bỏ qua."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-710",
+  "word": "all states coverage",
+  "nghia": "Bao phủ mọi trạng thái",
+  "dinhnghia": "Tiêu chí bao phủ yêu cầu mọi trạng thái trong mô hình được ghé qua ít nhất một lần; là tiêu chí yếu nhất trong kiểm thử chuyển đổi trạng thái."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-711",
+  "word": "valid transitions coverage",
+  "nghia": "Bao phủ chuyển hợp lệ (còn gọi 0-switch coverage)",
+  "dinhnghia": "Tiêu chí bao phủ yêu cầu mọi chuyển trạng thái hợp lệ được chạy qua ít nhất một lần; đạt 100% thì cũng đạt 100% all states coverage."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-712",
+  "word": "0-switch coverage",
+  "nghia": "Bao phủ 0-switch (tên khác của valid transitions coverage)",
+  "dinhnghia": "Tiêu chí bao phủ yêu cầu từng chuyển trạng thái hợp lệ đơn lẻ (không xét chuỗi nhiều chuyển liên tiếp) được chạy qua ít nhất một lần."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-713",
+  "word": "all transitions coverage",
+  "nghia": "Bao phủ mọi chuyển",
+  "dinhnghia": "Tiêu chí bao phủ yêu cầu chạy qua mọi chuyển hợp lệ và thử mọi chuyển không hợp lệ (mỗi test case chỉ một chuyển không hợp lệ để tránh che lấp lỗi); mạnh nhất trong ba tiêu chí."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-714",
+  "word": "defect masking",
+  "nghia": "Che lấp lỗi",
+  "dinhnghia": "Hiện tượng một defect ngăn không cho defect khác bị phát hiện (vd lỗi đầu tiên làm dừng luồng chạy), khiến lỗi phía sau bị che khuất."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-719",
+  "word": "statement testing",
+  "nghia": "Kiểm thử câu lệnh",
+  "dinhnghia": "Kỹ thuật hộp trắng thiết kế test để chạy qua các câu lệnh thực thi được trong code; coverage đo bằng số câu lệnh đã chạy chia cho tổng số câu lệnh thực thi được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-729",
+  "word": "branch testing",
+  "nghia": "Kiểm thử nhánh",
+  "dinhnghia": "Kỹ thuật hộp trắng thiết kế test để chạy qua các nhánh (có điều kiện và không điều kiện) trong đồ thị luồng điều khiển, bao gồm mọi kết quả của từng quyết định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-730",
+  "word": "branch coverage",
+  "nghia": "Độ bao phủ nhánh",
+  "dinhnghia": "Tỷ lệ phần trăm nhánh đã được test chạy qua trên tổng số nhánh; đạt 100% branch coverage thì cũng đạt 100% statement coverage (nhưng không ngược lại)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-731",
+  "word": "branch",
+  "nghia": "Nhánh",
+  "dinhnghia": "Sự chuyển điều khiển giữa hai node trong đồ thị luồng điều khiển; có thể không điều kiện (code tuyến tính) hoặc có điều kiện (kết quả của if, switch/case, vòng lặp)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-734",
+  "word": "control flow graph",
+  "nghia": "Đồ thị luồng điều khiển",
+  "dinhnghia": "Đồ thị biểu diễn các con đường có thể đi qua code: node là câu lệnh hoặc khối lệnh, cạnh là sự chuyển điều khiển (nhánh); dùng làm cơ sở cho statement và branch testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-742",
+  "word": "defect of omission",
+  "nghia": "Lỗi do thiếu sót",
+  "dinhnghia": "Defect do một yêu cầu hoặc chức năng hoàn toàn chưa được hiện thực trong code; kỹ thuật hộp trắng khó phát hiện vì chỉ dựa trên code đang có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-748",
+  "word": "error guessing",
+  "nghia": "Đoán lỗi",
+  "dinhnghia": "Kỹ thuật dựa trên kinh nghiệm, dự đoán các error, defect và failure có thể xảy ra dựa trên hiểu biết của tester về cách ứng dụng từng hoạt động, các lỗi điển hình và lịch sử lỗi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-751",
+  "word": "fault attack",
+  "nghia": "Tấn công lỗi",
+  "dinhnghia": "Cách hiện thực error guessing có phương pháp: lập danh sách các error, defect, failure có thể có rồi thiết kế test nhằm làm lộ defect hoặc gây ra failure đó."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-760",
+  "word": "session-based testing",
+  "nghia": "Kiểm thử theo phiên",
+  "dinhnghia": "Cách tổ chức kiểm thử thăm dò thành các phiên có khung thời gian cố định, theo một test charter, ghi lại trong test session sheet và kết thúc bằng buổi debriefing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-761",
+  "word": "time box",
+  "nghia": "Khung thời gian cố định",
+  "dinhnghia": "Khoảng thời gian định trước, không kéo dài, dành cho một hoạt động (vd một phiên kiểm thử thăm dò, một sprint); hết giờ thì dừng và đánh giá kết quả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-766",
+  "word": "test session sheet",
+  "nghia": "Phiếu ghi phiên test",
+  "dinhnghia": "Tài liệu ghi lại diễn biến một phiên kiểm thử thăm dò: các bước đã làm, điều phát hiện được, defect, vấn đề và câu hỏi nảy sinh."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-771",
+  "word": "checklist-based testing",
+  "nghia": "Kiểm thử dựa trên danh sách kiểm",
+  "dinhnghia": "Kỹ thuật dựa trên kinh nghiệm, trong đó tester thiết kế và chạy test để bao phủ các test condition trong một checklist xây dựng từ kinh nghiệm, nhu cầu người dùng và nguyên nhân lỗi thường gặp."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-778",
+  "word": "severity",
+  "nghia": "Mức độ nghiêm trọng (của lỗi)",
+  "dinhnghia": "Mức độ ảnh hưởng của một defect lên hoạt động của hệ thống hoặc thành phần; khác với priority là mức độ cấp bách cần sửa."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-781",
+  "word": "collaboration-based test approach",
+  "nghia": "Cách tiếp cận kiểm thử dựa trên hợp tác",
+  "dinhnghia": "Nhóm cách tiếp cận chú trọng phòng ngừa defect thông qua hợp tác và giao tiếp giữa các bên, vd cùng viết user story, acceptance criteria, ATDD."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-787",
+  "word": "Card",
+  "nghia": "Thẻ",
+  "dinhnghia": "Phương tiện ghi lại user story (thẻ giấy hoặc mục trên bảng điện tử), thường theo mẫu 'As a…, I want…, so that…'; một trong 3C của user story."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-788",
+  "word": "Conversation",
+  "nghia": "Trò chuyện",
+  "dinhnghia": "Sự trao đổi giữa các bên để giải thích tính năng sẽ được sử dụng như thế nào, có thể bằng lời hoặc tài liệu; một trong 3C của user story."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-789",
+  "word": "Confirmation",
+  "nghia": "Xác nhận",
+  "dinhnghia": "Acceptance criteria của user story, dùng để xác nhận story đã được hiện thực đúng và hoàn chỉnh; một trong 3C của user story."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-795",
+  "word": "INVEST",
+  "nghia": "INVEST (bộ tiêu chí user story tốt)",
+  "dinhnghia": "Từ viết tắt các đặc điểm của một user story tốt: độc lập (Independent), thương lượng được (Negotiable), có giá trị (Valuable), ước lượng được (Estimable), nhỏ (Small), kiểm thử được (Testable)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-805",
+  "word": "Given/When/Then",
+  "nghia": "Định dạng Given/When/Then (dùng trong BDD)",
+  "dinhnghia": "Định dạng viết kịch bản dạng ví dụ: Given mô tả ngữ cảnh/điều kiện ban đầu, When là hành động hoặc sự kiện, Then là kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-806",
+  "word": "BDD",
+  "nghia": "Behavior-Driven Development (phát triển hướng hành vi)",
+  "dinhnghia": "Cách tiếp cận test-first trong đó hành vi mong muốn được mô tả bằng các ví dụ dễ hiểu cho mọi bên (thường dạng Given/When/Then), dùng làm cơ sở cho cả test lẫn phát triển."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-811",
+  "word": "ATDD",
+  "nghia": "Viết tắt của Acceptance Test-Driven Development",
+  "dinhnghia": "Cách tiếp cận test-first trong đó test case được tạo từ acceptance criteria trước khi hiện thực user story, thông qua hợp tác giữa khách hàng, developer và tester."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-812",
+  "word": "test-first approach",
+  "nghia": "Cách tiếp cận test trước",
+  "dinhnghia": "Cách tiếp cận trong đó test được định nghĩa trước khi viết code, rồi code được phát triển để test pass; vd TDD, ATDD, BDD."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-814",
+  "word": "specification workshop",
+  "nghia": "Buổi làm việc về đặc tả",
+  "dinhnghia": "Buổi làm việc ở bước đầu ATDD, nơi các bên cùng phân tích, thảo luận và viết user story cùng acceptance criteria, làm rõ các điểm mơ hồ, mâu thuẫn hoặc thiếu sót."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-818",
+  "word": "negative testing",
+  "nghia": "Kiểm thử tiêu cực",
+  "dinhnghia": "Kiểm thử nhằm xác nhận đối tượng kiểm thử phản ứng đúng với input không hợp lệ, thao tác sai hoặc điều kiện ngoại lệ, vd từ chối và báo lỗi phù hợp thay vì sập."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-821",
+  "word": "postcondition",
+  "nghia": "Hậu điều kiện",
+  "dinhnghia": "Trạng thái mong đợi của đối tượng kiểm thử và môi trường sau khi thực thi một test case hoặc test procedure."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-823",
+  "word": "test automation framework",
+  "nghia": "Khung tự động hóa kiểm thử",
+  "dinhnghia": "Bộ công cụ, thư viện, cấu trúc và quy ước hỗ trợ viết, tổ chức và chạy test tự động, giúp test dễ bảo trì, tái sử dụng và báo cáo kết quả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-827",
+  "word": "test planning",
+  "nghia": "Việc lập kế hoạch kiểm thử",
+  "dinhnghia": "Hoạt động xác định mục tiêu kiểm thử và cách tiếp cận để đạt được chúng trong ràng buộc của bối cảnh (phạm vi, nguồn lực, thời gian); kết quả thường là test plan."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-828",
+  "word": "test plan",
+  "nghia": "Bản kế hoạch kiểm thử",
+  "dinhnghia": "Tài liệu mô tả mục tiêu, phạm vi, cách tiếp cận, nguồn lực, lịch trình, rủi ro và tiêu chí đầu vào/đầu ra của việc kiểm thử; là phương tiện giao tiếp với stakeholder."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-832",
+  "word": "stakeholder",
+  "nghia": "Bên liên quan",
+  "dinhnghia": "Cá nhân hoặc tổ chức có lợi ích, có ảnh hưởng hoặc bị ảnh hưởng bởi dự án/sản phẩm, vd khách hàng, người dùng, product owner, developer, tester, quản lý."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-834",
+  "word": "test policy",
+  "nghia": "Chính sách kiểm thử",
+  "dinhnghia": "Tài liệu cấp tổ chức mô tả mục đích, mục tiêu và nguyên tắc kiểm thử chung mà mọi dự án trong tổ chức phải tuân theo."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-835",
+  "word": "test strategy",
+  "nghia": "Chiến lược kiểm thử",
+  "dinhnghia": "Mô tả ở cấp tổ chức hoặc dự án về cách thức kiểm thử chung (mức, loại test, kỹ thuật, automation…) để đạt mục tiêu kiểm thử; được cụ thể hóa trong test plan."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-847",
+  "word": "risk register",
+  "nghia": "Sổ đăng ký rủi ro",
+  "dinhnghia": "Danh sách các rủi ro đã nhận diện cùng mức độ rủi ro, người phụ trách và biện pháp giảm thiểu, được theo dõi và cập nhật suốt dự án."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-848",
+  "word": "test approach",
+  "nghia": "Cách tiếp cận kiểm thử",
+  "dinhnghia": "Cách thực hiện kiểm thử cụ thể cho một dự án: lựa chọn test level, test type, kỹ thuật, deliverable, tiêu chí đầu vào/đầu ra; là phần cốt lõi của test plan."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-852",
+  "word": "deliverable",
+  "nghia": "Sản phẩm bàn giao (kết quả cần giao nộp)",
+  "dinhnghia": "Sản phẩm công việc phải giao cho stakeholder như một phần cam kết của dự án, vd test plan, test case, test report."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-853",
+  "word": "entry criteria",
+  "nghia": "Tiêu chí đầu vào",
+  "dinhnghia": "Tập điều kiện phải thỏa mãn trước khi bắt đầu một hoạt động kiểm thử, vd nguồn lực và testware sẵn sàng, chất lượng ban đầu đạt (smoke test pass)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-854",
+  "word": "exit criteria",
+  "nghia": "Tiêu chí đầu ra/kết thúc test",
+  "dinhnghia": "Tập điều kiện phải đạt để coi một hoạt động kiểm thử là hoàn thành, vd mức coverage, số defect còn mở, mật độ lỗi; trong Agile thường thể hiện qua Definition of Done."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-855",
+  "word": "independence of testing",
+  "nghia": "Tính độc lập của kiểm thử",
+  "dinhnghia": "Mức độ tách biệt giữa người kiểm thử và người tạo ra sản phẩm (từ tác giả tự test đến tester ngoài tổ chức); độc lập cao giúp phát hiện loại lỗi khác nhờ góc nhìn khác."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-856",
+  "word": "metric",
+  "nghia": "Chỉ số đo lường (số liệu để theo dõi)",
+  "dinhnghia": "Thước đo được thu thập trong quá trình kiểm thử để theo dõi tiến độ, chất lượng sản phẩm và hiệu quả kiểm thử, vd coverage, số defect, tỷ lệ test pass."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-858",
+  "word": "test environment",
+  "nghia": "Môi trường kiểm thử",
+  "dinhnghia": "Môi trường gồm phần cứng, phần mềm, công cụ, dữ liệu và cấu hình cần thiết để thực thi test, càng giống môi trường thật càng tốt."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-861",
+  "word": "release planning",
+  "nghia": "Lập kế hoạch phát hành",
+  "dinhnghia": "Hoạt động Agile nhìn xa tới bản phát hành: định nghĩa và cập nhật product backlog, tách tính năng lớn thành user story; tester tham gia viết acceptance criteria, phân tích rủi ro, ước lượng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-862",
+  "word": "iteration planning",
+  "nghia": "Lập kế hoạch cho một sprint/iteration",
+  "dinhnghia": "Hoạt động đầu mỗi iteration: team chọn user story từ backlog, chia thành task và ước lượng; tester đánh giá tính kiểm thử được và lên các task test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-863",
+  "word": "product backlog",
+  "nghia": "Danh sách hạng mục cần làm của sản phẩm",
+  "dinhnghia": "Danh sách có thứ tự ưu tiên các hạng mục (user story, tính năng, sửa lỗi) cần làm cho sản phẩm, do product owner quản lý và cập nhật liên tục."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-867",
+  "word": "testability",
+  "nghia": "Tính có thể kiểm thử",
+  "dinhnghia": "Mức độ dễ dàng thiết kế và thực thi test cho một sản phẩm hoặc thành phần, vd yêu cầu rõ ràng, kết quả quan sát được và trạng thái kiểm soát được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-869",
+  "word": "precondition",
+  "nghia": "Điều kiện tiên quyết",
+  "dinhnghia": "Trạng thái cần có của đối tượng kiểm thử và môi trường trước khi một test case hoặc hoạt động có thể được thực thi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-874",
+  "word": "smoke test",
+  "nghia": "Test khói",
+  "dinhnghia": "Bộ test nhỏ chạy nhanh trên bản build mới để kiểm tra các chức năng cốt lõi còn hoạt động và build đủ ổn định để test sâu hơn; thường dùng làm entry criteria."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-878",
+  "word": "defect density",
+  "nghia": "Mật độ lỗi",
+  "dinhnghia": "Số defect phát hiện trên một đơn vị kích thước sản phẩm (vd trên 1000 dòng code hoặc function point); dùng làm metric chất lượng và exit criteria."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-881",
+  "word": "Definition of Done",
+  "nghia": "Định nghĩa Hoàn thành",
+  "dinhnghia": "Bộ tiêu chí cả team thống nhất mà một hạng mục (user story, increment) phải thỏa mãn mới được coi là xong trong Agile; đóng vai trò exit criteria."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-902",
+  "word": "Planning Poker",
+  "nghia": "Poker lập kế hoạch",
+  "dinhnghia": "Biến thể của Wideband Delphi trong Agile: mỗi thành viên chọn lá bài số (thường theo dãy Fibonacci) thể hiện ước lượng, lật cùng lúc, thảo luận khi chênh lệch rồi ước lượng lại đến khi đồng thuận."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-885",
+  "word": "test effort",
+  "nghia": "Công sức kiểm thử",
+  "dinhnghia": "Lượng công việc cần cho các hoạt động kiểm thử, thường tính bằng người-giờ hoặc người-ngày; được ước lượng để lập kế hoạch và phân bổ nguồn lực."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-894",
+  "word": "extrapolation",
+  "nghia": "Phép ngoại suy",
+  "dinhnghia": "Kỹ thuật ước lượng dựa trên số liệu: đo công sức thực tế ở các giai đoạn/iteration đã qua rồi dùng mô hình toán học suy ra công sức cho phần việc còn lại."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-898",
+  "word": "Wideband Delphi",
+  "nghia": "Kỹ thuật Delphi băng rộng",
+  "dinhnghia": "Kỹ thuật ước lượng dựa trên chuyên gia: từng chuyên gia ước lượng riêng, thảo luận các chênh lệch lớn rồi ước lượng lại, lặp cho đến khi đạt đồng thuận."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-903",
+  "word": "three-point estimation",
+  "nghia": "Ước lượng ba điểm (lạc quan, khả dĩ nhất, bi quan)",
+  "dinhnghia": "Kỹ thuật ước lượng dựa trên chuyên gia dùng ba giá trị a (lạc quan), m (khả dĩ nhất), b (bi quan); kết quả E = (a + 4m + b)/6, sai số SD = (b − a)/6."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-910",
+  "word": "test case prioritization",
+  "nghia": "Sắp xếp thứ tự ưu tiên test case",
+  "dinhnghia": "Việc xếp thứ tự thực thi test case theo tiêu chí như rủi ro, coverage hoặc yêu cầu, có tính đến phụ thuộc và nguồn lực, để test quan trọng nhất chạy trước."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-912",
+  "word": "test procedure",
+  "nghia": "Quy trình thực thi test",
+  "dinhnghia": "Chuỗi các test case theo thứ tự thực thi, kèm các bước cần thiết như thiết lập precondition ban đầu và dọn dẹp sau khi chạy."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-913",
+  "word": "test suite",
+  "nghia": "Bộ test",
+  "dinhnghia": "Tập hợp các test case hoặc test procedure được nhóm lại để thực thi cùng nhau trong một lần chạy, vd bộ regression, bộ smoke test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-914",
+  "word": "test execution schedule",
+  "nghia": "Lịch thực thi test",
+  "dinhnghia": "Lịch xác định thứ tự và thời điểm thực thi các test suite/test procedure, có tính đến mức ưu tiên, phụ thuộc và nguồn lực sẵn có."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-916",
+  "word": "statement coverage",
+  "nghia": "Độ bao phủ câu lệnh",
+  "dinhnghia": "Tỷ lệ phần trăm câu lệnh thực thi được đã được các test chạy qua so với tổng số câu lệnh thực thi được trong code."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-926",
+  "word": "end-to-end test",
+  "nghia": "Test đầu-cuối",
+  "dinhnghia": "Loại test kiểm tra toàn bộ một luồng nghiệp vụ từ đầu đến cuối qua tất cả các thành phần, hệ thống liên quan, mô phỏng cách người dùng thật sử dụng; nằm ở đỉnh kim tự tháp kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-928",
+  "word": "testing quadrants",
+  "nghia": "Bốn góc phần tư kiểm thử (mô hình của Marick)",
+  "dinhnghia": "Mô hình chia các loại test thành 4 nhóm theo hai trục: hướng nghiệp vụ hay hướng kỹ thuật, và hỗ trợ team phát triển hay đánh giá phê phán sản phẩm; giúp đảm bảo đủ loại test cần thiết trong Agile."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-929",
+  "word": "business facing",
+  "nghia": "Hướng nghiệp vụ",
+  "dinhnghia": "Trong testing quadrants, chỉ các test được viết dưới góc nhìn người dùng/nghiệp vụ, dùng ngôn ngữ mà stakeholder hiểu được (vd: functional test, acceptance test, exploratory test)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-930",
+  "word": "technology facing",
+  "nghia": "Hướng kỹ thuật",
+  "dinhnghia": "Trong testing quadrants, chỉ các test được viết dưới góc nhìn kỹ thuật/lập trình viên (vd: component test, integration test, performance test), tập trung vào cách hệ thống được xây dựng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-932",
+  "word": "CI (continuous integration)",
+  "nghia": "Tích hợp liên tục",
+  "dinhnghia": "Thực hành trong đó lập trình viên thường xuyên gộp code vào nhánh chung, mỗi lần gộp đều được tự động build và chạy test để phát hiện lỗi tích hợp sớm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-933",
+  "word": "exploratory testing",
+  "nghia": "Kiểm thử khám phá",
+  "dinhnghia": "Kỹ thuật dựa trên kinh nghiệm, trong đó tester đồng thời thiết kế, thực thi và đánh giá test, dùng kết quả vừa thu được để định hướng các test tiếp theo; thường tổ chức theo session và test charter."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-934",
+  "word": "usability testing",
+  "nghia": "Kiểm thử tính khả dụng",
+  "dinhnghia": "Kiểm thử phi chức năng đánh giá mức độ người dùng có thể sử dụng hệ thống hiệu quả, dễ học, dễ thao tác và hài lòng khi đạt mục tiêu của mình."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-935",
+  "word": "user acceptance testing",
+  "nghia": "Kiểm thử chấp nhận của người dùng (UAT)",
+  "dinhnghia": "Dạng kiểm thử chấp nhận do người dùng thực hiện trong môi trường gần với thực tế, nhằm xác nhận hệ thống đáp ứng nhu cầu sử dụng và quy trình nghiệp vụ của họ."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-937",
+  "word": "prototype",
+  "nghia": "Bản mẫu",
+  "dinhnghia": "Phiên bản sơ bộ, chưa hoàn chỉnh của hệ thống hoặc giao diện được dựng nhanh để kiểm chứng ý tưởng, làm rõ yêu cầu và lấy phản hồi sớm từ stakeholder."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-938",
+  "word": "risk management",
+  "nghia": "Quản lý rủi ro",
+  "dinhnghia": "Quá trình có hệ thống gồm risk analysis (nhận diện, đánh giá) và risk control (giảm thiểu, giám sát), giúp tổ chức tăng khả năng đạt mục tiêu và nâng chất lượng sản phẩm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-941",
+  "word": "likelihood",
+  "nghia": "Khả năng xảy ra, xác suất",
+  "dinhnghia": "Trong quản lý rủi ro, là xác suất một rủi ro thực sự xảy ra; cùng với impact quyết định risk level."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-943",
+  "word": "risk analysis",
+  "nghia": "Phân tích rủi ro",
+  "dinhnghia": "Hoạt động gồm risk identification (lập danh sách rủi ro) và risk assessment (đánh giá mức độ), làm cơ sở để quyết định phạm vi, ưu tiên và độ kỹ lưỡng của kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-944",
+  "word": "risk identification",
+  "nghia": "Nhận diện rủi ro",
+  "dinhnghia": "Hoạt động tìm và lập danh sách đầy đủ các rủi ro có thể xảy ra, qua các kỹ thuật như brainstorming, workshop, phỏng vấn hoặc sơ đồ nhân-quả."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-945",
+  "word": "risk assessment",
+  "nghia": "Đánh giá rủi ro",
+  "dinhnghia": "Hoạt động phân loại các rủi ro đã nhận diện, xác định likelihood, impact và risk level của từng rủi ro, rồi sắp ưu tiên và đề xuất cách xử lý."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-946",
+  "word": "risk control",
+  "nghia": "Kiểm soát rủi ro",
+  "dinhnghia": "Các biện pháp được áp dụng để phản ứng với rủi ro đã phân tích, gồm risk mitigation (thực hiện hành động giảm rủi ro) và risk monitoring (theo dõi hiệu quả)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-947",
+  "word": "risk mitigation",
+  "nghia": "Giảm thiểu rủi ro",
+  "dinhnghia": "Việc thực hiện các hành động đã đề xuất (vd: kiểm thử, review, thêm nguồn lực) để giảm likelihood hoặc impact của rủi ro, từ đó hạ risk level."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-948",
+  "word": "risk monitoring",
+  "nghia": "Giám sát rủi ro",
+  "dinhnghia": "Hoạt động theo dõi liên tục để đảm bảo các biện pháp giảm thiểu có hiệu quả, thu thập thêm thông tin để cải thiện đánh giá và phát hiện rủi ro mới nổi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-949",
+  "word": "risk-based testing",
+  "nghia": "Kiểm thử dựa trên rủi ro",
+  "dinhnghia": "Cách tiếp cận kiểm thử trong đó việc lựa chọn, ưu tiên và quản lý các hoạt động test được dựa trên kết quả phân tích và kiểm soát rủi ro."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-950",
+  "word": "risk level",
+  "nghia": "Mức độ rủi ro",
+  "dinhnghia": "Thước đo độ lớn của một rủi ro, được xác định từ likelihood và impact của nó; có thể biểu diễn định lượng (tích số) hoặc định tính (cao/trung bình/thấp)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-956",
+  "word": "impact",
+  "nghia": "Tác động, mức độ ảnh hưởng (khi rủi ro xảy ra)",
+  "dinhnghia": "Trong quản lý rủi ro, là mức thiệt hại hay hậu quả gây ra nếu rủi ro xảy ra; cùng với likelihood quyết định risk level."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-960",
+  "word": "project risk",
+  "nghia": "Rủi ro dự án",
+  "dinhnghia": "Rủi ro liên quan đến việc quản lý và kiểm soát dự án, như thiếu nhân lực, trễ tiến độ, vượt ngân sách, vấn đề nhà cung cấp; có thể ảnh hưởng đến lịch, chi phí, phạm vi của dự án."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-961",
+  "word": "product risk",
+  "nghia": "Rủi ro sản phẩm",
+  "dinhnghia": "Rủi ro liên quan đến các đặc tính chất lượng của sản phẩm, như thiếu chức năng, tính toán sai, lỗi lúc chạy, hiệu năng kém, bảo mật yếu; có thể gây hậu quả cho người dùng và tổ chức."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-967",
+  "word": "scope creep",
+  "nghia": "Phình phạm vi",
+  "dinhnghia": "Tình trạng yêu cầu hoặc tính năng của dự án tăng dần ngoài kế hoạch ban đầu mà không kiểm soát lịch, chi phí tương ứng; một dạng project risk phổ biến."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-987",
+  "word": "cause-effect diagram",
+  "nghia": "Sơ đồ nhân-quả (biểu đồ xương cá)",
+  "dinhnghia": "Sơ đồ (còn gọi là Ishikawa) trình bày các nguyên nhân tiềm ẩn dẫn tới một vấn đề, được nhóm theo từng hạng mục; dùng để nhận diện rủi ro hoặc phân tích nguyên nhân gốc của lỗi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-991",
+  "word": "risk matrix",
+  "nghia": "Ma trận rủi ro",
+  "dinhnghia": "Bảng đối chiếu likelihood với impact, mỗi ô tương ứng một risk level; dùng trong đánh giá rủi ro định tính để phân loại và ưu tiên rủi ro."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-997",
+  "word": "risk acceptance",
+  "nghia": "Chấp nhận rủi ro",
+  "dinhnghia": "Phương án phản ứng rủi ro trong đó tổ chức quyết định không thực hiện biện pháp xử lý và chấp nhận hậu quả nếu rủi ro xảy ra, thường khi chi phí xử lý cao hơn lợi ích."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-998",
+  "word": "risk transfer",
+  "nghia": "Chuyển giao rủi ro (ví dụ mua bảo hiểm)",
+  "dinhnghia": "Phương án phản ứng rủi ro trong đó trách nhiệm hoặc hậu quả của rủi ro được chuyển sang bên khác, như nhà cung cấp, đối tác hoặc công ty bảo hiểm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-999",
+  "word": "contingency plan",
+  "nghia": "Kế hoạch dự phòng",
+  "dinhnghia": "Kế hoạch hành động được chuẩn bị sẵn để thực hiện khi một rủi ro thực sự xảy ra, nhằm hạn chế thiệt hại và duy trì tiến độ dự án."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1007",
+  "word": "control directive",
+  "nghia": "Chỉ thị điều khiển",
+  "dinhnghia": "Trong test control, là các hành động điều chỉnh được đưa ra dựa trên thông tin giám sát (vd: sắp lại ưu tiên test, đổi lịch, thêm nguồn lực) để đưa kiểm thử về đúng kế hoạch."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1010",
+  "word": "issue",
+  "nghia": "Vấn đề (rủi ro đã thực sự xảy ra)",
+  "dinhnghia": "Sự kiện hoặc tình huống đã xảy ra và đang ảnh hưởng tới dự án, cần được xử lý; khác với risk là điều chưa chắc chắn sẽ xảy ra."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1014",
+  "word": "maintenance release",
+  "nghia": "Bản phát hành bảo trì",
+  "dinhnghia": "Phiên bản phần mềm được phát hành sau khi đưa vào sử dụng để sửa lỗi, cập nhật hoặc nâng cấp nhỏ; cần được kiểm thử xác nhận và regression testing trước khi triển khai."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1017",
+  "word": "availability",
+  "nghia": "Tính sẵn sàng",
+  "dinhnghia": "Đặc tính chất lượng (thuộc reliability) cho biết mức độ hệ thống hoạt động và truy cập được khi cần, thường đo bằng tỷ lệ % thời gian hệ thống chạy được."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1018",
+  "word": "mean time to failure",
+  "nghia": "Thời gian trung bình đến khi hỏng (MTTF)",
+  "dinhnghia": "Chỉ số độ tin cậy, là thời gian hoạt động trung bình của hệ thống trước khi xảy ra failure; MTTF càng lớn, hệ thống càng tin cậy."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1019",
+  "word": "defect detection percentage",
+  "nghia": "Tỷ lệ phần trăm phát hiện lỗi (DDP)",
+  "dinhnghia": "Chỉ số đo hiệu quả kiểm thử: số defect tìm được trong một giai đoạn test chia cho tổng số defect (gồm cả lỗi phát hiện sau đó, vd ở production), tính theo %."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1020",
+  "word": "code coverage",
+  "nghia": "Độ bao phủ mã nguồn",
+  "dinhnghia": "Tỷ lệ phần code (câu lệnh, nhánh…) đã được thực thi bởi bộ test, tính theo %; là thước đo trong white-box testing, giúp chỉ ra phần code chưa được test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1021",
+  "word": "cost of quality",
+  "nghia": "Chi phí chất lượng",
+  "dinhnghia": "Tổng chi phí liên quan đến chất lượng, gồm chi phí phòng ngừa và thẩm định (review, test) cùng chi phí do lỗi nội bộ và lỗi bên ngoài (sửa lỗi, khiếu nại, mất uy tín)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1022",
+  "word": "test reporting",
+  "nghia": "Báo cáo kiểm thử",
+  "dinhnghia": "Hoạt động tổng hợp và truyền đạt thông tin về tiến độ, kết quả kiểm thử tới stakeholder, gồm báo cáo tiến độ trong lúc test và báo cáo hoàn tất khi kết thúc."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1023",
+  "word": "test progress report",
+  "nghia": "Báo cáo tiến độ kiểm thử",
+  "dinhnghia": "Báo cáo được lập định kỳ trong quá trình test, trình bày tiến độ so với kế hoạch, trở ngại, rủi ro và các thay đổi; hỗ trợ test control."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1024",
+  "word": "test completion report",
+  "nghia": "Báo cáo hoàn tất kiểm thử",
+  "dinhnghia": "Báo cáo được lập khi kết thúc một mức test, dự án hoặc iteration, tổng kết kết quả, chất lượng sản phẩm, sai lệch so với kế hoạch, rủi ro còn lại và lessons learned."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1037",
+  "word": "burn-down chart",
+  "nghia": "Biểu đồ burn-down",
+  "dinhnghia": "Biểu đồ thể hiện lượng công việc còn lại theo thời gian trong một iteration/release; giúp team Agile theo dõi tiến độ và dự đoán khả năng hoàn thành đúng hạn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1038",
+  "word": "self-organizing team",
+  "nghia": "Đội tự tổ chức",
+  "dinhnghia": "Đội trong Agile tự quyết định cách phân công và thực hiện công việc thay vì được quản lý chỉ đạo chi tiết, cùng chịu trách nhiệm về chất lượng sản phẩm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1042",
+  "word": "configuration management",
+  "nghia": "Quản lý cấu hình",
+  "dinhnghia": "Quy trình nhận diện, kiểm soát và theo dõi các work product (code, test case, tài liệu, môi trường) và phiên bản của chúng, đảm bảo tính toàn vẹn và khả năng truy vết trong suốt vòng đời."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1045",
+  "word": "configuration item",
+  "nghia": "Hạng mục cấu hình",
+  "dinhnghia": "Một work product (vd: file code, tài liệu, test script) được đưa vào quản lý cấu hình và được theo dõi như một đơn vị riêng có định danh và phiên bản."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1047",
+  "word": "test log",
+  "nghia": "Nhật ký test",
+  "dinhnghia": "Bản ghi theo thời gian về quá trình thực thi test, gồm test nào đã chạy, khi nào, bởi ai, trên môi trường nào và kết quả pass/fail."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1048",
+  "word": "test condition",
+  "nghia": "Điều kiện kiểm thử",
+  "dinhnghia": "Một khía cạnh có thể kiểm thử của đối tượng test (chức năng, đặc tính chất lượng, quy tắc nghiệp vụ…) được xác định trong test analysis, làm cơ sở để thiết kế test case."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1049",
+  "word": "baseline",
+  "nghia": "Phiên bản mốc",
+  "dinhnghia": "Phiên bản đã được xem xét và phê duyệt của một work product, dùng làm cơ sở cho các bước tiếp theo; chỉ được thay đổi thông qua quy trình change control chính thức."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1050",
+  "word": "change control",
+  "nghia": "Kiểm soát thay đổi",
+  "dinhnghia": "Quy trình chính thức để đề xuất, đánh giá, phê duyệt và theo dõi các thay đổi đối với baseline hay configuration item, tránh thay đổi tùy tiện."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1053",
+  "word": "version control",
+  "nghia": "Quản lý phiên bản",
+  "dinhnghia": "Việc lưu trữ và theo dõi lịch sử thay đổi của file (code, test, tài liệu), cho phép xác định từng phiên bản, so sánh và khôi phục bản cũ; là một phần của configuration management."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1055",
+  "word": "test item",
+  "nghia": "Hạng mục test",
+  "dinhnghia": "Một phần cụ thể của đối tượng test (test object) được kiểm thử, có định danh và phiên bản riêng để có thể truy vết kết quả test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1059",
+  "word": "continuous delivery",
+  "nghia": "Bàn giao liên tục (CD)",
+  "dinhnghia": "Thực hành giữ cho phần mềm luôn ở trạng thái sẵn sàng phát hành nhờ pipeline tự động build, test; việc đưa lên production vẫn do con người quyết định."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1060",
+  "word": "continuous deployment",
+  "nghia": "Triển khai liên tục",
+  "dinhnghia": "Mở rộng của continuous delivery: mọi thay đổi vượt qua tất cả các bước test tự động trong pipeline sẽ được tự động triển khai lên production mà không cần duyệt thủ công."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1061",
+  "word": "DevOps pipeline",
+  "nghia": "Luồng DevOps",
+  "dinhnghia": "Chuỗi các bước tự động (build, chạy test, phân tích tĩnh, triển khai) mà mỗi thay đổi code đi qua, giúp phản hồi nhanh về chất lượng và giao phần mềm liên tục."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1062",
+  "word": "defect management",
+  "nghia": "Quản lý lỗi",
+  "dinhnghia": "Quy trình ghi nhận, phân loại, phân tích, theo dõi và xử lý defect từ lúc phát hiện tới khi đóng, theo một workflow được định nghĩa sẵn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1066",
+  "word": "false-positive",
+  "nghia": "Dương tính giả",
+  "dinhnghia": "Kết quả test báo có defect trong khi thực tế không có (vd do lỗi test script, dữ liệu hoặc môi trường); làm lãng phí công phân tích nếu không được nhận ra."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1064",
+  "word": "defect report",
+  "nghia": "Báo cáo lỗi",
+  "dinhnghia": "Tài liệu ghi nhận một defect, gồm mô tả, bước tái hiện, kết quả mong đợi và thực tế, severity, priority, trạng thái…; giúp developer sửa lỗi và theo dõi chất lượng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1067",
+  "word": "change request",
+  "nghia": "Yêu cầu thay đổi",
+  "dinhnghia": "Đề nghị chính thức thay đổi một work product hay chức năng đã được phê duyệt (thêm, sửa, bỏ); được đánh giá và phê duyệt qua quy trình change control."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1083",
+  "word": "priority",
+  "nghia": "Độ ưu tiên (mức cần sửa gấp tới đâu)",
+  "dinhnghia": "Thuộc tính của defect cho biết mức độ khẩn cấp cần sửa theo góc nhìn nghiệp vụ; khác với severity là mức độ ảnh hưởng kỹ thuật của defect lên hệ thống."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1090",
+  "word": "incident report",
+  "nghia": "Báo cáo sự cố (tên gọi khác của defect report theo ISO 29119)",
+  "dinhnghia": "Tài liệu ghi nhận một sự kiện bất thường quan sát được khi test hoặc vận hành cần được điều tra; sau khi phân tích có thể là defect thật hoặc không."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1091",
+  "word": "test automation",
+  "nghia": "Tự động hóa kiểm thử",
+  "dinhnghia": "Việc dùng phần mềm/công cụ để thực hiện hoặc hỗ trợ các hoạt động kiểm thử như chạy test, so sánh kết quả, sinh dữ liệu, báo cáo — thay cho làm thủ công."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1092",
+  "word": "test tool",
+  "nghia": "Công cụ kiểm thử",
+  "dinhnghia": "Phần mềm hỗ trợ một hay nhiều hoạt động kiểm thử như lập kế hoạch, quản lý, thiết kế, thực thi, đo coverage hoặc báo cáo; giúp tăng hiệu suất và độ tin cậy của test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1095",
+  "word": "test activity",
+  "nghia": "Hoạt động kiểm thử",
+  "dinhnghia": "Nhóm công việc trong quy trình kiểm thử: lập kế hoạch, giám sát và kiểm soát, phân tích, thiết kế, triển khai, thực thi và hoàn tất kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1096",
+  "word": "test management tool",
+  "nghia": "Công cụ quản lý kiểm thử",
+  "dinhnghia": "Công cụ hỗ trợ quản lý quy trình test: lưu requirement, test case, kết quả chạy, defect, truy vết giữa chúng và tạo báo cáo tiến độ (vd: Jira + Xray, TestRail)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1102",
+  "word": "static testing tool",
+  "nghia": "Công cụ kiểm thử tĩnh",
+  "dinhnghia": "Công cụ hỗ trợ review và phân tích tĩnh, kiểm tra code hoặc tài liệu mà không cần thực thi chương trình (vd: linter, công cụ phân tích code) để phát hiện defect sớm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1109",
+  "word": "test data",
+  "nghia": "Dữ liệu kiểm thử",
+  "dinhnghia": "Dữ liệu cần thiết để thực thi test, gồm dữ liệu đầu vào và dữ liệu có sẵn trong hệ thống (database, file cấu hình) mà test đọc hoặc làm thay đổi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1111",
+  "word": "test execution",
+  "nghia": "Thực thi kiểm thử",
+  "dinhnghia": "Hoạt động chạy test (thủ công hoặc tự động) trên đối tượng test, so sánh kết quả thực tế với kết quả mong đợi, ghi log và báo cáo các bất thường."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1112",
+  "word": "test coverage",
+  "nghia": "Độ bao phủ kiểm thử",
+  "dinhnghia": "Mức độ mà các coverage item (yêu cầu, test condition, câu lệnh, nhánh…) đã được bộ test thực hiện, thường tính theo %; dùng để đánh giá độ đầy đủ của test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1118",
+  "word": "delivery pipeline",
+  "nghia": "Chuỗi phân phối",
+  "dinhnghia": "Luồng các bước tự động đưa thay đổi code từ commit qua build, test, đóng gói tới khi được triển khai lên môi trường thật; nền tảng của CI/CD."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1117",
+  "word": "DevOps",
+  "nghia": "DevOps",
+  "dinhnghia": "Cách tiếp cận tổ chức kết hợp phát triển (Dev) và vận hành (Ops) thành một nhóm cộng tác, dùng tự động hóa và CI/CD để giao phần mềm nhanh, ổn định và nhận phản hồi sớm."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1120",
+  "word": "build process",
+  "nghia": "Quá trình build",
+  "dinhnghia": "Chuỗi bước biên dịch, liên kết và đóng gói mã nguồn thành sản phẩm có thể chạy hoặc triển khai; trong CI thường được tự động hóa và kèm chạy test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1121",
+  "word": "CI/CD",
+  "nghia": "Tích hợp và bàn giao liên tục (CI/CD)",
+  "dinhnghia": "Kết hợp tích hợp liên tục (thường xuyên gộp code, tự động build và test) với bàn giao/triển khai liên tục (luôn sẵn sàng hoặc tự động phát hành), giúp phản hồi nhanh về chất lượng."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1124",
+  "word": "scalability",
+  "nghia": "Khả năng mở rộng",
+  "dinhnghia": "Khả năng hệ thống đáp ứng được khi tải, số người dùng hoặc khối lượng dữ liệu tăng lên mà vẫn đảm bảo hiệu năng; thường được kiểm tra bằng scalability testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1125",
+  "word": "deployment",
+  "nghia": "Triển khai",
+  "dinhnghia": "Hoạt động cài đặt và đưa một phiên bản phần mềm lên môi trường đích (thường là production) để người dùng sử dụng; có thể tự động qua pipeline."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1127",
+  "word": "virtual machine",
+  "nghia": "Máy ảo",
+  "dinhnghia": "Môi trường máy tính được giả lập bằng phần mềm trên phần cứng thật, có hệ điều hành riêng; trong test dùng để dựng nhanh môi trường test đồng nhất."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1128",
+  "word": "containerization",
+  "nghia": "Đóng gói ứng dụng vào container (như Docker)",
+  "dinhnghia": "Kỹ thuật đóng gói ứng dụng cùng các thư viện, cấu hình cần thiết vào container chạy cô lập, giúp môi trường dev, test và production nhất quán, dễ dựng lại."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1137",
+  "word": "risk",
+  "nghia": "Rủi ro",
+  "dinhnghia": "Một yếu tố có thể xảy ra trong tương lai và gây hậu quả tiêu cực; được đặc trưng bởi likelihood (khả năng xảy ra) và impact (mức ảnh hưởng)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1141",
+  "word": "expected result",
+  "nghia": "Kết quả mong đợi",
+  "dinhnghia": "Hành vi hoặc đầu ra mà đối tượng test được dự đoán sẽ tạo ra trong điều kiện xác định, lấy từ test basis hoặc test oracle; được so với kết quả thực tế để quyết định pass/fail."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1142",
+  "word": "actual result",
+  "nghia": "Kết quả thực tế",
+  "dinhnghia": "Hành vi hoặc đầu ra mà đối tượng test thực sự tạo ra khi chạy test; nếu khác kết quả mong đợi thì là dấu hiệu của failure cần phân tích."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1143",
+  "word": "coding standard",
+  "nghia": "Chuẩn viết code",
+  "dinhnghia": "Bộ quy tắc thống nhất về cách viết mã nguồn (đặt tên, định dạng, cấu trúc, cấm một số cấu trúc nguy hiểm); thường được kiểm tra bằng review hoặc công cụ phân tích tĩnh."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1156",
+  "word": "failure rate",
+  "nghia": "Tỷ lệ thất bại",
+  "dinhnghia": "Chỉ số đo số failure xảy ra trên một đơn vị (số lần chạy, số test, thời gian hoạt động), dùng để đánh giá độ tin cậy của hệ thống hoặc độ ổn định của bộ test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-269",
+  "word": "behavior-driven development",
+  "nghia": "Phát triển hướng hành vi (viết tắt BDD)",
+  "dinhnghia": "Phương pháp phát triển test-first, trong đó hành vi mong muốn của hệ thống được mô tả bằng ví dụ dạng Given/When/Then dễ hiểu với stakeholder, rồi chuyển thành test tự động."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1166",
+  "word": "estimation",
+  "nghia": "Sự ước lượng",
+  "dinhnghia": "Trong quản lý test, là việc dự đoán công sức, thời gian, chi phí cần cho các hoạt động kiểm thử, dựa trên số liệu (metrics-based) hoặc kinh nghiệm chuyên gia (expert-based)."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1168",
+  "word": "test script",
+  "nghia": "Kịch bản test",
+  "dinhnghia": "Chuỗi các bước (thường là mã) để thực thi một hay nhiều test case, đặc biệt trong kiểm thử tự động; cần được bảo trì khi hệ thống thay đổi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1179",
+  "word": "open-source software",
+  "nghia": "Phần mềm mã nguồn mở",
+  "dinhnghia": "Phần mềm có mã nguồn công khai, cho phép sử dụng, chỉnh sửa và phân phối theo giấy phép; công cụ test mã nguồn mở rẻ nhưng có rủi ro về hỗ trợ và việc bị bỏ dở."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-921",
+  "word": "test pyramid",
+  "nghia": "Kim tự tháp kiểm thử",
+  "dinhnghia": "Mô hình thể hiện các tầng test theo độ mịn: đáy là nhiều test nhỏ, nhanh, cô lập (unit), lên đỉnh là ít test lớn, chậm (end-to-end); gợi ý tỷ lệ test tự động hợp lý."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-109",
+  "word": "exhaustive",
+  "nghia": "Vét cạn, đầy đủ toàn bộ",
+  "dinhnghia": "Liên quan tới nguyên tắc 'kiểm thử vét cạn là không thể': test mọi tổ hợp đầu vào và điều kiện là không khả thi (trừ trường hợp tầm thường), nên phải dùng kỹ thuật, ưu tiên và rủi ro để chọn test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-183",
+  "word": "audit",
+  "nghia": "Kiểm toán, rà soát",
+  "dinhnghia": "Đánh giá độc lập một sản phẩm hoặc quy trình, thường do bên ngoài thực hiện, nhằm xác định có tuân thủ tiêu chuẩn, quy định, hợp đồng hay quy trình đã cam kết không."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-181",
+  "word": "key performance indicator",
+  "nghia": "Chỉ số hiệu suất then chốt (KPI)",
+  "dinhnghia": "Chỉ số đo lường then chốt dùng để theo dõi mức độ đạt mục tiêu, vd tỷ lệ test pass, defect detection percentage, mức coverage; giúp đánh giá hiệu quả của kiểm thử."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-220",
+  "word": "safety-critical",
+  "nghia": "Trọng yếu về an toàn (lỗi có thể gây nguy hiểm tính mạng)",
+  "dinhnghia": "Mô tả hệ thống mà failure có thể gây chết người, thương tích hoặc thiệt hại nghiêm trọng (y tế, hàng không, ô tô…); thường đòi hỏi kiểm thử kỹ, độc lập cao và tuân thủ tiêu chuẩn."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-264",
+  "word": "prototyping",
+  "nghia": "Việc làm bản mẫu (dựng nhanh bản thử để lấy phản hồi)",
+  "dinhnghia": "Cách làm dựng nhanh một phiên bản thử của sản phẩm (giao diện, chức năng chính) để lấy phản hồi sớm từ người dùng và làm rõ yêu cầu trước khi phát triển thật."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-298",
+  "word": "manual testing",
+  "nghia": "Kiểm thử thủ công (test bằng tay)",
+  "dinhnghia": "Kiểm thử do con người trực tiếp thực hiện các bước test và đánh giá kết quả, không dùng công cụ tự động hóa việc chạy test; phù hợp với exploratory testing, usability testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-286",
+  "word": "requirement review",
+  "nghia": "Rà soát yêu cầu (đọc soát tài liệu requirement)",
+  "dinhnghia": "Hoạt động static testing đọc soát tài liệu yêu cầu/user story để tìm lỗi như mơ hồ, thiếu, mâu thuẫn hoặc không kiểm thử được, trước khi bắt đầu thiết kế và code."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-430",
+  "word": "corrective",
+  "nghia": "Mang tính sửa lỗi (khắc phục sự cố)",
+  "dinhnghia": "Trong bảo trì, chỉ loại thay đổi nhằm sửa defect đã phát hiện trong hệ thống đang vận hành (corrective maintenance); sau đó cần confirmation testing và regression testing."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-431",
+  "word": "adaptive",
+  "nghia": "Mang tính thích ứng (điều chỉnh theo thay đổi môi trường)",
+  "dinhnghia": "Trong bảo trì, chỉ loại thay đổi giúp hệ thống thích ứng với môi trường thay đổi như hệ điều hành, nền tảng, luật mới (adaptive maintenance), không phải để sửa lỗi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-441",
+  "word": "migration",
+  "nghia": "Sự di trú, chuyển đổi (dữ liệu/nền tảng)",
+  "dinhnghia": "Việc chuyển hệ thống hoặc dữ liệu từ nền tảng/hệ thống cũ sang cái mới; là một trigger của maintenance testing, cần test môi trường mới và độ chính xác của dữ liệu chuyển đổi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-443",
+  "word": "retirement",
+  "nghia": "Sự loại bỏ/ngừng sử dụng (hệ thống hết vòng đời)",
+  "dinhnghia": "Giai đoạn đưa hệ thống ra khỏi vận hành khi hết vòng đời; là một trigger của maintenance testing, có thể phải test việc lưu trữ, giữ và khôi phục dữ liệu."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-437",
+  "word": "trigger",
+  "nghia": "Yếu tố kích hoạt (nguyên nhân dẫn tới việc bảo trì)",
+  "dinhnghia": "Sự kiện làm phát sinh maintenance testing, vd sửa đổi (bản vá, nâng cấp, thay đổi môi trường), migration sang nền tảng mới, hoặc retirement hệ thống."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-364",
+  "word": "unit test framework",
+  "nghia": "Khung kiểm thử đơn vị (như JUnit, pytest)",
+  "dinhnghia": "Công cụ/thư viện cung cấp môi trường để viết, tổ chức và chạy tự động các test component (unit test), vd JUnit, NUnit, pytest; thường tích hợp vào CI."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-375",
+  "word": "independent test team",
+  "nghia": "Đội kiểm thử độc lập (tách khỏi đội dev)",
+  "dinhnghia": "Đội kiểm thử tách khỏi đội phát triển (trong hoặc ngoài tổ chức); mức độc lập cao giúp phát hiện lỗi khác nhờ góc nhìn khác, nhưng có thể bị cô lập và chậm phản hồi."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-537",
+  "word": "security vulnerability",
+  "nghia": "Lỗ hổng bảo mật",
+  "dinhnghia": "Điểm yếu trong phần mềm (vd buffer overflow, SQL injection) có thể bị khai thác để truy cập trái phép hoặc gây hại; static analysis giúp phát hiện sớm loại lỗi này."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-538",
+  "word": "buffer overflow",
+  "nghia": "Tràn bộ đệm (một loại lỗ hổng bảo mật)",
+  "dinhnghia": "Lỗi khi chương trình ghi dữ liệu vượt quá kích thước bộ đệm đã cấp, đè lên vùng nhớ kế bên; có thể gây crash hoặc bị khai thác thành lỗ hổng bảo mật."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1027",
+  "word": "impediment",
+  "nghia": "Trở ngại, chướng ngại (cản trở việc test)",
+  "dinhnghia": "Trở ngại cản trở tiến độ kiểm thử (môi trường chưa sẵn sàng, thiếu dữ liệu, chờ fix…); được nêu trong test progress report cùng hành động xử lý."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1031",
+  "word": "lessons learned",
+  "nghia": "Bài học kinh nghiệm (rút ra sau dự án)",
+  "dinhnghia": "Những kinh nghiệm rút ra khi kết thúc hoạt động test hoặc dự án (điều gì tốt, điều gì cần cải thiện), được ghi nhận ở test completion để áp dụng cho các dự án sau."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-1114",
+  "word": "coverage measurement",
+  "nghia": "Đo độ bao phủ — tính xem test chạm tới bao nhiêu phần code",
+  "dinhnghia": "Việc dùng công cụ đo xem test đã chạy qua bao nhiêu phần trăm coverage item (vd câu lệnh, nhánh trong code), để đánh giá độ kỹ lưỡng và tìm phần chưa được test."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-351",
+  "word": "test effectiveness",
+  "nghia": "Tính hiệu quả của kiểm thử (bắt được nhiều lỗi đáng kể)",
+  "dinhnghia": "Mức độ kiểm thử đạt được mục tiêu, nhất là khả năng phát hiện defect quan trọng; thường đo bằng chỉ số như defect detection percentage."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-623",
+  "word": "specification-based",
+  "nghia": "Dựa trên đặc tả (tên gọi khác của hộp đen)",
+  "dinhnghia": "Tên gọi khác của kỹ thuật black-box: test case được thiết kế từ đặc tả hành vi của đối tượng test, không dựa vào cấu trúc bên trong."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-629",
+  "word": "structure-based",
+  "nghia": "Dựa trên cấu trúc (tên khác của hộp trắng)",
+  "dinhnghia": "Tên gọi khác của kỹ thuật white-box: test case được thiết kế từ cấu trúc bên trong của đối tượng test như code, kiến trúc, luồng điều khiển."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-764",
+  "word": "debriefing",
+  "nghia": "Buổi tổng kết, họp rút kinh nghiệm sau phiên",
+  "dinhnghia": "Buổi trao đổi sau một phiên session-based exploratory testing, tester báo cáo kết quả, vấn đề tìm được và thống nhất bước tiếp theo với người quản lý/team."
+ },
+ {
+  "id": "istqb-ctfl-1752400000-136",
+  "word": "testable",
+  "nghia": "Có thể kiểm thử được",
+  "dinhnghia": "Mô tả yêu cầu hoặc tiêu chí được viết đủ rõ ràng, cụ thể và đo được để có thể thiết kế test xác định pass/fail; là chữ T trong INVEST."
+ }
+]

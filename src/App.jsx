@@ -1141,8 +1141,22 @@ const playableCards = (cards) =>
 // nghĩa) trả về nguyên văn.
 const pickMeaning = (raw) => {
   const { meaning } = parseCardFields(raw);
-  if (meaning) return meaning;
+  if (meaning) return splitDefinition(meaning).short || meaning;
   return (raw || "").trim();
+};
+
+// Trường Nghĩa có thể kèm dòng "Định nghĩa: …" (thuật ngữ ISTQB CTFL, v1.29.0). Tách ra để
+// mặt sau thẻ hiện định nghĩa cỡ chữ nhỏ, còn game/danh sách chỉ dùng nghĩa ngắn.
+const DEFINITION_LINE = /^định nghĩa\s*[:：]\s*/i;
+const splitDefinition = (meaning) => {
+  const short = [];
+  const definition = [];
+  (meaning || "").split("\n").forEach((l) => {
+    if (DEFINITION_LINE.test(l.trim())) definition.push(l.trim().replace(DEFINITION_LINE, ""));
+    else if (definition.length) definition.push(l);
+    else short.push(l);
+  });
+  return { short: short.join("\n").trim(), definition: definition.join("\n").trim() };
 };
 
 // Tách cột `meaning` (format chuẩn 3 dòng "Phiên âm: … / Nghĩa: … / Ví dụ: …")
@@ -4745,7 +4759,11 @@ export default function App() {
   const frontText = isReverseStudy
     ? pickMeaning(currentCard?.meaning || "")
     : currentCard?.word;
-  const backText = isReverseStudy ? currentCard?.word : currentCardFields.meaning;
+  const currentMeaningParts = splitDefinition(currentCardFields.meaning);
+  const backText = isReverseStudy
+    ? currentCard?.word
+    : currentMeaningParts.short || currentCardFields.meaning;
+  const backDefinition = isReverseStudy ? "" : currentMeaningParts.definition;
   const frontIsMeaning = isReverseStudy;
   const backIsWord = isReverseStudy;
 
@@ -5423,6 +5441,12 @@ export default function App() {
                         {!backIsWord && (
                           <p className="text-white text-center select-none w-full break-words whitespace-pre-line text-2xl font-semibold">
                             {backText}
+                          </p>
+                        )}
+                        {backDefinition && (
+                          <p className="text-blue-50 text-center select-none w-full break-words whitespace-pre-line text-sm leading-relaxed">
+                            <span className="font-semibold">Định nghĩa: </span>
+                            {backDefinition}
                           </p>
                         )}
                         {currentCardFields.example && (
