@@ -58,6 +58,12 @@ User muốn lọc các từ hay dùng khi giao tiếp trong công việc testing
   Script: `scripts/create-giao-tiep-testing.mjs` (upsert, idempotent, có `--dry`).
 - Xoá chủ đề này: xoá các thẻ có `deck = 'Giao tiếp Testing'` (hoặc id bắt đầu bằng `gtt-`).
 
+## Phiên trước (2026-11-10) — v1.29.1: sửa tìm kiếm trong danh sách thẻ
+
+Lỗi: chọn chủ đề "Giao tiếp Testing" rồi gõ "meet the dead" lại ra cả thẻ của Oxford 3000/PREIE ("Efficiently" khớp vì câu ví dụ có
+"meet the deadline"). Nguyên nhân: `visibleCards` (App.jsx) bỏ qua chủ đề khi có từ khoá và so khớp toàn bộ cột `meaning` (gồm Phiên âm + Ví dụ).
+Sửa: luôn lọc theo chủ đề đang chọn ("Tất cả" = tìm mọi chủ đề), chỉ so khớp Từ vựng + phần Nghĩa (qua `parseCardFields`).
+
 ## Phiên trước (2026-11-10) — v1.29.0: thêm định nghĩa cho thuật ngữ deck ISTQB CTFL
 
 User yêu cầu: thuật ngữ trong deck "ISTQB CTFL" (906 thẻ) có thêm định nghĩa ngay sau nghĩa tiếng Việt, nằm chung ô Nghĩa. Từ tiếng Anh

@@ -4417,10 +4417,15 @@ export default function App() {
     deckInput === "Tất cả" || (card.deck || "Chung") === deckInput;
 
   const normalizedSearchInput = searchInput.trim().toLocaleLowerCase("vi");
+  // Tìm kiếm chỉ trong chủ đề đang chọn ("Tất cả" = mọi chủ đề), và chỉ khớp Từ vựng +
+  // Nghĩa — không khớp Phiên âm/Ví dụ, nếu không gõ "meet the dead" sẽ ra cả thẻ
+  // "Efficiently" chỉ vì câu ví dụ của nó có "meet the deadline".
   const visibleCards = cards.filter((card) => {
-    if (!normalizedSearchInput) return isCardInCurrentDeck(card);
+    if (!isCardInCurrentDeck(card)) return false;
+    if (!normalizedSearchInput) return true;
 
-    return [card.word, card.meaning, card.deck].some((value) =>
+    const { meaning } = parseCardFields(card.meaning);
+    return [card.word, meaning].some((value) =>
       String(value || "")
         .toLocaleLowerCase("vi")
         .includes(normalizedSearchInput),
