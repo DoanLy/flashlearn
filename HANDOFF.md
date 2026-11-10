@@ -21,7 +21,14 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-10) — chủ đề mới "Giao tiếp Testing" (chỉ dữ liệu, không đổi code)
+## Phiên làm việc gần nhất (2026-11-10) — xóa 20 chủ đề "4000IELTS - …" (chỉ dữ liệu)
+
+User yêu cầu xóa hết thẻ ở các chủ đề có tiền tố `4000IELTS - ` và đã xác nhận sau khi xem số lượng.
+Đã xóa 4000 thẻ (20 chủ đề × 200 thẻ: 3996 thẻ chưa học, 2 đã thuộc, 2 chưa thuộc). Bảng `cards` còn 7399 thẻ.
+Backup đầy đủ (đủ mọi cột) ở `backups/cards-backup-2026-11-10-pre-delete-4000ielts.json`; khôi phục bằng cách upsert lại file này.
+`scripts/import-4000ielts.mjs` vẫn còn, **đừng chạy lại** nếu user chưa yêu cầu, vì nó sẽ nạp lại các chủ đề này.
+
+## Phiên trước (2026-11-10) — chủ đề mới "Giao tiếp Testing" (chỉ dữ liệu, không đổi code)
 
 User muốn lọc các từ hay dùng khi giao tiếp trong công việc testing từ 2 deck ISTQB CTFL và ISTQB CTAI, rồi gom thành 1 chủ đề mới tên "Giao tiếp Testing".
 
