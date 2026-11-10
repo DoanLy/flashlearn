@@ -1,0 +1,1910 @@
+[
+ {
+  "id": "istqb-ctai-1752400000-1",
+  "word": "Artificial Intelligence (AI)",
+  "nghia": "Trí tuệ nhân tạo",
+  "dinhnghia": "Khả năng của một hệ thống kỹ thuật thu nhận, xử lý và áp dụng tri thức để thực hiện các tác vụ vốn cần trí tuệ con người như suy luận, học, nhận dạng hay ra quyết định."
+ },
+ {
+  "id": "istqb-ctai-1752400000-5",
+  "word": "Adaptability",
+  "nghia": "Khả năng thích ứng",
+  "dinhnghia": "Mức độ một hệ thống có thể được điều chỉnh hoặc tự thay đổi để tiếp tục hoạt động hiệu quả khi môi trường, phần cứng hoặc điều kiện vận hành thay đổi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-13",
+  "word": "Imperative language",
+  "nghia": "Ngôn ngữ lập trình mệnh lệnh (ra lệnh từng bước)",
+  "dinhnghia": "Kiểu ngôn ngữ lập trình trong đó lập trình viên mô tả tường minh chuỗi lệnh máy phải thực hiện; là cách xây dựng phần mềm truyền thống, khác với việc để AI tự học hành vi từ dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-28",
+  "word": "Image recognition",
+  "nghia": "Nhận dạng hình ảnh",
+  "dinhnghia": "Ứng dụng AI (thường dùng deep learning/CNN) để xác định và gán nhãn đối tượng, người, cảnh hoặc đặc điểm xuất hiện trong ảnh."
+ },
+ {
+  "id": "istqb-ctai-1752400000-29",
+  "word": "Train (a model)",
+  "nghia": "Huấn luyện (mô hình)",
+  "dinhnghia": "Quá trình cho thuật toán ML học từ training dataset, điều chỉnh dần các tham số nội tại để tạo ra model có thể dự đoán hoặc quyết định trên dữ liệu mới."
+ },
+ {
+  "id": "istqb-ctai-1752400000-39",
+  "word": "Probabilistic reasoning",
+  "nghia": "Suy luận theo xác suất",
+  "dinhnghia": "Cách suy luận dùng lý thuyết xác suất để rút ra kết luận khi thông tin không chắc chắn hoặc không đầy đủ; kết quả là mức độ khả dĩ thay vì đúng/sai tuyệt đối."
+ },
+ {
+  "id": "istqb-ctai-1752400000-40",
+  "word": "Statistical inference",
+  "nghia": "Suy diễn thống kê",
+  "dinhnghia": "Việc dùng phương pháp thống kê trên dữ liệu mẫu để rút ra kết luận hoặc ước lượng về tổng thể; là nền tảng toán học cho nhiều thuật toán ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-41",
+  "word": "Pattern recognition",
+  "nghia": "Nhận dạng mẫu",
+  "dinhnghia": "Khả năng tự động phát hiện các quy luật, cấu trúc lặp lại trong dữ liệu (ảnh, âm thanh, văn bản…) để phân loại hoặc dự đoán; là năng lực cốt lõi của ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-47",
+  "word": "Black-box",
+  "nghia": "Hộp đen (không thấy được bên trong)",
+  "dinhnghia": "Chỉ model AI (nhất là mạng nơ-ron sâu) mà cách nó đi từ đầu vào đến quyết định rất khó hoặc không thể giải thích cho con người, làm giảm tính minh bạch và khả năng giải thích."
+ },
+ {
+  "id": "istqb-ctai-1752400000-58",
+  "word": "Continuous monitoring",
+  "nghia": "Giám sát liên tục",
+  "dinhnghia": "Việc theo dõi thường xuyên hành vi và hiệu năng của hệ AI khi vận hành thực tế để sớm phát hiện drift, suy giảm chất lượng hoặc hành vi bất thường và kịp thời retrain."
+ },
+ {
+  "id": "istqb-ctai-1752400000-60",
+  "word": "Narrow AI (weak AI)",
+  "nghia": "AI hẹp (AI yếu) - chỉ làm được tác vụ cụ thể",
+  "dinhnghia": "AI được thiết kế để giải quyết một tác vụ hoặc phạm vi hẹp, xác định rõ (như chơi cờ, nhận diện ảnh); toàn bộ hệ AI hiện nay đều thuộc loại này."
+ },
+ {
+  "id": "istqb-ctai-1752400000-64",
+  "word": "Speech processing",
+  "nghia": "Xử lý giọng nói",
+  "dinhnghia": "Lĩnh vực AI phân tích tín hiệu tiếng nói để nhận dạng lời nói thành văn bản, nhận diện người nói hoặc tổng hợp giọng nói từ văn bản."
+ },
+ {
+  "id": "istqb-ctai-1752400000-70",
+  "word": "Frontier AI",
+  "nghia": "AI tiên phong (dạng tiến tiến nhất của AI hẹp)",
+  "dinhnghia": "Các model AI đa năng, có năng lực cao nhất hiện tại (thường là foundation model/LLM rất lớn), làm được nhiều tác vụ và có thể mang rủi ro nghiêm trọng nếu bị lạm dụng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-75",
+  "word": "General AI (strong AI)",
+  "nghia": "AI tổng quát (AI mạnh) - làm được như con người",
+  "dinhnghia": "Dạng AI giả định có năng lực nhận thức tổng quát như con người, có thể học và thực hiện bất kỳ tác vụ trí tuệ nào; hiện chưa tồn tại."
+ },
+ {
+  "id": "istqb-ctai-1752400000-80",
+  "word": "Super AI (superintelligence)",
+  "nghia": "Siêu AI (siêu trí tuệ) - vượt trí tuệ con người",
+  "dinhnghia": "Dạng AI giả định có trí tuệ vượt xa con người ở hầu hết lĩnh vực, có thể tự cải thiện mà không cần con người can thiệp; thường gắn với khái niệm điểm kỳ dị công nghệ."
+ },
+ {
+  "id": "istqb-ctai-1752400000-85",
+  "word": "Technological singularity",
+  "nghia": "Điểm kỳ dị công nghệ (AI vượt con người)",
+  "dinhnghia": "Thời điểm giả định khi AI chuyển từ AI tổng quát sang siêu AI và tự cải thiện nhanh đến mức con người không còn kiểm soát hay dự đoán được."
+ },
+ {
+  "id": "istqb-ctai-1752400000-88",
+  "word": "Machine Learning (ML)",
+  "nghia": "Học máy",
+  "dinhnghia": "Nhánh của AI trong đó hệ thống dùng thuật toán để học quy luật từ dữ liệu và tạo ra model, thay vì được lập trình tường minh bằng các luật viết tay."
+ },
+ {
+  "id": "istqb-ctai-1752400000-93",
+  "word": "Linear regression",
+  "nghia": "Hồi quy tuyến tính",
+  "dinhnghia": "Thuật toán ML có giám sát đơn giản, mô hình hóa quan hệ giữa các biến đầu vào và một giá trị đầu ra liên tục bằng một đường (hàm) tuyến tính để dự đoán giá trị số."
+ },
+ {
+  "id": "istqb-ctai-1752400000-105",
+  "word": "Support vector machine (SVM)",
+  "nghia": "Máy vec-tơ hỗ trợ (thuật toán phân loại)",
+  "dinhnghia": "Thuật toán ML có giám sát tìm siêu phẳng phân tách các lớp dữ liệu với khoảng cách lề lớn nhất; dùng cho phân loại và cả hồi quy."
+ },
+ {
+  "id": "istqb-ctai-1752400000-107",
+  "word": "Deep Learning (DL)",
+  "nghia": "Học sâu (dùng mạng nơ-ron nhiều lớp)",
+  "dinhnghia": "Nhánh của ML dùng mạng nơ-ron có nhiều lớp ẩn để tự học các đặc trưng phức tạp từ lượng lớn dữ liệu, mạnh ở ảnh, giọng nói và ngôn ngữ."
+ },
+ {
+  "id": "istqb-ctai-1752400000-108",
+  "word": "Convolutional neural network (CNN)",
+  "nghia": "Mạng nơ-ron tích chập (mạnh về ảnh)",
+  "dinhnghia": "Loại mạng nơ-ron sâu dùng các lớp tích chập để tự trích xuất đặc trưng không gian (cạnh, hình dạng…) từ dữ liệu dạng lưới như ảnh; dùng nhiều cho phân loại ảnh, phát hiện đối tượng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-109",
+  "word": "Object detection",
+  "nghia": "Phát hiện đối tượng",
+  "dinhnghia": "Tác vụ computer vision vừa xác định loại đối tượng vừa định vị chúng (thường bằng khung bao) trong ảnh hoặc video."
+ },
+ {
+  "id": "istqb-ctai-1752400000-110",
+  "word": "Recurrent neural network (RNN)",
+  "nghia": "Mạng nơ-ron hồi quy (mạnh về chuỗi)",
+  "dinhnghia": "Loại mạng nơ-ron có kết nối vòng, giữ trạng thái từ bước trước để xử lý dữ liệu tuần tự như văn bản, chuỗi thời gian hay tiếng nói."
+ },
+ {
+  "id": "istqb-ctai-1752400000-113",
+  "word": "Transformer",
+  "nghia": "Kiến trúc Transformer (nền tảng của LLM)",
+  "dinhnghia": "Kiến trúc mạng nơ-ron dựa trên cơ chế self-attention, xử lý song song toàn bộ chuỗi đầu vào và nắm bắt tốt phụ thuộc xa; là nền tảng của LLM và nhiều model GenAI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-114",
+  "word": "Long-range dependency",
+  "nghia": "Phụ thuộc xa (giữa các phần cách xa nhau)",
+  "dinhnghia": "Mối liên hệ ngữ nghĩa giữa các phần tử cách xa nhau trong một chuỗi (vd từ đầu và cuối đoạn văn); RNN khó nắm bắt, còn Transformer xử lý tốt nhờ self-attention."
+ },
+ {
+  "id": "istqb-ctai-1752400000-115",
+  "word": "Natural language processing (NLP)",
+  "nghia": "Xử lý ngôn ngữ tự nhiên",
+  "dinhnghia": "Lĩnh vực AI giúp máy tính hiểu, phân tích và sinh ra ngôn ngữ con người, ứng dụng trong dịch máy, chatbot, phân tích cảm xúc, tóm tắt văn bản."
+ },
+ {
+  "id": "istqb-ctai-1752400000-116",
+  "word": "Large language model (LLM)",
+  "nghia": "Mô hình ngôn ngữ lớn",
+  "dinhnghia": "Model deep learning (thường kiến trúc Transformer) với số tham số rất lớn, được huấn luyện trên kho văn bản khổng lồ để hiểu và sinh ngôn ngữ tự nhiên theo prompt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-117",
+  "word": "Deep neural network (DNN)",
+  "nghia": "Mạng nơ-ron sâu (nhiều lớp)",
+  "dinhnghia": "Mạng nơ-ron nhân tạo gồm lớp đầu vào, nhiều lớp ẩn và lớp đầu ra, mỗi nơ-ron tính tổng có trọng số rồi qua hàm kích hoạt; là cấu trúc cơ bản của deep learning."
+ },
+ {
+  "id": "istqb-ctai-1752400000-118",
+  "word": "Sentiment analysis",
+  "nghia": "Phân tích cảm xúc (khen/chê)",
+  "dinhnghia": "Ứng dụng NLP tự động xác định thái độ hoặc cảm xúc (tích cực, tiêu cực, trung tính) thể hiện trong văn bản như đánh giá, bình luận."
+ },
+ {
+  "id": "istqb-ctai-1752400000-119",
+  "word": "Computer vision",
+  "nghia": "Thị giác máy tính",
+  "dinhnghia": "Lĩnh vực AI giúp máy tính thu nhận và diễn giải thông tin từ ảnh, video, như phân loại ảnh, phát hiện đối tượng, nhận diện khuôn mặt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-120",
+  "word": "Facial recognition",
+  "nghia": "Nhận diện khuôn mặt",
+  "dinhnghia": "Ứng dụng computer vision xác định hoặc xác thực danh tính một người từ đặc điểm khuôn mặt trong ảnh/video; thường bị xem là rủi ro cao về quyền riêng tư và thiên lệch."
+ },
+ {
+  "id": "istqb-ctai-1752400000-122",
+  "word": "Fuzzy logic",
+  "nghia": "Logic mờ (xử lý cái không rõ ràng)",
+  "dinhnghia": "Kỹ thuật AI cho phép giá trị chân lý nằm trong khoảng từ 0 đến 1 thay vì chỉ đúng/sai, giúp suy luận với thông tin mơ hồ như \"hơi nóng\", \"khá nhanh\"."
+ },
+ {
+  "id": "istqb-ctai-1752400000-124",
+  "word": "Expert system",
+  "nghia": "Hệ chuyên gia (ra quyết định theo luật)",
+  "dinhnghia": "Hệ AI dựa trên luật, mã hóa tri thức của chuyên gia thành tập luật if-then và dùng cơ chế suy diễn để đưa ra kết luận hoặc khuyến nghị trong một lĩnh vực hẹp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-125",
+  "word": "Rule-based reasoning",
+  "nghia": "Suy luận dựa trên luật",
+  "dinhnghia": "Cách suy luận áp dụng tập luật do con người định nghĩa sẵn lên dữ kiện để rút ra kết luận; minh bạch, dễ giải thích nhưng khó mở rộng cho bài toán phức tạp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-128",
+  "word": "Agentic AI",
+  "nghia": "AI dạng tác nhân (tự lập kế hoạch và hành động)",
+  "dinhnghia": "Hệ AI (thường dựa trên LLM) có thể tự đặt mục tiêu con, lập kế hoạch, gọi công cụ và thực hiện chuỗi hành động nhiều bước với mức tự chủ cao, ít cần con người can thiệp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-129",
+  "word": "Generative AI (GenAI)",
+  "nghia": "AI tạo sinh (tạo ra nội dung mới)",
+  "dinhnghia": "Loại AI học phân phối của dữ liệu huấn luyện để sinh ra nội dung mới tương tự như văn bản, ảnh, âm thanh, code; ví dụ LLM, GAN, diffusion model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-133",
+  "word": "Generative adversarial network (GAN)",
+  "nghia": "Mạng đối kháng tạo sinh",
+  "dinhnghia": "Kiến trúc gồm hai mạng nơ-ron cạnh tranh: generator tạo dữ liệu giả và discriminator phân biệt thật/giả; qua đối kháng, generator tạo ra dữ liệu ngày càng chân thực."
+ },
+ {
+  "id": "istqb-ctai-1752400000-134",
+  "word": "Diffusion model",
+  "nghia": "Mô hình khuếch tán (tạo ảnh từ nhiễu)",
+  "dinhnghia": "Model GenAI học cách đảo ngược quá trình thêm nhiễu: bắt đầu từ nhiễu ngẫu nhiên rồi khử nhiễu dần từng bước để tạo ra ảnh hoặc dữ liệu mới chất lượng cao."
+ },
+ {
+  "id": "istqb-ctai-1752400000-141",
+  "word": "Self-attention mechanism",
+  "nghia": "Cơ chế tự chú ý (trọng tâm của Transformer)",
+  "dinhnghia": "Cơ chế cho phép model tính mức độ liên quan giữa mỗi phần tử với mọi phần tử khác trong cùng chuỗi, nhờ đó nắm được ngữ cảnh và phụ thuộc xa."
+ },
+ {
+  "id": "istqb-ctai-1752400000-144",
+  "word": "Multimodal",
+  "nghia": "Đa phương thức (xử lý text, ảnh, âm thanh...)",
+  "dinhnghia": "Chỉ model AI có thể nhận đầu vào và/hoặc sinh đầu ra ở nhiều loại dữ liệu khác nhau như văn bản, ảnh, âm thanh, video và kết hợp chúng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-149",
+  "word": "Deepfake",
+  "nghia": "Video/ảnh giả mạo do AI tạo",
+  "dinhnghia": "Nội dung ảnh, video hoặc giọng nói giả nhưng rất chân thực do GenAI (GAN, diffusion…) tạo ra, thường giả mạo người thật; có thể bị dùng để lừa đảo, thao túng dư luận."
+ },
+ {
+  "id": "istqb-ctai-1752400000-170",
+  "word": "Foundation model",
+  "nghia": "Mô hình nền tảng (huấn luyện sẵn, rồi tinh chỉnh)",
+  "dinhnghia": "Model lớn được pre-train trên lượng dữ liệu rất rộng và đa dạng, có thể dùng trực tiếp hoặc fine-tune cho nhiều tác vụ hạ nguồn khác nhau; ví dụ các LLM."
+ },
+ {
+  "id": "istqb-ctai-1752400000-175",
+  "word": "Cloud computing",
+  "nghia": "Điện toán đám mây",
+  "dinhnghia": "Mô hình cung cấp tài nguyên tính toán (máy chủ, lưu trữ, GPU, dịch vụ AI) qua mạng theo nhu cầu, cho phép mở rộng linh hoạt và trả tiền theo mức sử dụng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-176",
+  "word": "Massively parallel",
+  "nghia": "Song song hàng loạt (nhiều phép tính cùng lúc)",
+  "dinhnghia": "Kiểu xử lý thực hiện đồng thời rất nhiều phép tính đơn giản trên hàng nghìn lõi; đặc trưng của GPU và chip AI, rất phù hợp với phép nhân ma trận trong mạng nơ-ron."
+ },
+ {
+  "id": "istqb-ctai-1752400000-179",
+  "word": "Low-precision arithmetic",
+  "nghia": "Số học độ chính xác thấp",
+  "dinhnghia": "Việc tính toán với số biểu diễn bằng ít bit (vd 8 hoặc 16 bit thay vì 32 bit) để tăng tốc độ, giảm bộ nhớ và điện năng, chấp nhận sai số nhỏ trong kết quả model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-180",
+  "word": "Quantization",
+  "nghia": "Lượng tử hóa (giảm số bit để nhẹ hơn)",
+  "dinhnghia": "Kỹ thuật chuyển trọng số và phép tính của model sang dạng số ít bit hơn để model nhỏ, chạy nhanh và tiết kiệm năng lượng hơn, đổi lại có thể giảm nhẹ độ chính xác."
+ },
+ {
+  "id": "istqb-ctai-1752400000-184",
+  "word": "Bandwidth",
+  "nghia": "Băng thông",
+  "dinhnghia": "Lượng dữ liệu có thể truyền trong một đơn vị thời gian (giữa bộ nhớ và bộ xử lý hoặc qua mạng); băng thông bộ nhớ cao rất quan trọng để huấn luyện và chạy model AI nhanh."
+ },
+ {
+  "id": "istqb-ctai-1752400000-185",
+  "word": "Central processing unit (CPU)",
+  "nghia": "Bộ xử lý trung tâm",
+  "dinhnghia": "Bộ xử lý đa dụng của máy tính với ít lõi nhưng mạnh, tối ưu cho xử lý tuần tự; đủ cho model nhỏ nhưng chậm hơn GPU khi huấn luyện mạng nơ-ron lớn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-188",
+  "word": "Graphics processing unit (GPU)",
+  "nghia": "Bộ xử lý đồ họa (rất mạnh cho ML)",
+  "dinhnghia": "Bộ xử lý có hàng nghìn lõi đơn giản chạy song song, ban đầu cho đồ họa nhưng rất hiệu quả cho phép nhân ma trận nên là phần cứng chủ lực để huấn luyện và chạy deep learning."
+ },
+ {
+  "id": "istqb-ctai-1752400000-193",
+  "word": "Application-Specific Integrated Circuit (ASIC)",
+  "nghia": "Vi mạch tích hợp chuyên dụng",
+  "dinhnghia": "Chip được thiết kế riêng cho một loại tác vụ (vd tăng tốc tính toán mạng nơ-ron như TPU), cho hiệu năng và hiệu quả năng lượng cao nhưng kém linh hoạt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-194",
+  "word": "System-on-a-Chip (SoC)",
+  "nghia": "Hệ thống trên một con chip",
+  "dinhnghia": "Vi mạch tích hợp nhiều thành phần (CPU, GPU, bộ tăng tốc AI, bộ nhớ, giao tiếp) trên một chip duy nhất, phổ biến trong điện thoại và thiết bị biên chạy AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-195",
+  "word": "In-memory processing",
+  "nghia": "Xử lý ngay trong bộ nhớ",
+  "dinhnghia": "Kiến trúc thực hiện tính toán ngay tại nơi lưu dữ liệu để tránh việc chuyển dữ liệu qua lại giữa bộ nhớ và bộ xử lý, giúp tăng tốc và tiết kiệm điện cho AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-196",
+  "word": "Edge computing",
+  "nghia": "Điện toán biên (xử lý ngay tại thiết bị)",
+  "dinhnghia": "Mô hình xử lý dữ liệu và chạy model AI ngay trên hoặc gần thiết bị thu thập dữ liệu thay vì gửi lên cloud, giúp giảm độ trễ, băng thông và tăng quyền riêng tư."
+ },
+ {
+  "id": "istqb-ctai-1752400000-197",
+  "word": "Neuromorphic processor",
+  "nghia": "Bộ xử lý mô phỏng thần kinh (giống não)",
+  "dinhnghia": "Bộ xử lý có kiến trúc mô phỏng nơ-ron và khớp thần kinh sinh học, xử lý theo sự kiện và song song, hướng tới chạy AI với mức tiêu thụ năng lượng rất thấp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-198",
+  "word": "Von Neumann architecture",
+  "nghia": "Kiến trúc Von Neumann (máy tính truyền thống)",
+  "dinhnghia": "Kiến trúc máy tính truyền thống tách bộ xử lý và bộ nhớ, dữ liệu phải chuyển qua lại giữa hai nơi; gây nút thắt cổ chai khi xử lý khối lượng dữ liệu lớn của AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-203",
+  "word": "On-premises",
+  "nghia": "Tại chỗ (chạy trên hạ tầng của công ty)",
+  "dinhnghia": "Hình thức triển khai trong đó tổ chức tự mua, vận hành phần cứng và phần mềm AI tại cơ sở của mình; kiểm soát dữ liệu tốt nhưng chi phí đầu tư và bảo trì cao."
+ },
+ {
+  "id": "istqb-ctai-1752400000-204",
+  "word": "As a service (AIaaS)",
+  "nghia": "Dạng dịch vụ (thuê AI qua mạng)",
+  "dinhnghia": "Mô hình cung cấp năng lực AI (model, API, nền tảng huấn luyện) qua cloud dưới dạng dịch vụ thuê bao, giúp dùng AI mà không cần tự xây dựng hạ tầng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-213",
+  "word": "Public cloud",
+  "nghia": "Đám mây công cộng",
+  "dinhnghia": "Hạ tầng cloud do nhà cung cấp bên thứ ba sở hữu và chia sẻ cho nhiều khách hàng qua Internet, trả tiền theo mức dùng và mở rộng nhanh."
+ },
+ {
+  "id": "istqb-ctai-1752400000-217",
+  "word": "Private cloud",
+  "nghia": "Đám mây riêng",
+  "dinhnghia": "Hạ tầng cloud dành riêng cho một tổ chức (tự vận hành hoặc thuê riêng), cho khả năng kiểm soát và bảo mật dữ liệu cao hơn public cloud nhưng tốn kém hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-228",
+  "word": "Elasticity",
+  "nghia": "Tính co giãn (tăng/giảm tài nguyên linh hoạt)",
+  "dinhnghia": "Khả năng của hạ tầng (thường là cloud) tự động cấp thêm hoặc thu hồi tài nguyên tính toán theo tải thực tế, chỉ trả cho phần đã dùng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-234",
+  "word": "Preprocessing",
+  "nghia": "Tiền xử lý (làm sạch, chuẩn hóa dữ liệu)",
+  "dinhnghia": "Bước trong ML workflow biến đổi dữ liệu thô thành dạng phù hợp cho huấn luyện, gồm làm sạch, biến đổi, chuẩn hóa, tăng cường dữ liệu và chọn đặc trưng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-235",
+  "word": "Clean (data)",
+  "nghia": "Làm sạch (dữ liệu)",
+  "dinhnghia": "Việc phát hiện và xử lý dữ liệu sai, thiếu, trùng lặp hoặc ngoại lai trong dataset để cải thiện chất lượng dữ liệu trước khi huấn luyện model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-254",
+  "word": "Application programming interface (API)",
+  "nghia": "Giao diện lập trình ứng dụng",
+  "dinhnghia": "Tập các hàm, giao thức được định nghĩa sẵn cho phép phần mềm giao tiếp với nhau, vd gọi model AI hay dịch vụ cloud từ ứng dụng mà không cần biết cài đặt bên trong."
+ },
+ {
+  "id": "istqb-ctai-1752400000-241",
+  "word": "Layer",
+  "nghia": "Lớp (tầng của mạng nơ-ron)",
+  "dinhnghia": "Một tầng gồm nhiều nơ-ron trong mạng nơ-ron; dữ liệu đi qua lớp đầu vào, các lớp ẩn và lớp đầu ra, mỗi lớp biến đổi đầu ra của lớp trước."
+ },
+ {
+  "id": "istqb-ctai-1752400000-246",
+  "word": "Distributed training",
+  "nghia": "Huấn luyện phân tán (trải trên nhiều máy)",
+  "dinhnghia": "Kỹ thuật chia việc huấn luyện model (theo dữ liệu hoặc theo phần model) cho nhiều GPU/máy chạy song song để rút ngắn thời gian huấn luyện model lớn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-270",
+  "word": "Soft law instrument",
+  "nghia": "Công cụ luật mềm (khuyến nghị, không bắt buộc)",
+  "dinhnghia": "Văn bản định hướng như nguyên tắc, hướng dẫn, khuyến nghị (vd Nguyên tắc AI của OECD) không có tính ràng buộc pháp lý nhưng định hướng việc phát triển AI có trách nhiệm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-276",
+  "word": "Risk-based approach",
+  "nghia": "Cách tiếp cận dựa trên rủi ro",
+  "dinhnghia": "Cách quản lý (như EU AI Act hay kiểm thử dựa trên rủi ro) phân loại hệ AI theo mức rủi ro và áp dụng yêu cầu, nỗ lực kiểm soát tương xứng với mức rủi ro đó."
+ },
+ {
+  "id": "istqb-ctai-1752400000-283",
+  "word": "Data governance",
+  "nghia": "Quản trị dữ liệu",
+  "dinhnghia": "Tập chính sách, quy trình và trách nhiệm đảm bảo dữ liệu dùng cho AI có chất lượng, đúng nguồn gốc, bảo mật, tuân thủ pháp luật và được quản lý xuyên suốt vòng đời."
+ },
+ {
+  "id": "istqb-ctai-1752400000-300",
+  "word": "Governance",
+  "nghia": "Quản trị (cách điều hành, đặt luật lệ)",
+  "dinhnghia": "Khung chính sách, quy trình, vai trò và cơ chế giám sát giúp tổ chức phát triển, triển khai và sử dụng AI một cách có trách nhiệm, tuân thủ quy định và kiểm soát rủi ro."
+ },
+ {
+  "id": "istqb-ctai-1752400000-305",
+  "word": "Quality characteristic",
+  "nghia": "đặc tính chất lượng",
+  "dinhnghia": "Thuộc tính dùng để đánh giá chất lượng của phần mềm/hệ AI; ISO/IEC 25059 bổ sung các đặc tính riêng cho AI như functional adaptability, AI robustness, intervenability, transparency."
+ },
+ {
+  "id": "istqb-ctai-1752400000-307",
+  "word": "Functional adaptability",
+  "nghia": "khả năng thích ứng chức năng",
+  "dinhnghia": "Đặc tính chất lượng (ISO/IEC 25059): khả năng của hệ AI thu nhận thông tin từ dữ liệu và kết quả trước đó để tự điều chỉnh, tiếp tục đáp ứng yêu cầu khi môi trường vận hành thay đổi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-308",
+  "word": "AI functional correctness",
+  "nghia": "tính đúng đắn chức năng của AI",
+  "dinhnghia": "Đặc tính chất lượng (ISO/IEC 25059): mức độ hệ AI cho kết quả đúng; do bản chất xác suất nên chấp nhận một tỉ lệ lỗi nhất định, thường đo bằng các metric như accuracy, precision, recall."
+ },
+ {
+  "id": "istqb-ctai-1752400000-309",
+  "word": "Intervenability",
+  "nghia": "khả năng can thiệp",
+  "dinhnghia": "Đặc tính chất lượng (ISO/IEC 25059): mức độ người vận hành có thể can thiệp kịp thời vào hoạt động của hệ AI (dừng, sửa, ghi đè quyết định) để ngăn nguy hại hoặc rủi ro."
+ },
+ {
+  "id": "istqb-ctai-1752400000-310",
+  "word": "AI robustness",
+  "nghia": "độ bền vững của AI",
+  "dinhnghia": "Đặc tính chất lượng (ISO/IEC 25059): khả năng hệ AI duy trì mức hiệu năng chấp nhận được khi gặp đầu vào nhiễu, bất thường, tấn công đối kháng hoặc điều kiện môi trường bất lợi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-311",
+  "word": "Safety",
+  "nghia": "an toàn (khả năng hệ thống không gây thương tích/thiệt hại)",
+  "dinhnghia": "Đặc tính chất lượng: mức độ hệ thống tránh được trạng thái gây nguy hiểm cho tính mạng, sức khỏe, tài sản hoặc môi trường; với AI tự chủ còn đòi hỏi cơ chế giám sát và can thiệp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-312",
+  "word": "Societal and ethical risk mitigation",
+  "nghia": "giảm thiểu rủi ro xã hội và đạo đức (công bằng, quyền riêng tư, không phân biệt...)",
+  "dinhnghia": "Đặc tính con của freedom from risk trong ISO/IEC 25059: mức độ hệ AI hạn chế được tác động tiêu cực tới xã hội và các giá trị đạo đức như công bằng, quyền riêng tư, trách nhiệm giải trình."
+ },
+ {
+  "id": "istqb-ctai-1752400000-314",
+  "word": "User controllability",
+  "nghia": "khả năng người dùng kiểm soát",
+  "dinhnghia": "Đặc tính con của interaction capability (ISO/IEC 25059): mức độ con người hoặc tác nhân bên ngoài có thể can thiệp kịp thời vào hoạt động của hệ AI, ví dụ dừng, điều chỉnh hoặc giành quyền điều khiển."
+ },
+ {
+  "id": "istqb-ctai-1752400000-317",
+  "word": "Acceptance criteria",
+  "nghia": "tiêu chí nghiệm thu (điều kiện để chấp nhận/pass một hệ thống)",
+  "dinhnghia": "Tập điều kiện mà một thành phần hoặc hệ thống phải thỏa mãn để được người dùng, khách hàng hay bên có thẩm quyền chấp nhận; với hệ AI thường gồm ngưỡng metric như accuracy tối thiểu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-318",
+  "word": "ISO/IEC 25059",
+  "nghia": "tiêu chuẩn ISO/IEC 25059",
+  "dinhnghia": "Tiêu chuẩn quốc tế mở rộng mô hình chất lượng ISO/IEC 25010 cho hệ thống AI, bổ sung và điều chỉnh các đặc tính như user controllability, functional adaptability, robustness, transparency và societal and ethical risk mitigation."
+ },
+ {
+  "id": "istqb-ctai-1752400000-319",
+  "word": "Safety-related system",
+  "nghia": "hệ thống liên quan đến an toàn (hệ mà lỗi có thể gây thương tích/thiệt hại)",
+  "dinhnghia": "Hệ thống mà hỏng hóc hoặc hành vi sai có thể dẫn tới tổn hại cho con người, tài sản hay môi trường, nên phải tuân theo tiêu chuẩn an toàn chức năng và được kiểm thử nghiêm ngặt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-322",
+  "word": "Traditional software quality model",
+  "nghia": "mô hình chất lượng phần mềm truyền thống (dùng cho phần mềm không phải AI)",
+  "dinhnghia": "Mô hình chất lượng như ISO/IEC 25010 định nghĩa các đặc tính chất lượng cho phần mềm thông thường; chưa bao quát các đặc thù của AI nên được ISO/IEC 25059 mở rộng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-324",
+  "word": "Probabilistic ML",
+  "nghia": "học máy xác suất (ML cho kết quả mang tính xác suất, không tuyệt đối)",
+  "dinhnghia": "Đặc điểm của mô hình ML là đưa ra dự đoán kèm độ tin cậy hoặc xác suất thay vì kết quả chắc chắn, nên test oracle thường dựa trên thống kê và ngưỡng chấp nhận."
+ },
+ {
+  "id": "istqb-ctai-1752400000-326",
+  "word": "Self-learning",
+  "nghia": "tự học",
+  "dinhnghia": "Khả năng hệ AI tự thay đổi hành vi sau khi triển khai bằng cách học từ dữ liệu hoặc trải nghiệm mới; khiến kết quả test trước đó có thể không còn đúng và cần kiểm thử, giám sát liên tục."
+ },
+ {
+  "id": "istqb-ctai-1752400000-327",
+  "word": "Limited explainability",
+  "nghia": "khả năng giải thích hạn chế (khó biết vì sao model ra quyết định đó)",
+  "dinhnghia": "Thách thức của nhiều model ML (nhất là mạng nơ-ron sâu) khi con người khó hiểu cơ chế dẫn tới một kết quả, làm khó việc phân tích lỗi, xây dựng niềm tin và chứng minh tuân thủ."
+ },
+ {
+  "id": "istqb-ctai-1752400000-334",
+  "word": "Product quality",
+  "nghia": "chất lượng sản phẩm (đánh giá bản thân sản phẩm phần mềm)",
+  "dinhnghia": "Một trong hai mô hình của ISO/IEC 25010/25059, mô tả các đặc tính tĩnh và động của chính hệ thống như functional suitability, reliability, security, interaction capability."
+ },
+ {
+  "id": "istqb-ctai-1752400000-335",
+  "word": "Quality in use",
+  "nghia": "chất lượng khi sử dụng (đánh giá sản phẩm trong bối cảnh người dùng thực tế)",
+  "dinhnghia": "Mô hình chất lượng đánh giá mức độ sản phẩm giúp người dùng cụ thể đạt mục tiêu trong bối cảnh sử dụng thực tế, gồm các đặc tính như effectiveness, efficiency, satisfaction và freedom from risk."
+ },
+ {
+  "id": "istqb-ctai-1752400000-337",
+  "word": "Test objective",
+  "nghia": "mục tiêu kiểm thử (điều mà một hoạt động test hướng tới)",
+  "dinhnghia": "Lý do hoặc mục đích của việc thiết kế và thực thi kiểm thử, ví dụ đánh giá đặc tính chất lượng, tìm defect, xây dựng niềm tin hay xác nhận hệ thống đạt tiêu chí nghiệm thu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-347",
+  "word": "Sub-characteristic",
+  "nghia": "đặc tính con (thành phần nhỏ hơn của một đặc tính chất lượng)",
+  "dinhnghia": "Trong mô hình chất lượng ISO/IEC 25010/25059, mỗi đặc tính chất lượng được chia thành các đặc tính con cụ thể hơn để có thể đo lường và kiểm thử, ví dụ robustness thuộc reliability."
+ },
+ {
+  "id": "istqb-ctai-1752400000-348",
+  "word": "Functional suitability",
+  "nghia": "tính phù hợp chức năng (mức độ chức năng đáp ứng nhu cầu)",
+  "dinhnghia": "Đặc tính chất lượng sản phẩm: mức độ hệ thống cung cấp chức năng đầy đủ, đúng và phù hợp với nhu cầu đã nêu và ngầm định; ISO/IEC 25059 bổ sung functional adaptability cho hệ AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-352",
+  "word": "Interaction capability",
+  "nghia": "khả năng tương tác (thuật ngữ mới thay cho usability trong ISO/IEC 25010 bản 2023)",
+  "dinhnghia": "Đặc tính chất lượng sản phẩm chỉ mức độ người dùng có thể tương tác với hệ thống để đạt mục tiêu một cách hiệu quả và dễ chịu; với AI gồm thêm user controllability và transparency."
+ },
+ {
+  "id": "istqb-ctai-1752400000-353",
+  "word": "Usability",
+  "nghia": "tính khả dụng (mức độ dễ dùng của hệ thống)",
+  "dinhnghia": "Mức độ người dùng cụ thể có thể dùng hệ thống để đạt mục tiêu với hiệu lực, hiệu quả và sự hài lòng trong bối cảnh sử dụng nhất định; bản ISO/IEC 25010:2023 đổi tên thành interaction capability."
+ },
+ {
+  "id": "istqb-ctai-1752400000-357",
+  "word": "Satisfaction",
+  "nghia": "sự hài lòng (đặc tính chất lượng khi sử dụng liên quan trải nghiệm người dùng)",
+  "dinhnghia": "Đặc tính quality in use: mức độ nhu cầu của người dùng (sự tin tưởng, tính hữu ích, sự thoải mái) được đáp ứng khi sử dụng sản phẩm trong bối cảnh cụ thể."
+ },
+ {
+  "id": "istqb-ctai-1752400000-359",
+  "word": "Stakeholder",
+  "nghia": "bên liên quan (người/nhóm có lợi ích trong dự án)",
+  "dinhnghia": "Cá nhân hoặc tổ chức có quyền lợi, bị ảnh hưởng hoặc có thể tác động tới hệ thống, ví dụ người dùng, khách hàng, nhà phát triển, cơ quan quản lý; nhu cầu của họ định hình yêu cầu và tiêu chí kiểm thử."
+ },
+ {
+  "id": "istqb-ctai-1752400000-363",
+  "word": "Adversarial data",
+  "nghia": "dữ liệu đối kháng",
+  "dinhnghia": "Đầu vào được cố ý tạo hoặc chỉnh sửa tinh vi (thường khó nhận ra bằng mắt) để khiến model ML đưa ra kết quả sai; dùng trong adversarial testing để đánh giá robustness và security."
+ },
+ {
+  "id": "istqb-ctai-1752400000-368",
+  "word": "Security",
+  "nghia": "bảo mật (bảo vệ hệ thống khỏi truy cập/tác động trái phép)",
+  "dinhnghia": "Đặc tính chất lượng: mức độ hệ thống bảo vệ thông tin và dữ liệu khỏi truy cập, sửa đổi trái phép; với AI còn gồm chống data poisoning, adversarial attack, đánh cắp model và prompt injection."
+ },
+ {
+  "id": "istqb-ctai-1752400000-371",
+  "word": "Hazard",
+  "nghia": "mối nguy hiểm (nguồn có thể gây hại)",
+  "dinhnghia": "Nguồn hoặc tình huống tiềm ẩn có thể gây tổn hại cho con người, tài sản hay môi trường; phân tích hazard là bước cơ bản để xác định yêu cầu an toàn của hệ thống."
+ },
+ {
+  "id": "istqb-ctai-1752400000-372",
+  "word": "Freedom from risk",
+  "nghia": "sự thoát khỏi rủi ro (nhóm đặc tính về giảm rủi ro trong quality in use)",
+  "dinhnghia": "Đặc tính quality in use: mức độ sản phẩm giảm thiểu rủi ro về kinh tế, sức khỏe, an toàn, môi trường; ISO/IEC 25059 bổ sung đặc tính con societal and ethical risk mitigation cho AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-374",
+  "word": "Accountability",
+  "nghia": "trách nhiệm giải trình (có người/tổ chức chịu trách nhiệm cho hệ AI)",
+  "dinhnghia": "Nguyên tắc đạo đức AI yêu cầu xác định rõ cá nhân hoặc tổ chức chịu trách nhiệm về hoạt động, quyết định và hậu quả của hệ AI, kèm khả năng truy vết và giải trình."
+ },
+ {
+  "id": "istqb-ctai-1752400000-375",
+  "word": "Fairness",
+  "nghia": "tính công bằng (model không thiên vị nhóm nào)",
+  "dinhnghia": "Đặc tính cho thấy hệ AI đối xử bình đẳng với các cá nhân và nhóm, không tạo ra kết quả thiên lệch do bias trong dữ liệu hay thuật toán; được đánh giá bằng các fairness metric."
+ },
+ {
+  "id": "istqb-ctai-1752400000-376",
+  "word": "Non-discrimination",
+  "nghia": "không phân biệt đối xử (model không đối xử bất công theo chủng tộc/giới...)",
+  "dinhnghia": "Nguyên tắc đạo đức yêu cầu hệ AI không đưa ra quyết định bất lợi cho người dùng dựa trên thuộc tính được bảo vệ như chủng tộc, giới tính, tuổi, tôn giáo."
+ },
+ {
+  "id": "istqb-ctai-1752400000-379",
+  "word": "Privacy",
+  "nghia": "quyền riêng tư (bảo vệ dữ liệu cá nhân)",
+  "dinhnghia": "Yêu cầu dữ liệu cá nhân dùng để huấn luyện và vận hành hệ AI được thu thập, lưu trữ, xử lý hợp pháp và an toàn, tránh lộ thông tin (ví dụ qua membership inference) và tuân thủ quy định như GDPR."
+ },
+ {
+  "id": "istqb-ctai-1752400000-382",
+  "word": "Human-centered design",
+  "nghia": "thiết kế lấy con người làm trung tâm (ưu tiên nhu cầu người dùng)",
+  "dinhnghia": "Cách tiếp cận thiết kế hệ thống tương tác dựa trên hiểu biết về người dùng, nhiệm vụ và môi trường của họ, có người dùng tham gia và đánh giá lặp lại suốt quá trình phát triển."
+ },
+ {
+  "id": "istqb-ctai-1752400000-399",
+  "word": "Traceability",
+  "nghia": "khả năng truy vết (lần theo từ yêu cầu tới phần hiện thực)",
+  "dinhnghia": "Khả năng thiết lập liên kết hai chiều giữa các sản phẩm công việc như yêu cầu, thiết kế, code và test case; với hệ ML khó đạt vì hành vi được học từ dữ liệu chứ không viết tường minh."
+ },
+ {
+  "id": "istqb-ctai-1752400000-409",
+  "word": "Safety integrity",
+  "nghia": "tính toàn vẹn an toàn (mức độ hệ đáng tin về mặt an toàn)",
+  "dinhnghia": "Xác suất hệ liên quan đến an toàn thực hiện đúng chức năng an toàn trong điều kiện quy định; thường phân cấp (SIL, ASIL) để quyết định mức nghiêm ngặt của phát triển và kiểm thử."
+ },
+ {
+  "id": "istqb-ctai-1752400000-412",
+  "word": "Emergence",
+  "nghia": "sự xuất hiện, nảy sinh (hành vi mới tự phát sinh)",
+  "dinhnghia": "Hiện tượng hệ AI (đặc biệt hệ tự học hoặc nhiều tác nhân) bộc lộ hành vi không được thiết kế hay dự đoán trước, phát sinh từ tương tác giữa các thành phần hoặc với môi trường."
+ },
+ {
+  "id": "istqb-ctai-1752400000-414",
+  "word": "Safety guard",
+  "nghia": "cơ chế bảo vệ an toàn (chốt chặn ngăn model làm điều nguy hiểm)",
+  "dinhnghia": "Cơ chế (guardrail) đặt quanh model để phát hiện và chặn đầu vào hoặc đầu ra không an toàn, ví dụ lọc nội dung độc hại hay giới hạn lệnh điều khiển, giúp hệ vẫn an toàn khi model sai."
+ },
+ {
+  "id": "istqb-ctai-1752400000-416",
+  "word": "Content moderation",
+  "nghia": "kiểm duyệt nội dung (lọc nội dung xấu/không phù hợp)",
+  "dinhnghia": "Quá trình, thường kết hợp model AI và con người, phát hiện và chặn hoặc gỡ nội dung độc hại, vi phạm chính sách; với GenAI dùng để kiểm soát output mà model sinh ra."
+ },
+ {
+  "id": "istqb-ctai-1752400000-420",
+  "word": "Explainable AI",
+  "nghia": "AI có thể giải thích (XAI)",
+  "dinhnghia": "Lĩnh vực và tập kỹ thuật giúp con người hiểu vì sao hệ AI đưa ra một quyết định hay dự đoán, ví dụ LIME, SHAP; hỗ trợ debug, xây dựng niềm tin và tuân thủ quy định."
+ },
+ {
+  "id": "istqb-ctai-1752400000-421",
+  "word": "LIME (Local interpretable model-agnostic explanations)",
+  "nghia": "LIME",
+  "dinhnghia": "Kỹ thuật XAI giải thích từng dự đoán riêng lẻ bằng cách nhiễu nhẹ đầu vào quanh điểm cần giải thích rồi khớp một model đơn giản dễ hiểu; áp dụng được cho mọi loại model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-422",
+  "word": "Model-agnostic",
+  "nghia": "không phụ thuộc loại model",
+  "dinhnghia": "Tính chất của kỹ thuật (ví dụ giải thích hoặc kiểm thử) chỉ dựa trên quan hệ đầu vào–đầu ra của model, coi model như hộp đen, nên dùng được cho mọi kiến trúc ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-427",
+  "word": "Functional safety standard",
+  "nghia": "tiêu chuẩn an toàn chức năng (chuẩn đảm bảo hệ chạy an toàn)",
+  "dinhnghia": "Tiêu chuẩn như IEC 61508 hay ISO 26262 quy định quy trình phát triển, phân tích rủi ro và kiểm thử để hệ điện/điện tử phản ứng đúng, tránh gây nguy hiểm khi có lỗi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-429",
+  "word": "EU AI Act",
+  "nghia": "Đạo luật AI của EU",
+  "dinhnghia": "Khung pháp lý của Liên minh châu Âu phân loại hệ AI theo mức rủi ro (cấm, rủi ro cao, hạn chế, tối thiểu) và áp đặt nghĩa vụ như quản lý dữ liệu, minh bạch, giám sát con người cho hệ rủi ro cao."
+ },
+ {
+  "id": "istqb-ctai-1752400000-430",
+  "word": "Safety component",
+  "nghia": "thành phần an toàn (bộ phận đảm nhiệm chức năng an toàn)",
+  "dinhnghia": "Thành phần của sản phẩm hoặc hệ thống thực hiện chức năng an toàn, hoặc mà hỏng hóc của nó gây nguy hiểm cho người và tài sản; theo EU AI Act, AI dùng làm safety component thường bị xếp rủi ro cao."
+ },
+ {
+  "id": "istqb-ctai-1752400000-434",
+  "word": "High-risk",
+  "nghia": "rủi ro cao (nhóm hệ AI bị quản lý chặt nhất)",
+  "dinhnghia": "Hạng rủi ro trong EU AI Act dành cho hệ AI có thể ảnh hưởng nghiêm trọng tới sức khỏe, an toàn hay quyền cơ bản; phải đáp ứng yêu cầu về quản lý rủi ro, dữ liệu, tài liệu, giám sát con người và đánh giá sự phù hợp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-441",
+  "word": "Non-functional",
+  "nghia": "phi chức năng (thuộc tính như hiệu năng, bảo mật... chứ không phải chức năng)",
+  "dinhnghia": "Chỉ các đặc tính mô tả hệ thống hoạt động tốt đến đâu thay vì làm gì, như performance efficiency, reliability, security, usability; kiểm thử phi chức năng đánh giá các đặc tính này."
+ },
+ {
+  "id": "istqb-ctai-1752400000-461",
+  "word": "Manual override",
+  "nghia": "sự can thiệp thủ công (con người giành quyền điều khiển tay)",
+  "dinhnghia": "Cơ chế cho phép người vận hành vô hiệu hóa hoặc ghi đè quyết định của hệ tự động và trực tiếp điều khiển, thể hiện user controllability và giám sát của con người."
+ },
+ {
+  "id": "istqb-ctai-1752400000-464",
+  "word": "Provenance",
+  "nghia": "nguồn gốc (xuất xứ của dữ liệu huấn luyện)",
+  "dinhnghia": "Thông tin ghi lại nguồn gốc, quá trình thu thập và các biến đổi của dữ liệu hoặc model, giúp đánh giá chất lượng, tính hợp pháp, phát hiện bias và truy vết khi có sự cố."
+ },
+ {
+  "id": "istqb-ctai-1752400000-474",
+  "word": "Edge AI device",
+  "nghia": "thiết bị AI biên (chạy AI ngay tại thiết bị, không qua cloud)",
+  "dinhnghia": "Thiết bị như camera, cảm biến, điện thoại thực hiện inference ngay trên phần cứng cục bộ; cho độ trễ thấp và bảo vệ dữ liệu nhưng bị giới hạn về tài nguyên tính toán, bộ nhớ, điện năng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-494",
+  "word": "Fairness metric",
+  "nghia": "chỉ số công bằng (thước đo mức độ công bằng của model)",
+  "dinhnghia": "Độ đo định lượng so sánh kết quả của model giữa các nhóm, ví dụ demographic parity hay equalized odds, dùng để phát hiện và theo dõi bias không mong muốn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-498",
+  "word": "Refusal",
+  "nghia": "sự từ chối (model từ chối sinh nội dung xấu)",
+  "dinhnghia": "Hành vi của LLM/GenAI không thực hiện yêu cầu độc hại hoặc vi phạm chính sách; kiểm thử cần xác nhận model từ chối đúng lúc, đồng thời không từ chối quá mức với yêu cầu hợp lệ."
+ },
+ {
+  "id": "istqb-ctai-1752400000-504",
+  "word": "ASIL (automotive safety integrity level)",
+  "nghia": "ASIL (mức toàn vẹn an toàn ô tô)",
+  "dinhnghia": "Phân hạng rủi ro trong ISO 26262 từ A (thấp nhất) đến D (cao nhất), dựa trên mức nghiêm trọng, tần suất phơi nhiễm và khả năng kiểm soát; ASIL càng cao yêu cầu phát triển và kiểm thử càng nghiêm ngặt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-511",
+  "word": "Safety monitoring sub-system",
+  "nghia": "hệ con giám sát an toàn",
+  "dinhnghia": "Thành phần độc lập theo dõi đầu ra hoặc trạng thái của hệ AI và can thiệp (giới hạn, chặn, chuyển chế độ an toàn) khi phát hiện hành vi vượt giới hạn an toàn, giúp giảm phụ thuộc vào độ đúng của model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-513",
+  "word": "Machine learning",
+  "nghia": "học máy",
+  "dinhnghia": "Nhánh của AI trong đó hệ thống dùng thuật toán để xây dựng model từ dữ liệu huấn luyện, giúp đưa ra dự đoán hay quyết định mà không cần lập trình tường minh từng quy tắc."
+ },
+ {
+  "id": "istqb-ctai-1752400000-515",
+  "word": "ML algorithm",
+  "nghia": "thuật toán học máy (dùng để huấn luyện mô hình)",
+  "dinhnghia": "Thủ tục tính toán (như decision tree, k-means, neural network với backpropagation) xử lý dữ liệu huấn luyện để tạo ra ML model; khác với model là kết quả sau huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-517",
+  "word": "Unsupervised learning",
+  "nghia": "học không giám sát",
+  "dinhnghia": "Kiểu học máy huấn luyện model trên dữ liệu chưa gán nhãn để tự tìm cấu trúc hoặc mẫu ẩn, ví dụ clustering nhóm khách hàng hay association tìm quan hệ giữa thuộc tính."
+ },
+ {
+  "id": "istqb-ctai-1752400000-519",
+  "word": "Classification",
+  "nghia": "phân loại",
+  "dinhnghia": "Dạng bài toán học có giám sát trong đó model gán mỗi đầu vào vào một trong các lớp định trước, ví dụ email spam/không spam; đánh giá bằng accuracy, precision, recall, F1."
+ },
+ {
+  "id": "istqb-ctai-1752400000-521",
+  "word": "Association",
+  "nghia": "luật kết hợp",
+  "dinhnghia": "Kỹ thuật học không giám sát tìm các quan hệ hoặc phụ thuộc thường xuất hiện cùng nhau giữa các thuộc tính trong dữ liệu, ví dụ sản phẩm hay được mua kèm nhau."
+ },
+ {
+  "id": "istqb-ctai-1752400000-522",
+  "word": "Data preparation",
+  "nghia": "chuẩn bị dữ liệu",
+  "dinhnghia": "Giai đoạn trong ML workflow gồm thu thập, tiền xử lý (làm sạch, chuyển đổi, tăng cường, lấy mẫu), feature engineering và gán nhãn để dữ liệu sẵn sàng cho huấn luyện; thường tốn nhiều công sức nhất."
+ },
+ {
+  "id": "istqb-ctai-1752400000-526",
+  "word": "ML regression",
+  "nghia": "hồi quy trong ML",
+  "dinhnghia": "Dạng bài toán học có giám sát trong đó model dự đoán một giá trị số liên tục, như giá nhà hay nhiệt độ; đánh giá bằng metric như MSE, MAE hay R²."
+ },
+ {
+  "id": "istqb-ctai-1752400000-527",
+  "word": "ML functional performance metric",
+  "nghia": "chỉ số hiệu năng chức năng của ML",
+  "dinhnghia": "Độ đo định lượng mức model ML thực hiện đúng chức năng của nó, ví dụ accuracy, precision, recall, F1-score cho phân loại hay MSE cho hồi quy."
+ },
+ {
+  "id": "istqb-ctai-1752400000-528",
+  "word": "ML functional performance criteria",
+  "nghia": "tiêu chí hiệu năng chức năng của ML (ngưỡng cần đạt)",
+  "dinhnghia": "Các điều kiện chấp nhận đặt ra cho ML functional performance metric, ví dụ recall ≥ 0,95, dùng để quyết định model có đạt yêu cầu và sẵn sàng triển khai hay không."
+ },
+ {
+  "id": "istqb-ctai-1752400000-529",
+  "word": "Perceptron",
+  "nghia": "perceptron (đơn vị mạng nơ-ron đơn giản nhất)",
+  "dinhnghia": "Mô hình nơ-ron nhân tạo cơ bản tính tổng có trọng số của các đầu vào cộng bias rồi đưa qua hàm kích hoạt để tạo đầu ra; là khối xây dựng của mạng nơ-ron."
+ },
+ {
+  "id": "istqb-ctai-1752400000-530",
+  "word": "Neuron coverage",
+  "nghia": "độ phủ nơ-ron",
+  "dinhnghia": "Độ đo độ phủ cho mạng nơ-ron: tỷ lệ nơ-ron được kích hoạt (giá trị kích hoạt vượt một ngưỡng, thường là 0) bởi bộ test so với tổng số nơ-ron trong mạng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-531",
+  "word": "Neuron boundary coverage",
+  "nghia": "độ phủ biên nơ-ron",
+  "dinhnghia": "Độ đo độ phủ tính tỷ lệ nơ-ron có giá trị kích hoạt vượt trên mức cao nhất hoặc dưới mức thấp nhất từng quan sát được khi huấn luyện, giúp kiểm tra hành vi ở vùng ngoài biên."
+ },
+ {
+  "id": "istqb-ctai-1752400000-532",
+  "word": "K-multisection neuron coverage",
+  "nghia": "độ phủ nơ-ron k-đoạn",
+  "dinhnghia": "Độ đo độ phủ chia dải giá trị kích hoạt (min–max khi huấn luyện) của mỗi nơ-ron thành k đoạn bằng nhau và tính tỷ lệ đoạn được bộ test kích hoạt tới."
+ },
+ {
+  "id": "istqb-ctai-1752400000-543",
+  "word": "Fine-tuning",
+  "nghia": "tinh chỉnh",
+  "dinhnghia": "Huấn luyện tiếp một model đã được pre-train trên tập dữ liệu nhỏ hơn, chuyên biệt để thích nghi với tác vụ hoặc lĩnh vực mới; model có thể kế thừa cả hạn chế và bias của model gốc."
+ },
+ {
+  "id": "istqb-ctai-1752400000-544",
+  "word": "Retrieval-augmented generation",
+  "nghia": "sinh nội dung tăng cường truy hồi (RAG)",
+  "dinhnghia": "Kỹ thuật GenAI truy xuất thông tin liên quan từ nguồn tri thức bên ngoài (ví dụ vector database) rồi đưa vào prompt để LLM sinh câu trả lời chính xác, cập nhật hơn và giảm hallucination."
+ },
+ {
+  "id": "istqb-ctai-1752400000-554",
+  "word": "Output label",
+  "nghia": "nhãn đầu ra (kết quả mong muốn tương ứng đầu vào)",
+  "dinhnghia": "Giá trị đúng được gán cho mỗi mẫu dữ liệu trong học có giám sát, đóng vai trò đáp án để model học và để so sánh khi đánh giá; nhãn sai sẽ làm giảm chất lượng model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-564",
+  "word": "Change-related defect",
+  "nghia": "lỗi hồi quy do thay đổi (nghĩa 'regression' trong test thông thường)",
+  "dinhnghia": "Defect xuất hiện ở phần vốn chạy đúng sau khi hệ thống bị thay đổi; regression testing nhằm phát hiện loại lỗi này, khác với khái niệm regression (hồi quy) trong ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-565",
+  "word": "Unlabeled data",
+  "nghia": "dữ liệu chưa gán nhãn",
+  "dinhnghia": "Dữ liệu chỉ có đầu vào mà không kèm đáp án đúng; được dùng trong học không giám sát hoặc cần gán nhãn trước khi dùng cho học có giám sát."
+ },
+ {
+  "id": "istqb-ctai-1752400000-576",
+  "word": "Intelligent agent",
+  "nghia": "tác nhân thông minh (hệ AI tự học qua tương tác)",
+  "dinhnghia": "Thực thể tự chủ cảm nhận môi trường và chọn hành động để đạt mục tiêu; trong reinforcement learning, agent học chính sách tối ưu qua thử–sai dựa trên phần thưởng và hình phạt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-579",
+  "word": "Reward",
+  "nghia": "phần thưởng (tín hiệu tích cực)",
+  "dinhnghia": "Trong reinforcement learning, tín hiệu số mà môi trường trả về sau mỗi hành động của agent; agent học cách tối đa hóa tổng phần thưởng, nên reward function thiết kế sai dễ gây hành vi không mong muốn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-580",
+  "word": "Penalty",
+  "nghia": "hình phạt (tín hiệu tiêu cực)",
+  "dinhnghia": "Trong reinforcement learning, phần thưởng âm mà agent nhận khi thực hiện hành động không mong muốn, khiến agent học cách tránh các hành động đó."
+ },
+ {
+  "id": "istqb-ctai-1752400000-586",
+  "word": "Adaptive system",
+  "nghia": "hệ thống thích ứng (như chatbot)",
+  "dinhnghia": "Hệ thống tự thay đổi hành vi khi môi trường hoặc dữ liệu vận hành thay đổi; cần kiểm thử để chắc hệ thích ứng đúng hướng và không suy giảm hiệu năng hay an toàn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-595",
+  "word": "Data acquisition",
+  "nghia": "thu thập dữ liệu",
+  "dinhnghia": "Bước đầu tiên của chuẩn bị dữ liệu: xác định, thu thập và gom dữ liệu cần cho huấn luyện từ các nguồn (database, API, cảm biến…), kể cả việc gán nhãn nếu cần."
+ },
+ {
+  "id": "istqb-ctai-1752400000-596",
+  "word": "Data preprocessing",
+  "nghia": "tiền xử lý dữ liệu (làm sạch, chuẩn hóa)",
+  "dinhnghia": "Các bước biến đổi dữ liệu thô thành dạng phù hợp cho huấn luyện, như làm sạch, xử lý giá trị thiếu, ẩn danh hóa, scaling/chuẩn hóa, augmentation và sampling."
+ },
+ {
+  "id": "istqb-ctai-1752400000-597",
+  "word": "Feature engineering",
+  "nghia": "kỹ thuật đặc trưng (chọn/tạo đặc trưng cho mô hình)",
+  "dinhnghia": "Hoạt động chọn, biến đổi hoặc tạo mới các thuộc tính (feature) từ dữ liệu sao cho giàu thông tin, không dư thừa, giúp mô hình học tốt hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-598",
+  "word": "Exploratory data analysis",
+  "nghia": "phân tích dữ liệu thăm dò (EDA)",
+  "dinhnghia": "Việc khảo sát dữ liệu bằng thống kê và trực quan hóa (biểu đồ, đồ thị) để phát hiện xu hướng, pattern, bất thường và hiểu dữ liệu trước khi xây mô hình."
+ },
+ {
+  "id": "istqb-ctai-1752400000-603",
+  "word": "Decision tree",
+  "nghia": "cây quyết định (một loại mô hình ML)",
+  "dinhnghia": "Mô hình ML có cấu trúc cây, mỗi nút trong kiểm tra một điều kiện trên feature và mỗi lá cho ra kết quả; dễ giải thích, độ sâu cây là một hyperparameter."
+ },
+ {
+  "id": "istqb-ctai-1752400000-604",
+  "word": "Model hyperparameter",
+  "nghia": "siêu tham số mô hình (định nghĩa cấu trúc mô hình)",
+  "dinhnghia": "Loại hyperparameter xác định cấu trúc của mô hình, ví dụ số layer và số nơ-ron của mạng nơ-ron hay độ sâu của cây quyết định; được đặt trước khi huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-605",
+  "word": "Algorithm hyperparameter",
+  "nghia": "siêu tham số thuật toán (điều khiển quá trình huấn luyện)",
+  "dinhnghia": "Loại hyperparameter điều khiển cách thuật toán huấn luyện chạy, ví dụ số vòng lặp/epoch, learning rate hay batch size; không phải giá trị mô hình tự học."
+ },
+ {
+  "id": "istqb-ctai-1752400000-607",
+  "word": "Random forest",
+  "nghia": "rừng ngẫu nhiên (mô hình gồm nhiều cây quyết định)",
+  "dinhnghia": "Mô hình ensemble huấn luyện nhiều cây quyết định trên các tập con ngẫu nhiên của dữ liệu/feature rồi tổng hợp kết quả (bỏ phiếu hoặc lấy trung bình) để tăng độ chính xác và giảm overfitting."
+ },
+ {
+  "id": "istqb-ctai-1752400000-608",
+  "word": "SVM",
+  "nghia": "máy vector hỗ trợ (Support Vector Machine)",
+  "dinhnghia": "Thuật toán học có giám sát dùng cho phân loại, tìm siêu phẳng phân tách các lớp với khoảng cách (margin) lớn nhất tới các điểm dữ liệu gần nhất."
+ },
+ {
+  "id": "istqb-ctai-1752400000-609",
+  "word": "Neural network",
+  "nghia": "mạng nơ-ron (mô hình lấy cảm hứng từ não người)",
+  "dinhnghia": "Mô hình ML gồm các nơ-ron nhân tạo xếp thành lớp (input, hidden, output), nối với nhau qua các kết nối có trọng số; học bằng cách điều chỉnh trọng số theo dữ liệu huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-612",
+  "word": "Independent test dataset",
+  "nghia": "tập kiểm thử độc lập (không dùng khi huấn luyện)",
+  "dinhnghia": "Tập dữ liệu tách riêng, không tham gia huấn luyện hay tuning, dùng để đánh giá khách quan hiệu năng của mô hình đã tune trên dữ liệu chưa từng thấy."
+ },
+ {
+  "id": "istqb-ctai-1752400000-613",
+  "word": "Non-functional test",
+  "nghia": "kiểm thử phi chức năng (như thời gian phản hồi)",
+  "dinhnghia": "Kiểm thử đánh giá các đặc tính chất lượng ngoài chức năng của hệ thống, như hiệu năng, độ trễ, khả năng mở rộng, bảo mật hay khả năng sử dụng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-619",
+  "word": "Embedded system",
+  "nghia": "hệ thống nhúng",
+  "dinhnghia": "Hệ thống máy tính chuyên dụng gắn trong thiết bị lớn hơn (xe, thiết bị y tế, IoT), thường bị giới hạn tài nguyên; mô hình ML triển khai lên đó thường phải được tối ưu lại."
+ },
+ {
+  "id": "istqb-ctai-1752400000-621",
+  "word": "Web API",
+  "nghia": "giao diện lập trình ứng dụng qua web",
+  "dinhnghia": "Giao diện cho phép ứng dụng khác gọi chức năng qua giao thức web (thường HTTP/REST); mô hình ML đã deploy thường được cung cấp dưới dạng web API để nhận đầu vào và trả dự đoán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-624",
+  "word": "Batch prediction",
+  "nghia": "dự đoán theo lô (chạy hàng loạt theo lịch)",
+  "dinhnghia": "Cách vận hành mô hình trong đó dự đoán được tính cho cả một lô dữ liệu cùng lúc, thường theo lịch định kỳ, thay vì trả kết quả tức thời cho từng yêu cầu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-634",
+  "word": "Test level",
+  "nghia": "cấp độ kiểm thử (integration, system, acceptance)",
+  "dinhnghia": "Nhóm hoạt động kiểm thử được tổ chức và quản lý cùng nhau, gắn với một giai đoạn phát triển cụ thể như component, integration, system hay acceptance testing."
+ },
+ {
+  "id": "istqb-ctai-1752400000-635",
+  "word": "Classification model",
+  "nghia": "mô hình phân loại",
+  "dinhnghia": "Mô hình ML học có giám sát, gán mỗi đầu vào vào một trong các lớp (nhãn) rời rạc định sẵn, ví dụ phân biệt email spam/không spam; đánh giá bằng confusion matrix, accuracy, precision, recall."
+ },
+ {
+  "id": "istqb-ctai-1752400000-649",
+  "word": "LLM",
+  "nghia": "mô hình ngôn ngữ lớn (Large Language Model)",
+  "dinhnghia": "Mô hình GenAI dựa trên deep learning (thường là transformer), được huấn luyện trên lượng văn bản khổng lồ để hiểu và sinh ngôn ngữ tự nhiên theo prompt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-653",
+  "word": "Enhanced prompt",
+  "nghia": "prompt được tăng cường (bổ sung tài liệu)",
+  "dinhnghia": "Trong RAG, prompt gốc của người dùng được ghép thêm các tài liệu/đoạn văn liên quan đã truy hồi, giúp LLM trả lời chính xác và sát ngữ cảnh hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-669",
+  "word": "Raw data",
+  "nghia": "dữ liệu thô (chưa xử lý)",
+  "dinhnghia": "Dữ liệu ở dạng vừa thu thập, chưa qua làm sạch hay biến đổi, thường chứa nhiễu, giá trị thiếu hoặc sai định dạng nên cần tiền xử lý trước khi huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-672",
+  "word": "Numerical",
+  "nghia": "dạng số (kiểu dữ liệu)",
+  "dinhnghia": "Kiểu dữ liệu biểu diễn bằng giá trị số đo được, có thể tính toán (tuổi, giá, nhiệt độ); thường cần scaling hoặc chuẩn hóa trước khi đưa vào mô hình."
+ },
+ {
+  "id": "istqb-ctai-1752400000-673",
+  "word": "Categorical",
+  "nghia": "dạng phân loại/hạng mục (kiểu dữ liệu)",
+  "dinhnghia": "Kiểu dữ liệu nhận giá trị thuộc một tập hạng mục hữu hạn, không mang ý nghĩa số học (màu sắc, quốc gia); thường phải mã hóa (vd one-hot) trước khi huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-679",
+  "word": "Time series",
+  "nghia": "chuỗi thời gian (dữ liệu theo thời gian)",
+  "dinhnghia": "Dữ liệu gồm các quan sát được ghi theo thứ tự thời gian, trong đó thứ tự và khoảng cách thời gian mang ý nghĩa, ví dụ giá cổ phiếu hay số đo cảm biến."
+ },
+ {
+  "id": "istqb-ctai-1752400000-681",
+  "word": "Cleaning data",
+  "nghia": "làm sạch dữ liệu",
+  "dinhnghia": "Bước tiền xử lý phát hiện và sửa hoặc loại bỏ dữ liệu sai, trùng lặp, outlier, nhiễu và giá trị thiếu để nâng chất lượng dữ liệu huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-684",
+  "word": "Impute",
+  "nghia": "điền/gán giá trị thiếu",
+  "dinhnghia": "Kỹ thuật thay giá trị bị thiếu bằng giá trị ước lượng, như mean, median, mode hoặc giá trị dự đoán, để giữ dữ liệu đầy đủ thay vì xóa bản ghi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-689",
+  "word": "Data completeness",
+  "nghia": "tính đầy đủ của dữ liệu",
+  "dinhnghia": "Đặc tính chất lượng dữ liệu cho biết mức độ dữ liệu có đủ các giá trị và bản ghi cần thiết, không bị thiếu, để mô hình học được đúng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-690",
+  "word": "Anonymize",
+  "nghia": "ẩn danh hóa (xóa thông tin nhận dạng)",
+  "dinhnghia": "Bước tiền xử lý loại bỏ hoặc che các thông tin nhận dạng cá nhân trong dữ liệu để bảo vệ quyền riêng tư và tuân thủ quy định như GDPR."
+ },
+ {
+  "id": "istqb-ctai-1752400000-695",
+  "word": "Scaling",
+  "nghia": "co giãn thang giá trị (đưa về cùng thang)",
+  "dinhnghia": "Bước tiền xử lý biến đổi các feature số về cùng một khoảng hoặc thang đo, tránh feature có giá trị lớn lấn át feature khác khi huấn luyện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-696",
+  "word": "Normalize",
+  "nghia": "chuẩn hóa (đưa về khoảng chuẩn)",
+  "dinhnghia": "Biến đổi giá trị feature về một khoảng chuẩn (thường 0–1) hoặc phân phối chuẩn, giúp thuật toán hội tụ nhanh và ổn định hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-697",
+  "word": "Augment",
+  "nghia": "tăng cường, bổ sung (dữ liệu)",
+  "dinhnghia": "Data augmentation: tạo thêm mẫu huấn luyện bằng cách biến đổi dữ liệu có sẵn (xoay, lật, thêm nhiễu ảnh…) để tăng kích thước và độ đa dạng của tập dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-702",
+  "word": "Synthetic data",
+  "nghia": "dữ liệu tổng hợp (được tạo nhân tạo)",
+  "dinhnghia": "Dữ liệu được sinh nhân tạo bằng thuật toán, mô phỏng hoặc GenAI thay vì thu thập thực tế, dùng để bù dữ liệu thiếu, cân bằng lớp hoặc bảo vệ quyền riêng tư."
+ },
+ {
+  "id": "istqb-ctai-1752400000-703",
+  "word": "Sampling",
+  "nghia": "lấy mẫu (chọn tập con)",
+  "dinhnghia": "Chọn một tập con đại diện từ tập dữ liệu lớn (ngẫu nhiên, phân tầng…) để giảm chi phí tính toán và thời gian huấn luyện mà vẫn giữ đặc điểm dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-728",
+  "word": "Holdout dataset",
+  "nghia": "tập giữ lại (dùng để test mô hình đã tune)",
+  "dinhnghia": "Phần dữ liệu tách riêng ngay từ đầu, không dùng để huấn luyện hay chỉnh hyperparameter, chỉ dùng cho lần đánh giá cuối cùng của mô hình."
+ },
+ {
+  "id": "istqb-ctai-1752400000-736",
+  "word": "Three-way split",
+  "nghia": "chia ba (train/validation/test)",
+  "dinhnghia": "Cách chia một dataset thành ba tập tương đương chọn ngẫu nhiên: training để huấn luyện, validation để tune hyperparameter và test để đánh giá cuối."
+ },
+ {
+  "id": "istqb-ctai-1752400000-739",
+  "word": "Hold-out test set",
+  "nghia": "tập test giữ riêng (không dùng khi huấn luyện)",
+  "dinhnghia": "Tập test được để riêng, không tham gia huấn luyện hay cross-validation, nhằm cho ước lượng hiệu năng cuối cùng không bị thiên lệch lạc quan."
+ },
+ {
+  "id": "istqb-ctai-1752400000-743",
+  "word": "Fold",
+  "nghia": "phần chia (một mảnh dữ liệu trong cross-validation)",
+  "dinhnghia": "Trong k-fold cross-validation, dữ liệu được chia thành k phần bằng nhau; mỗi lượt mô hình huấn luyện trên k-1 fold và kiểm định trên fold còn lại."
+ },
+ {
+  "id": "istqb-ctai-1752400000-746",
+  "word": "Hyperparameter tuning",
+  "nghia": "tinh chỉnh siêu tham số",
+  "dinhnghia": "Quá trình thử các tổ hợp giá trị hyperparameter (thủ công, grid search, random search…) và chọn bộ cho hiệu năng tốt nhất trên dữ liệu validation."
+ },
+ {
+  "id": "istqb-ctai-1752400000-748",
+  "word": "Imbalanced data",
+  "nghia": "dữ liệu mất cân bằng (lớp chênh lệch nhiều)",
+  "dinhnghia": "Dataset trong đó số mẫu giữa các lớp chênh lệch lớn, khiến mô hình thiên về lớp đa số; accuracy dễ gây hiểu lầm, nên dùng precision, recall, F1 hoặc stratified sampling."
+ },
+ {
+  "id": "istqb-ctai-1752400000-751",
+  "word": "Generalization ability",
+  "nghia": "khả năng khái quát hóa (chạy tốt trên dữ liệu mới)",
+  "dinhnghia": "Mức độ mô hình duy trì hiệu năng trên dữ liệu chưa thấy khi huấn luyện; mô hình overfitting có khả năng khái quát kém."
+ },
+ {
+  "id": "istqb-ctai-1752400000-757",
+  "word": "Resampling method",
+  "nghia": "phương pháp lấy mẫu lại",
+  "dinhnghia": "Nhóm kỹ thuật lấy mẫu lặp lại từ cùng dataset (như cross-validation, bootstrap) để ước lượng hiệu năng mô hình đáng tin cậy hơn, nhất là khi dữ liệu ít."
+ },
+ {
+  "id": "istqb-ctai-1752400000-758",
+  "word": "Leave-one-out cross-validation",
+  "nghia": "kiểm định chéo bỏ-một (k bằng số mẫu)",
+  "dinhnghia": "Dạng cực đoan của k-fold cross-validation với k bằng số mẫu: mỗi lượt chỉ giữ lại một mẫu để kiểm định; tận dụng tối đa dữ liệu nhưng rất tốn chi phí tính toán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-759",
+  "word": "Bootstrap",
+  "nghia": "bootstrap (kỹ thuật lấy mẫu có hoàn lại)",
+  "dinhnghia": "Kỹ thuật resampling tạo nhiều tập dữ liệu bằng cách lấy mẫu ngẫu nhiên có hoàn lại từ dataset gốc, dùng để ước lượng hiệu năng và độ biến thiên khi dữ liệu ít."
+ },
+ {
+  "id": "istqb-ctai-1752400000-761",
+  "word": "True positive",
+  "nghia": "dương tính thật (dự đoán dương và đúng)",
+  "dinhnghia": "Ô TP trong confusion matrix: trường hợp thực tế là dương và mô hình cũng dự đoán dương."
+ },
+ {
+  "id": "istqb-ctai-1752400000-762",
+  "word": "True negative",
+  "nghia": "âm tính thật (dự đoán âm và đúng)",
+  "dinhnghia": "Ô TN trong confusion matrix: trường hợp thực tế là âm và mô hình cũng dự đoán âm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-763",
+  "word": "False positive",
+  "nghia": "dương tính giả (dự đoán dương nhưng sai)",
+  "dinhnghia": "Ô FP trong confusion matrix: trường hợp thực tế là âm nhưng mô hình dự đoán dương, tức một báo động giả; làm giảm precision."
+ },
+ {
+  "id": "istqb-ctai-1752400000-773",
+  "word": "Data noise",
+  "nghia": "nhiễu dữ liệu",
+  "dinhnghia": "Sai lệch hoặc giá trị ngẫu nhiên, không chính xác trong dữ liệu (lỗi đo, nhãn sai) làm che khuất pattern thật, gây phân loại sai hoặc khiến mô hình học sai."
+ },
+ {
+  "id": "istqb-ctai-1752400000-777",
+  "word": "Sensitivity",
+  "nghia": "độ nhạy (tên gọi khác của recall)",
+  "dinhnghia": "Metric phân loại bằng recall: tỷ lệ ca dương thực tế được mô hình phát hiện đúng, TP/(TP+FN)."
+ },
+ {
+  "id": "istqb-ctai-1752400000-779",
+  "word": "Harmonic mean",
+  "nghia": "trung bình điều hòa",
+  "dinhnghia": "Kiểu trung bình bằng nghịch đảo của trung bình các nghịch đảo; F1-score là harmonic mean của precision và recall nên chỉ cao khi cả hai cùng cao."
+ },
+ {
+  "id": "istqb-ctai-1752400000-792",
+  "word": "Artificial neural network",
+  "nghia": "mạng nơ-ron nhân tạo",
+  "dinhnghia": "Mô hình tính toán mô phỏng mạng nơ-ron sinh học, gồm các nơ-ron nhân tạo xếp lớp và nối với nhau bằng kết nối có trọng số, học từ dữ liệu bằng cách điều chỉnh trọng số."
+ },
+ {
+  "id": "istqb-ctai-1752400000-797",
+  "word": "Single-layer perceptron",
+  "nghia": "perceptron một lớp (mạng nơ-ron sớm nhất, một lớp)",
+  "dinhnghia": "Dạng mạng nơ-ron đơn giản nhất, chỉ một lớp nơ-ron, hoạt động như bộ phân loại nhị phân và chỉ giải được bài toán phân tách tuyến tính."
+ },
+ {
+  "id": "istqb-ctai-1752400000-798",
+  "word": "Binary classifier",
+  "nghia": "bộ phân loại nhị phân (hai lớp)",
+  "dinhnghia": "Mô hình phân loại chỉ có hai lớp đầu ra (vd dương/âm, có/không); hiệu năng thường đánh giá bằng confusion matrix 2x2."
+ },
+ {
+  "id": "istqb-ctai-1752400000-799",
+  "word": "Linearly separable",
+  "nghia": "tách được bằng đường thẳng (phân tách tuyến tính)",
+  "dinhnghia": "Tính chất của bài toán mà các lớp có thể được tách hoàn toàn bằng một đường thẳng (hoặc siêu phẳng) trong không gian đầu vào; perceptron một lớp chỉ giải được loại này."
+ },
+ {
+  "id": "istqb-ctai-1752400000-800",
+  "word": "Input space",
+  "nghia": "không gian đầu vào (tập các đặc trưng)",
+  "dinhnghia": "Tập hợp mọi giá trị đầu vào có thể của mô hình, mỗi feature là một chiều; mô hình phân loại chia không gian này thành các vùng ứng với từng lớp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-801",
+  "word": "Deep neural network",
+  "nghia": "mạng nơ-ron sâu (nhiều lớp)",
+  "dinhnghia": "Mạng nơ-ron có nhiều hidden layer giữa lớp input và output, học được các biểu diễn ngày càng trừu tượng; là nền tảng của deep learning."
+ },
+ {
+  "id": "istqb-ctai-1752400000-802",
+  "word": "Fully connected network",
+  "nghia": "mạng kết nối đầy đủ (mỗi nơ-ron nối tất cả nơ-ron lớp sau)",
+  "dinhnghia": "Mạng nơ-ron trong đó mọi nơ-ron của một lớp đều được nối tới tất cả nơ-ron của lớp kế tiếp; chính là multi-layer perceptron."
+ },
+ {
+  "id": "istqb-ctai-1752400000-803",
+  "word": "Multi-layer perceptron",
+  "nghia": "perceptron đa lớp (mạng nhiều lớp)",
+  "dinhnghia": "Mạng nơ-ron feed-forward kết nối đầy đủ gồm lớp input, một hoặc nhiều hidden layer và lớp output, dùng hàm kích hoạt phi tuyến nên giải được bài toán phi tuyến."
+ },
+ {
+  "id": "istqb-ctai-1752400000-804",
+  "word": "Input layer",
+  "nghia": "lớp đầu vào (nhận dữ liệu vào)",
+  "dinhnghia": "Lớp đầu tiên của mạng nơ-ron, nhận giá trị đầu vào (vd pixel ảnh) và chuyển cho hidden layer; không thực hiện phép tính học."
+ },
+ {
+  "id": "istqb-ctai-1752400000-805",
+  "word": "Output layer",
+  "nghia": "lớp đầu ra (trả kết quả ra ngoài)",
+  "dinhnghia": "Lớp cuối của mạng nơ-ron, tạo ra kết quả dự đoán cuối cùng, ví dụ xác suất cho từng lớp trong bài toán phân loại."
+ },
+ {
+  "id": "istqb-ctai-1752400000-808",
+  "word": "Hidden layer",
+  "nghia": "lớp ẩn (nằm giữa lớp vào và ra)",
+  "dinhnghia": "Lớp nơ-ron nằm giữa input layer và output layer, thực hiện tính toán để trích xuất đặc trưng; số hidden layer quyết định độ sâu của mạng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-809",
+  "word": "Artificial neuron",
+  "nghia": "nơ-ron nhân tạo (còn gọi là node)",
+  "dinhnghia": "Đơn vị tính toán của mạng nơ-ron: nhận các đầu vào, tính tổng có trọng số cộng bias rồi đưa qua hàm kích hoạt để cho ra activation value."
+ },
+ {
+  "id": "istqb-ctai-1752400000-815",
+  "word": "Activation value",
+  "nghia": "giá trị kích hoạt (đầu ra của một nơ-ron)",
+  "dinhnghia": "Giá trị một nơ-ron xuất ra sau khi áp hàm kích hoạt lên tổng có trọng số các đầu vào; là cơ sở để đo các metric như neuron coverage."
+ },
+ {
+  "id": "istqb-ctai-1752400000-816",
+  "word": "Weighted sum",
+  "nghia": "tổng có trọng số",
+  "dinhnghia": "Tổng các đầu vào của một nơ-ron, mỗi đầu vào nhân với trọng số của kết nối tương ứng (thường cộng thêm bias), trước khi đưa qua hàm kích hoạt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-818",
+  "word": "Weight",
+  "nghia": "trọng số (hệ số của một kết nối)",
+  "dinhnghia": "Tham số gắn với mỗi kết nối giữa hai nơ-ron, quyết định mức ảnh hưởng của đầu vào; được khởi tạo ngẫu nhiên và điều chỉnh trong huấn luyện để giảm sai số."
+ },
+ {
+  "id": "istqb-ctai-1752400000-821",
+  "word": "Activation function",
+  "nghia": "hàm kích hoạt (biến đổi phi tuyến đầu ra nơ-ron)",
+  "dinhnghia": "Hàm, thường phi tuyến (ReLU, sigmoid, tanh), áp lên tổng có trọng số của nơ-ron để tạo activation value, giúp mạng học được quan hệ phức tạp."
+ },
+ {
+  "id": "istqb-ctai-1752400000-830",
+  "word": "Epoch",
+  "nghia": "epoch (một lượt đi hết toàn bộ tập huấn luyện)",
+  "dinhnghia": "Một vòng huấn luyện trong đó toàn bộ dữ liệu huấn luyện được đưa qua mạng một lần và trọng số được cập nhật; số epoch là một algorithm hyperparameter."
+ },
+ {
+  "id": "istqb-ctai-1752400000-836",
+  "word": "Structural coverage",
+  "nghia": "độ phủ cấu trúc (đo mức test các thành phần bên trong)",
+  "dinhnghia": "Mức độ các thành phần cấu trúc bên trong (code, hoặc nơ-ron trong mạng) được bộ test kích hoạt; với neural network đo bằng neuron coverage, kMNC…"
+ },
+ {
+  "id": "istqb-ctai-1752400000-837",
+  "word": "Coverage metric",
+  "nghia": "chỉ số độ phủ",
+  "dinhnghia": "Thước đo tỷ lệ phần tử (code, yêu cầu, nơ-ron…) được bộ test thực thi so với tổng số, dùng để đánh giá mức đầy đủ của kiểm thử."
+ },
+ {
+  "id": "istqb-ctai-1752400000-845",
+  "word": "Threshold",
+  "nghia": "ngưỡng (giá trị giới hạn để tính là kích hoạt)",
+  "dinhnghia": "Giá trị giới hạn dùng để quyết định: trong neuron coverage, nơ-ron được tính là kích hoạt khi activation value vượt ngưỡng; trong phân loại, ngưỡng xác suất quyết định nhãn dự đoán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-849",
+  "word": "Decision boundary",
+  "nghia": "ranh giới quyết định (đường phân tách các lớp)",
+  "dinhnghia": "Đường hoặc mặt trong không gian đầu vào mà tại đó mô hình phân loại chuyển từ dự đoán lớp này sang lớp khác."
+ },
+ {
+  "id": "istqb-ctai-1752400000-855",
+  "word": "Spurious correlation",
+  "nghia": "tương quan giả (mối liên hệ không thực chất)",
+  "dinhnghia": "Mối liên hệ thống kê mô hình học được từ dữ liệu huấn luyện nhưng không phản ánh quan hệ nhân quả thật (vd dựa vào nền ảnh thay vì đối tượng), khiến mô hình kém khái quát."
+ },
+ {
+  "id": "istqb-ctai-1752400000-858",
+  "word": "AI-based system",
+  "nghia": "hệ thống dựa trên AI (phần mềm có thành phần trí tuệ nhân tạo)",
+  "dinhnghia": "Hệ thống gồm một hoặc nhiều thành phần AI (vd model ML) kết hợp với các thành phần phần mềm truyền thống; cần cách kiểm thử riêng do hành vi xác suất và phụ thuộc dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-860",
+  "word": "Exploratory testing",
+  "nghia": "kiểm thử thăm dò (vừa học vừa thiết kế và chạy test cùng lúc)",
+  "dinhnghia": "Cách kiểm thử trong đó tester đồng thời tìm hiểu hệ thống, thiết kế và thực thi test, dựa vào kết quả vừa thu được để định hướng test tiếp theo."
+ },
+ {
+  "id": "istqb-ctai-1752400000-861",
+  "word": "Risk-based testing",
+  "nghia": "kiểm thử dựa trên rủi ro (ưu tiên test theo mức độ rủi ro)",
+  "dinhnghia": "Cách tiếp cận kiểm thử trong đó việc chọn, ưu tiên và phân bổ nỗ lực test dựa trên phân tích khả năng xảy ra và mức tác động của các rủi ro."
+ },
+ {
+  "id": "istqb-ctai-1752400000-863",
+  "word": "Adaptive AI-based system",
+  "nghia": "hệ thống AI thích nghi (thay đổi hành vi sau khi triển khai)",
+  "dinhnghia": "Hệ thống AI tiếp tục học và tự cập nhật từ dữ liệu mới khi đang vận hành nên hành vi có thể đổi theo thời gian; cần kiểm thử và giám sát liên tục."
+ },
+ {
+  "id": "istqb-ctai-1752400000-864",
+  "word": "Generative AI",
+  "nghia": "AI tạo sinh (sinh ra văn bản, ảnh, âm thanh, video mới)",
+  "dinhnghia": "Nhánh AI dùng các mô hình đã học phân phối dữ liệu (như LLM, diffusion model) để tạo ra nội dung mới tương tự dữ liệu huấn luyện theo prompt của người dùng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-865",
+  "word": "Large language model",
+  "nghia": "mô hình ngôn ngữ lớn (LLM, model AI xử lý ngôn ngữ quy mô lớn)",
+  "dinhnghia": "Mô hình deep learning (thường kiến trúc transformer) với rất nhiều tham số, được huấn luyện trên kho văn bản khổng lồ để hiểu và sinh ngôn ngữ tự nhiên."
+ },
+ {
+  "id": "istqb-ctai-1752400000-866",
+  "word": "Locked AI-based system",
+  "nghia": "hệ thống AI bị khóa (hành vi cố định sau khi triển khai)",
+  "dinhnghia": "Hệ thống AI có model không tự học thêm khi vận hành, hành vi chỉ đổi khi được huấn luyện lại và phát hành phiên bản mới; dễ kiểm thử hơn hệ thống adaptive."
+ },
+ {
+  "id": "istqb-ctai-1752400000-868",
+  "word": "Testability",
+  "nghia": "khả năng kiểm thử (mức độ dễ test của hệ thống)",
+  "dinhnghia": "Mức độ dễ dàng thiết kế và thực hiện test cho hệ thống, gồm khả năng quan sát, kiểm soát và xác định kết quả mong đợi; thường thấp ở hệ thống AI do tính xác suất và thiếu test oracle."
+ },
+ {
+  "id": "istqb-ctai-1752400000-871",
+  "word": "Boundary value analysis",
+  "nghia": "phân tích giá trị biên (kỹ thuật test lấy giá trị ở ranh giới)",
+  "dinhnghia": "Kỹ thuật kiểm thử hộp đen chọn giá trị test ở biên và sát biên của các phân vùng tương đương, nơi lỗi thường hay xảy ra."
+ },
+ {
+  "id": "istqb-ctai-1752400000-872",
+  "word": "Machine learning system",
+  "nghia": "hệ thống học máy (MLS, hệ thống chứa model ML)",
+  "dinhnghia": "Hệ thống gồm model ML cùng các thành phần đi kèm như data pipeline, code tiền xử lý, hạ tầng triển khai và giám sát, phối hợp để cung cấp chức năng dựa trên ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-876",
+  "word": "Deterministic",
+  "nghia": "tất định (cùng input luôn cho cùng output)",
+  "dinhnghia": "Tính chất của hệ thống mà cùng đầu vào và điều kiện luôn cho cùng đầu ra; ngược với hệ thống xác suất (non-deterministic) như nhiều mô hình GenAI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-881",
+  "word": "Statistical testing",
+  "nghia": "kiểm thử thống kê (đánh giá qua phân phối và độ tin cậy)",
+  "dinhnghia": "Cách kiểm thử chạy nhiều test trên nhiều kịch bản rồi đánh giá kết quả bằng thống kê (tỷ lệ đạt, phân phối, khoảng tin cậy), phù hợp với hệ thống AI cho output xác suất."
+ },
+ {
+  "id": "istqb-ctai-1752400000-886",
+  "word": "Test oracle problem",
+  "nghia": "bài toán test oracle (khó xác định kết quả mong đợi đúng)",
+  "dinhnghia": "Khó khăn khi không có hoặc rất khó có nguồn xác định kết quả mong đợi để so với kết quả thực tế; phổ biến ở hệ thống AI, thường xử lý bằng metamorphic testing, back-to-back testing hoặc đánh giá của chuyên gia."
+ },
+ {
+  "id": "istqb-ctai-1752400000-888",
+  "word": "Specification",
+  "nghia": "đặc tả (mô tả yêu cầu và hành vi mong đợi)",
+  "dinhnghia": "Tài liệu mô tả chính xác yêu cầu, hành vi và đặc tính của hệ thống hoặc thành phần, làm cơ sở (test basis) để thiết kế test và xác định kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-896",
+  "word": "Automated test oracle",
+  "nghia": "test oracle tự động",
+  "dinhnghia": "Cơ chế (chương trình, model tham chiếu, quy tắc) tự động xác định kết quả mong đợi hoặc phán định output của hệ thống là đạt hay không, thay cho việc con người kiểm tra từng kết quả."
+ },
+ {
+  "id": "istqb-ctai-1752400000-904",
+  "word": "DNN (deep neural network)",
+  "nghia": "mạng nơ-ron sâu",
+  "dinhnghia": "Mạng nơ-ron nhân tạo có nhiều lớp ẩn giữa lớp đầu vào và lớp đầu ra, cho phép học các đặc trưng phức tạp; nền tảng của deep learning (nhận dạng ảnh, giọng nói, LLM)."
+ },
+ {
+  "id": "istqb-ctai-1752400000-905",
+  "word": "Weights and biases",
+  "nghia": "trọng số và độ lệch (tham số học được của mạng nơ-ron)",
+  "dinhnghia": "Các tham số bên trong mạng nơ-ron được điều chỉnh trong quá trình huấn luyện: weight quyết định mức ảnh hưởng của mỗi đầu vào, bias là giá trị cộng thêm giúp dịch ngưỡng kích hoạt của nơ-ron."
+ },
+ {
+  "id": "istqb-ctai-1752400000-910",
+  "word": "Reinforcement learning",
+  "nghia": "học tăng cường",
+  "dinhnghia": "Kiểu học máy trong đó một agent tương tác với môi trường, thử các hành động và nhận phần thưởng hoặc hình phạt, từ đó học chính sách hành động tối đa hóa tổng phần thưởng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-911",
+  "word": "Reward function",
+  "nghia": "hàm phần thưởng",
+  "dinhnghia": "Hàm trong học tăng cường gán điểm thưởng/phạt cho mỗi hành động hoặc trạng thái, định hướng hành vi mà agent cần tối ưu; thiết kế sai có thể dẫn tới reward hacking."
+ },
+ {
+  "id": "istqb-ctai-1752400000-920",
+  "word": "Self-learning system",
+  "nghia": "hệ thống tự học",
+  "dinhnghia": "Hệ thống AI tự cập nhật hoặc thay đổi model khi vận hành dựa trên dữ liệu và trải nghiệm mới, nên hành vi có thể thay đổi sau triển khai và cần được test lại định kỳ."
+ },
+ {
+  "id": "istqb-ctai-1752400000-922",
+  "word": "Floating-point precision",
+  "nghia": "độ chính xác dấu phẩy động",
+  "dinhnghia": "Giới hạn về số chữ số có nghĩa khi máy tính biểu diễn số thực; sai số làm tròn và thứ tự tính toán khác nhau có thể khiến model cho kết quả hơi khác nhau, gây không tất định."
+ },
+ {
+  "id": "istqb-ctai-1752400000-925",
+  "word": "GPU",
+  "nghia": "bộ xử lý đồ họa (dùng tăng tốc tính toán AI)",
+  "dinhnghia": "Bộ xử lý gồm rất nhiều lõi tính toán song song, ban đầu dành cho đồ họa, nay được dùng rộng rãi để tăng tốc phép nhân ma trận khi huấn luyện và chạy inference model AI."
+ },
+ {
+  "id": "istqb-ctai-1752400000-938",
+  "word": "Non-determinism",
+  "nghia": "tính không tất định",
+  "dinhnghia": "Đặc điểm của hệ thống khi cùng một đầu vào và điều kiện có thể cho các đầu ra khác nhau ở những lần chạy khác nhau (do yếu tố ngẫu nhiên, sampling, phần cứng), gây khó cho việc xác định kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-941",
+  "word": "Probabilistic mapping",
+  "nghia": "ánh xạ xác suất",
+  "dinhnghia": "Quan hệ giữa đầu vào và đầu ra mà model ML học được mang tính thống kê: model đưa ra kết quả có khả năng đúng cao nhất chứ không đảm bảo luôn đúng, nên chất lượng phải đánh giá bằng metric trên nhiều mẫu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-955",
+  "word": "Performance metric",
+  "nghia": "chỉ số hiệu năng (thước đo chất lượng model)",
+  "dinhnghia": "Thước đo định lượng dùng để đánh giá mức độ tốt của model ML, ví dụ accuracy, precision, recall, F1-score, MSE; được chọn tùy loại bài toán và mức chấp nhận rủi ro."
+ },
+ {
+  "id": "istqb-ctai-1752400000-956",
+  "word": "Confidence interval",
+  "nghia": "khoảng tin cậy",
+  "dinhnghia": "Khoảng giá trị ước lượng từ mẫu dữ liệu mà giá trị thật của một đại lượng (vd accuracy của model) nằm trong đó với xác suất cho trước, thường là 95%."
+ },
+ {
+  "id": "istqb-ctai-1752400000-957",
+  "word": "Hypothesis testing",
+  "nghia": "kiểm định giả thuyết",
+  "dinhnghia": "Phương pháp thống kê dùng dữ liệu mẫu để quyết định chấp nhận hay bác bỏ một giả thuyết, vd hai model có khác biệt hiệu năng thật sự hay chỉ do ngẫu nhiên."
+ },
+ {
+  "id": "istqb-ctai-1752400000-958",
+  "word": "Error analysis",
+  "nghia": "phân tích lỗi",
+  "dinhnghia": "Hoạt động xem xét các mẫu mà model dự đoán sai, nhóm theo loại và tìm nguyên nhân (dữ liệu thiếu, nhãn sai, feature kém) để định hướng cải thiện model hoặc dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-961",
+  "word": "Reliability",
+  "nghia": "độ tin cậy",
+  "dinhnghia": "Đặc tính chất lượng: mức độ hệ thống thực hiện đúng chức năng đã định trong điều kiện xác định trong một khoảng thời gian, ổn định qua nhiều tình huống và lần chạy."
+ },
+ {
+  "id": "istqb-ctai-1752400000-988",
+  "word": "Proxy oracle",
+  "nghia": "oracle thay thế",
+  "dinhnghia": "Test oracle gián tiếp, dùng một hệ thống, model khác hoặc tiêu chí xấp xỉ để đánh giá output khi không có kết quả mong đợi chính xác, vd dùng LLM khác chấm điểm câu trả lời."
+ },
+ {
+  "id": "istqb-ctai-1752400000-992",
+  "word": "Black-box evaluation",
+  "nghia": "đánh giá hộp đen",
+  "dinhnghia": "Đánh giá model hoặc hệ thống AI chỉ dựa trên quan sát đầu vào và đầu ra, không cần biết kiến trúc, tham số hay dữ liệu huấn luyện bên trong."
+ },
+ {
+  "id": "istqb-ctai-1752400000-994",
+  "word": "Tunable parameter",
+  "nghia": "tham số điều chỉnh được (như temperature, max tokens)",
+  "dinhnghia": "Tham số có thể thiết lập khi gọi hoặc cấu hình model (không học từ dữ liệu) để điều khiển hành vi đầu ra, vd temperature quyết định độ ngẫu nhiên, max tokens giới hạn độ dài."
+ },
+ {
+  "id": "istqb-ctai-1752400000-998",
+  "word": "Coherence",
+  "nghia": "tính mạch lạc",
+  "dinhnghia": "Tiêu chí đánh giá đầu ra GenAI: nội dung có logic, các ý liên kết hợp lý và nhất quán từ đầu đến cuối, không tự mâu thuẫn hay nhảy chủ đề."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1002",
+  "word": "Non-functional requirement",
+  "nghia": "yêu cầu phi chức năng (hiệu năng, an toàn, bảo mật...)",
+  "dinhnghia": "Yêu cầu mô tả hệ thống hoạt động tốt đến mức nào thay vì làm gì, như hiệu năng, bảo mật, khả dụng, an toàn, độ tin cậy."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1010",
+  "word": "Input explosion problem",
+  "nghia": "bài toán bùng nổ đầu vào",
+  "dinhnghia": "Vấn đề không gian đầu vào của hệ thống AI (ảnh, văn bản, prompt...) lớn gần như vô hạn nên không thể test hết, buộc phải chọn mẫu đại diện bằng các kỹ thuật thiết kế test."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1016",
+  "word": "Maximum tokens",
+  "nghia": "số token tối đa",
+  "dinhnghia": "Tham số của LLM giới hạn số token tối đa model được sinh ra trong một phản hồi; ảnh hưởng tới độ dài, độ đầy đủ câu trả lời và chi phí."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1448",
+  "word": "Variance",
+  "nghia": "phương sai (mức phân tán của kết quả)",
+  "dinhnghia": "Đại lượng thống kê đo mức các giá trị phân tán quanh giá trị trung bình; trong ML, variance cao nghĩa là model nhạy với thay đổi dữ liệu train, dễ overfitting."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1021",
+  "word": "Inference",
+  "nghia": "suy luận / chạy dự đoán",
+  "dinhnghia": "Giai đoạn dùng model đã huấn luyện để tính toán đầu ra (dự đoán, phân loại, sinh nội dung) từ dữ liệu đầu vào mới, khác với giai đoạn training."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1031",
+  "word": "Fault attack",
+  "nghia": "tấn công tìm lỗi (chủ động dồn ép để lộ lỗi)",
+  "dinhnghia": "Kỹ thuật kiểm thử dựa trên kinh nghiệm, trong đó tester cố ý tạo các đầu vào hoặc tình huống nhắm vào những loại lỗi dự đoán trước để buộc hệ thống bộc lộ failure."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1049",
+  "word": "RAG (retrieval-augmented generation)",
+  "nghia": "RAG (sinh nội dung có truy xuất tài liệu bổ trợ)",
+  "dinhnghia": "Kỹ thuật cho LLM truy xuất thông tin liên quan từ nguồn tri thức bên ngoài (tài liệu, cơ sở dữ liệu vector) rồi đưa vào prompt để sinh câu trả lời chính xác, cập nhật hơn và giảm hallucination."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1055",
+  "word": "Attack vector",
+  "nghia": "hướng tấn công",
+  "dinhnghia": "Con đường hoặc phương thức cụ thể mà kẻ tấn công dùng để khai thác điểm yếu của hệ thống, vd prompt injection, jailbreak, dữ liệu bị đầu độc hay đầu vào đối kháng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1062",
+  "word": "Blue Teaming",
+  "nghia": "blue teaming (đội phòng thủ)",
+  "dinhnghia": "Hoạt động phòng thủ đối ứng với red teaming: giám sát, phát hiện và chặn tấn công bằng bộ lọc đầu vào/đầu ra, guardrail và biện pháp giảm thiểu để hệ thống AI an toàn hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1065",
+  "word": "Session sheet",
+  "nghia": "phiếu phiên test",
+  "dinhnghia": "Tài liệu dùng trong exploratory testing theo phiên, ghi charter (mục tiêu), phạm vi, thời lượng, ghi chú quá trình, lỗi tìm được và vấn đề cần trao đổi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1066",
+  "word": "2-value boundary value analysis",
+  "nghia": "phân tích biên 2 giá trị",
+  "dinhnghia": "Biến thể của kỹ thuật phân tích giá trị biên: với mỗi biên, test giá trị biên và giá trị liền kề thuộc phân vùng bên cạnh."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1067",
+  "word": "3-value boundary value analysis",
+  "nghia": "phân tích biên 3 giá trị",
+  "dinhnghia": "Biến thể của kỹ thuật phân tích giá trị biên: với mỗi biên, test chính giá trị biên và hai giá trị liền kề ở hai phía của nó; kỹ lưỡng hơn bản 2 giá trị."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1068",
+  "word": "Session debrief",
+  "nghia": "buổi tổng kết phiên",
+  "dinhnghia": "Buổi trao đổi ngay sau một phiên exploratory testing giữa tester và người quản lý để xem lại kết quả, lỗi phát hiện, mức bao phủ và quyết định bước tiếp theo."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1072",
+  "word": "ML model testing",
+  "nghia": "kiểm thử model ML",
+  "dinhnghia": "Mức kiểm thử tập trung vào bản thân model ML, kiểm tra model đạt tiêu chí hiệu năng chức năng (accuracy, precision...) và yêu cầu phi chức năng (robustness, fairness...) đã đặt ra."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1075",
+  "word": "Acceptance testing",
+  "nghia": "kiểm thử chấp nhận",
+  "dinhnghia": "Mức kiểm thử xác nhận hệ thống đáp ứng nhu cầu người dùng, yêu cầu nghiệp vụ và có thể được chấp nhận đưa vào sử dụng; thường do khách hàng hoặc người dùng thực hiện."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1083",
+  "word": "AI as a service",
+  "nghia": "AI dạng dịch vụ (AIaaS)",
+  "dinhnghia": "Mô hình dùng các chức năng AI do bên thứ ba cung cấp qua đám mây, thường qua API, thay vì tự xây model; cần test việc tích hợp và chất lượng dịch vụ mà mình không kiểm soát."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1085",
+  "word": "System testing",
+  "nghia": "kiểm thử hệ thống",
+  "dinhnghia": "Mức kiểm thử đánh giá toàn bộ hệ thống đã tích hợp, gồm cả thành phần AI và không AI, có đáp ứng yêu cầu chức năng và phi chức năng trong môi trường gần với thực tế hay không."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1086",
+  "word": "Confirmation testing",
+  "nghia": "kiểm thử xác nhận",
+  "dinhnghia": "Kiểm thử được chạy lại sau khi sửa lỗi hoặc thay đổi để xác nhận lỗi đã được khắc phục; với ML có thể là kiểm tra model sau retrain vẫn đạt tiêu chí hiệu năng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1091",
+  "word": "System integration testing",
+  "nghia": "kiểm thử tích hợp hệ thống",
+  "dinhnghia": "Mức kiểm thử tập trung vào giao tiếp và trao đổi dữ liệu giữa hệ thống AI với các hệ thống, dịch vụ bên ngoài (API, AI as a service, cơ sở dữ liệu)."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1094",
+  "word": "Functional performance criteria",
+  "nghia": "tiêu chí hiệu năng chức năng (mức chất lượng ML phải đạt)",
+  "dinhnghia": "Các ngưỡng đo bằng metric ML như accuracy, precision, recall, F1-score mà model phải đạt để được coi là đủ tốt; được xác định từ yêu cầu và dùng làm tiêu chí chấp nhận."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1097",
+  "word": "Project risk",
+  "nghia": "rủi ro dự án",
+  "dinhnghia": "Rủi ro ảnh hưởng tới việc quản lý và hoàn thành dự án như tiến độ, ngân sách, nhân lực, công cụ, khả năng có dữ liệu; khác với rủi ro nằm trong chất lượng sản phẩm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1098",
+  "word": "Product risk",
+  "nghia": "rủi ro sản phẩm (rủi ro nằm ở bản thân MLS)",
+  "dinhnghia": "Rủi ro liên quan trực tiếp đến chất lượng sản phẩm, tức khả năng hệ thống không đáp ứng nhu cầu hoặc gây hại, vd model thiên lệch, overfitting, dự đoán sai trong tình huống quan trọng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1102",
+  "word": "Biased training data",
+  "nghia": "dữ liệu train thiên lệch",
+  "dinhnghia": "Dữ liệu huấn luyện không cân bằng hoặc chứa định kiến (thiếu hay thừa một số nhóm, nhãn lệch), khiến model học theo và đưa ra kết quả không công bằng cho một số nhóm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1103",
+  "word": "Data-pipeline defect",
+  "nghia": "lỗi đường ống dữ liệu",
+  "dinhnghia": "Defect trong các bước thu thập, làm sạch, biến đổi, nạp dữ liệu cho model (sai định dạng, mất dữ liệu, xử lý sai), làm dữ liệu train hoặc inference bị hỏng và model kém đi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1104",
+  "word": "Unrepresentative training data",
+  "nghia": "dữ liệu train không đại diện",
+  "dinhnghia": "Dữ liệu huấn luyện không phản ánh đúng phân phối dữ liệu mà model sẽ gặp khi vận hành, khiến model hoạt động kém với các trường hợp hoặc nhóm bị thiếu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1105",
+  "word": "Overfitted model",
+  "nghia": "model quá khớp",
+  "dinhnghia": "Model học quá sát dữ liệu huấn luyện, kể cả nhiễu và chi tiết ngẫu nhiên, nên đạt kết quả rất tốt trên dữ liệu train nhưng kém trên dữ liệu mới."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1111",
+  "word": "Quality characteristics (ISO/IEC 25059)",
+  "nghia": "đặc tính chất lượng theo ISO/IEC 25059 (chuẩn chất lượng AI)",
+  "dinhnghia": "Mô hình chất lượng cho hệ thống AI mở rộng từ ISO/IEC 25010, bổ sung các đặc tính như khả năng thích ứng, tính minh bạch, robustness, khả năng can thiệp của con người, độ đúng chức năng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1112",
+  "word": "Input data testing",
+  "nghia": "kiểm thử dữ liệu đầu vào",
+  "dinhnghia": "Mức kiểm thử nhằm xác nhận dữ liệu dùng để train, test và vận hành model đủ chất lượng: đúng nguồn gốc, đầy đủ, nhất quán, đại diện, nhãn đúng và không thiên lệch."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1114",
+  "word": "MLS",
+  "nghia": "viết tắt của Machine Learning System (hệ thống học máy)",
+  "dinhnghia": "Hệ thống phần mềm có chứa một hoặc nhiều model ML cùng các thành phần không AI như pipeline dữ liệu, giao diện, hạ tầng triển khai và giám sát."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1120",
+  "word": "EDA",
+  "nghia": "Exploratory Data Analysis - phân tích dữ liệu thăm dò",
+  "dinhnghia": "Hoạt động khảo sát dữ liệu bằng thống kê mô tả và trực quan hóa để hiểu phân phối, phát hiện giá trị thiếu, ngoại lai, mất cân bằng và các mẫu bất thường trước khi xây model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1121",
+  "word": "Static testing",
+  "nghia": "kiểm thử tĩnh",
+  "dinhnghia": "Kiểm thử không chạy chương trình, gồm review và phân tích tĩnh trên tài liệu, code, cấu hình hoặc dữ liệu để phát hiện defect sớm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1122",
+  "word": "Dynamic testing",
+  "nghia": "kiểm thử động",
+  "dinhnghia": "Kiểm thử bằng cách thực thi phần mềm hoặc model với dữ liệu đầu vào rồi so sánh hành vi, kết quả thực tế với kết quả mong đợi."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1128",
+  "word": "Model",
+  "nghia": "mô hình (học máy)",
+  "dinhnghia": "Kết quả của quá trình huấn luyện thuật toán ML trên dữ liệu, gồm cấu trúc và các tham số đã học, dùng để đưa ra dự đoán hoặc quyết định cho dữ liệu mới."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1129",
+  "word": "ML development framework",
+  "nghia": "khung phát triển ML (thư viện/nền tảng để xây model)",
+  "dinhnghia": "Bộ thư viện và công cụ hỗ trợ xây dựng, huấn luyện, đánh giá và triển khai model ML, vd TensorFlow, PyTorch, scikit-learn; defect trong framework cũng có thể gây lỗi model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1132",
+  "word": "Data provenance testing",
+  "nghia": "kiểm thử nguồn gốc dữ liệu",
+  "dinhnghia": "Kiểm tra dữ liệu đến từ nguồn đáng tin cậy, được thu thập hợp pháp và có thể truy vết qua các bước xử lý, nhằm phát hiện dữ liệu không đáng tin hoặc bị đầu độc."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1133",
+  "word": "Poisoned training data",
+  "nghia": "dữ liệu huấn luyện bị đầu độc",
+  "dinhnghia": "Dữ liệu train bị kẻ tấn công cố ý chèn hoặc sửa (nhãn sai, mẫu độc, backdoor) để model học hành vi sai hoặc có điểm yếu có thể khai thác."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1139",
+  "word": "Dataset constraint testing",
+  "nghia": "kiểm thử ràng buộc tập dữ liệu",
+  "dinhnghia": "Kiểm tra dữ liệu tuân thủ các quy tắc định trước như kiểu dữ liệu, khoảng giá trị, định dạng, tính duy nhất, quan hệ giữa các trường; phát hiện giá trị ngoài khoảng hoặc mâu thuẫn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1140",
+  "word": "Feature selection",
+  "nghia": "chọn đặc trưng",
+  "dinhnghia": "Quá trình chọn ra tập con các thuộc tính đầu vào có ích nhất cho model, loại bỏ feature dư thừa, nhiễu hoặc gây thiên lệch để model chính xác và đơn giản hơn."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1141",
+  "word": "Feature testing",
+  "nghia": "kiểm thử đặc trưng",
+  "dinhnghia": "Kiểm tra các feature dùng cho model có liên quan, đúng giá trị, được tính toán chính xác và không mang thông tin nhạy cảm hay rò rỉ kết quả cần dự đoán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1144",
+  "word": "Skewed dataset",
+  "nghia": "tập dữ liệu bị lệch",
+  "dinhnghia": "Tập dữ liệu mà phân phối các lớp hoặc giá trị nghiêng hẳn về một phía (một lớp chiếm đa số), khiến model thiên về lớp phổ biến và kém với lớp hiếm."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1145",
+  "word": "Data augmentation",
+  "nghia": "tăng cường dữ liệu",
+  "dinhnghia": "Kỹ thuật tạo thêm mẫu huấn luyện bằng cách biến đổi dữ liệu có sẵn (xoay, lật, thêm nhiễu ảnh, diễn đạt lại văn bản) để tăng lượng và độ đa dạng dữ liệu, giảm overfitting."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1147",
+  "word": "Data representativeness testing",
+  "nghia": "kiểm thử tính đại diện của dữ liệu",
+  "dinhnghia": "Kiểm tra dữ liệu train và test có phản ánh đúng phân phối, các nhóm và tình huống mà hệ thống sẽ gặp khi vận hành thực tế hay không."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1149",
+  "word": "Labelling guidelines",
+  "nghia": "hướng dẫn gán nhãn",
+  "dinhnghia": "Bộ quy tắc và ví dụ mô tả cách gán nhãn cho từng loại dữ liệu, kể cả trường hợp nhập nhằng, giúp những người gán nhãn làm nhất quán và chính xác."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1152",
+  "word": "Label correctness testing",
+  "nghia": "kiểm thử độ đúng của nhãn",
+  "dinhnghia": "Kiểm tra nhãn gán cho dữ liệu huấn luyện và test có chính xác, nhất quán không, vd đối chiếu mẫu với chuyên gia hoặc so sánh nhãn giữa nhiều người gán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1156",
+  "word": "Testing for bias",
+  "nghia": "kiểm thử thiên lệch",
+  "dinhnghia": "Hoạt động kiểm tra dữ liệu và model có đối xử không công bằng với các nhóm theo thuộc tính nhạy cảm hay không, bằng phân tích dữ liệu, so sánh kết quả giữa các nhóm và kiểm thử counterfactual."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1158",
+  "word": "Sensitive attribute",
+  "nghia": "thuộc tính nhạy cảm",
+  "dinhnghia": "Thuộc tính của con người như giới tính, tuổi, chủng tộc, tôn giáo mà việc dùng nó để ra quyết định có thể dẫn tới phân biệt đối xử hoặc vi phạm pháp luật."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1165",
+  "word": "Historical skew",
+  "nghia": "lệch lịch sử",
+  "dinhnghia": "Thiên lệch có sẵn trong dữ liệu quá khứ do phản ánh định kiến hoặc bất bình đẳng xã hội trước đây; model học từ dữ liệu này sẽ lặp lại sự bất công đó."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1166",
+  "word": "Deliberate poisoning",
+  "nghia": "đầu độc có chủ đích",
+  "dinhnghia": "Hành vi tấn công cố tình chèn hoặc sửa dữ liệu huấn luyện để làm model sai lệch hoặc cài backdoor; là một nguồn gây bias và lỗ hổng bảo mật cho hệ thống ML."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1168",
+  "word": "Decision threshold",
+  "nghia": "ngưỡng quyết định",
+  "dinhnghia": "Giá trị ngưỡng áp lên điểm hoặc xác suất model trả ra để quyết định lớp kết quả (vd ≥ 0,5 là dương); thay đổi ngưỡng làm thay đổi cân bằng giữa precision và recall."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1171",
+  "word": "Algorithmic bias",
+  "nghia": "thiên lệch do thuật toán",
+  "dinhnghia": "Thiên lệch phát sinh từ cách thiết kế, cấu hình hoặc huấn luyện thuật toán (chọn feature, hàm mục tiêu, hyperparameter), không chỉ do dữ liệu, dẫn đến kết quả không công bằng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1174",
+  "word": "Dataset documentation",
+  "nghia": "tài liệu mô tả tập dữ liệu",
+  "dinhnghia": "Tài liệu ghi lại nguồn gốc, cách thu thập, gán nhãn, xử lý, thành phần và nhóm đối tượng đại diện của dataset, giúp đánh giá tính phù hợp và phát hiện nguy cơ bias."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1176",
+  "word": "Static analysis",
+  "nghia": "phân tích tĩnh",
+  "dinhnghia": "Kỹ thuật kiểm thử tĩnh dùng công cụ phân tích code, cấu hình hoặc dữ liệu mà không thực thi, để phát hiện defect, anti-pattern, vi phạm chuẩn và lỗ hổng."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1177",
+  "word": "Anti-pattern",
+  "nghia": "phản mẫu",
+  "dinhnghia": "Cách giải quyết thường gặp nhưng được biết là gây vấn đề; trong ML vd rò rỉ dữ liệu test vào train, xử lý giá trị thiếu sai cách, pipeline khó tái lập."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1180",
+  "word": "Clustering",
+  "nghia": "phân cụm",
+  "dinhnghia": "Kỹ thuật học không giám sát gom các điểm dữ liệu tương tự nhau thành nhóm mà không cần nhãn; dùng trong EDA để phát hiện nhóm bất thường hoặc dữ liệu thiên lệch."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1188",
+  "word": "Disparate impact analysis",
+  "nghia": "phân tích tác động chênh lệch",
+  "dinhnghia": "Kỹ thuật kiểm thử bias so sánh kết quả của model giữa các nhóm khác nhau theo thuộc tính nhạy cảm, vd tỷ lệ được duyệt vay, để phát hiện nhóm bị bất lợi một cách hệ thống."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1189",
+  "word": "Counterfactual",
+  "nghia": "phản thực",
+  "dinhnghia": "Trường hợp giả định giữ nguyên mọi đầu vào chỉ thay đổi một thuộc tính (vd giới tính); nếu output của model đổi theo thì đó là dấu hiệu model phụ thuộc vào thuộc tính đó, có thể bị bias."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1199",
+  "word": "Component testing",
+  "nghia": "kiểm thử thành phần",
+  "dinhnghia": "Mức kiểm thử tập trung vào từng thành phần riêng lẻ của hệ thống, gồm cả thành phần không AI như script biến đổi dữ liệu, giao diện cảm biến, độc lập với phần còn lại."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1200",
+  "word": "Data ingestion",
+  "nghia": "nạp/thu nhận dữ liệu",
+  "dinhnghia": "Bước đầu của pipeline dữ liệu: thu nhận dữ liệu từ các nguồn (cảm biến, file, API, cơ sở dữ liệu) và đưa vào hệ thống để lưu trữ, xử lý tiếp cho model."
+ },
+ {
+  "id": "istqb-ctai-1752400000-89",
+  "word": "Explicit programming",
+  "nghia": "Lập trình tường minh (viết luật rõ ràng)",
+  "dinhnghia": "Cách lập trình truyền thống: con người viết tường minh từng quy tắc và bước xử lý cho máy; khác với machine learning, nơi hệ thống tự học quy luật từ dữ liệu."
+ },
+ {
+  "id": "istqb-ctai-1752400000-111",
+  "word": "Sequential data",
+  "nghia": "Dữ liệu tuần tự (theo trình tự)",
+  "dinhnghia": "Dữ liệu mà thứ tự các phần tử mang ý nghĩa, vd chuỗi thời gian, văn bản, âm thanh; thường được xử lý bằng RNN hoặc transformer."
+ },
+ {
+  "id": "istqb-ctai-1752400000-123",
+  "word": "Optimization problem",
+  "nghia": "Bài toán tối ưu",
+  "dinhnghia": "Bài toán tìm lời giải tốt nhất trong nhiều phương án theo một hàm mục tiêu và các ràng buộc (vd xếp lịch, tìm đường); một số kỹ thuật AI chuyên giải loại bài toán này."
+ },
+ {
+  "id": "istqb-ctai-1752400000-215",
+  "word": "Pay-as-you-go",
+  "nghia": "Trả theo mức dùng (dùng bao nhiêu trả bấy nhiêu)",
+  "dinhnghia": "Mô hình tính phí của dịch vụ cloud/AIaaS: chỉ trả theo lượng tài nguyên thực dùng (giờ GPU, số request, token), không cần đầu tư phần cứng trước."
+ },
+ {
+  "id": "istqb-ctai-1752400000-210",
+  "word": "Server cluster",
+  "nghia": "Cụm máy chủ",
+  "dinhnghia": "Nhóm nhiều máy chủ kết nối và phối hợp như một hệ thống, dùng để huấn luyện hoặc chạy mô hình AI lớn nhờ chia việc tính toán song song."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1020",
+  "word": "Resource utilization",
+  "nghia": "mức sử dụng tài nguyên (CPU, GPU, bộ nhớ...)",
+  "dinhnghia": "Mức tiêu thụ tài nguyên (CPU, GPU, bộ nhớ, băng thông, năng lượng) của hệ thống khi chạy; là chỉ số hiệu năng phi chức năng cần kiểm thử, nhất là với LLM."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1027",
+  "word": "Curated dataset",
+  "nghia": "tập dữ liệu được tuyển chọn (chọn lọc kỹ càng)",
+  "dinhnghia": "Tập dữ liệu được tuyển chọn, làm sạch và kiểm duyệt cẩn thận cho một mục đích cụ thể, vd làm benchmark để đánh giá LLM một cách nhất quán."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1034",
+  "word": "Wargaming",
+  "nghia": "diễn tập chiến tranh (mô phỏng đối kháng để tìm điểm yếu)",
+  "dinhnghia": "Diễn tập theo kịch bản trong đó các nhóm đóng vai tấn công và phòng thủ để tìm điểm yếu của hệ thống AI và quy trình ứng phó; gắn với red teaming."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1035",
+  "word": "Tiger team",
+  "nghia": "tiger team (nhóm chuyên đi tìm lỗ hổng/điểm yếu)",
+  "dinhnghia": "Nhóm chuyên gia nhỏ được lập ra để chủ động tấn công hoặc thử phá hệ thống nhằm tìm lỗ hổng (tương tự red team), hoặc để giải quyết một vấn đề cụ thể."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1052",
+  "word": "Multi-turn dialogue",
+  "nghia": "hội thoại nhiều lượt (trao đổi qua lại 15-20 lượt)",
+  "dinhnghia": "Hội thoại nhiều lượt giữa người dùng và chatbot/LLM, mô hình phải nhớ ngữ cảnh các lượt trước; dùng khi kiểm thử vì lỗi hoặc tấn công có thể chỉ lộ ra sau nhiều lượt."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1143",
+  "word": "Target class",
+  "nghia": "lớp mục tiêu (nhãn cần model dự đoán)",
+  "dinhnghia": "Lớp (nhãn) mà mô hình phân loại cần dự đoán, đặc biệt là lớp quan tâm như 'gian lận' hay 'có bệnh'; dữ liệu thường mất cân bằng ở lớp này."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1181",
+  "word": "Skewed distribution",
+  "nghia": "phân phối lệch",
+  "dinhnghia": "Phân phối dữ liệu lệch hẳn về một phía hoặc tập trung vào một số giá trị/lớp; dễ khiến mô hình học lệch và cần được phát hiện khi phân tích dữ liệu (EDA)."
+ },
+ {
+  "id": "istqb-ctai-1752400000-1009",
+  "word": "Plausibility",
+  "nghia": "tính hợp lý, đáng tin (nghe có vẻ đúng)",
+  "dinhnghia": "Mức độ hợp lý, đáng tin của đầu ra (vd câu trả lời LLM nghe có vẻ đúng); khi kiểm thử cần lưu ý đầu ra hợp lý chưa chắc đã đúng sự thật."
+ }
+]

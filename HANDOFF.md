@@ -21,14 +21,24 @@ Góc dưới bên phải màn hình (ngay trên thanh nav) có một badge nhỏ
 - **Để biết Vercel đã deploy bản build mới hay chưa:** chỉ cần reload trang production và nhìn commit hash trong badge có khớp với commit vừa push không.
 - **Khi thêm tính năng/sửa lỗi đáng kể, hãy bump `version` trong `package.json`** (ví dụ 1.1.0 → 1.2.0) trước khi commit, để badge phản ánh đúng "phiên bản" chứ không chỉ hash. Hash luôn tự cập nhật dù có bump version hay không.
 
-## Phiên làm việc gần nhất (2026-11-10) — bổ sung định nghĩa cho chủ đề "Giao tiếp Testing" (chỉ dữ liệu)
+## Phiên làm việc gần nhất (2026-11-10) — thêm định nghĩa cho deck ISTQB CTAI (chỉ dữ liệu)
+
+Cùng quy tắc với CTFL: thuật ngữ chuyên môn (AI/ML, dữ liệu, metric, LLM, hạ tầng, quy định, đặc tính chất lượng, kiểm thử) có dòng `Định nghĩa:`;
+từ tiếng Anh chung và từ chỉ dùng làm ví dụ minh họa thì giữ nguyên.
+
+- Thêm cho 318 thẻ (dữ liệu `scripts/ctai-definitions.json`, script `scripts/add-ctai-definitions.mjs`, idempotent, `--dry`).
+  Cộng 72 thẻ đã có từ phiên "Giao tiếp Testing" → **390/1000 thẻ CTAI có định nghĩa**. Một số dòng Nghĩa được bỏ chú thích trong ngoặc khi định nghĩa đã bao trọn ý.
+- Kiểm chứng: so với backup, chỉ dòng Nghĩa/Định nghĩa thay đổi; Phiên âm, Ví dụ, status không đổi. Backup: `backups/cards-backup-2026-11-10-pre-ctai-definitions.json`.
+- Các thẻ đã thêm không thuộc chủ đề "Giao tiếp Testing" (các thẻ thuộc chủ đề đó đã có định nghĩa từ trước), nên bản sao `gtt-…` không cần đồng bộ.
+
+## Phiên trước (2026-11-10) — bổ sung định nghĩa cho chủ đề "Giao tiếp Testing" (chỉ dữ liệu)
 
 User báo nhiều thuật ngữ trong "Giao tiếp Testing" còn thiếu định nghĩa. Nguyên nhân: 95 thẻ lấy từ CTAI (deck CTAI chưa từng được thêm định nghĩa) và một số từ CTFL lúc trước bị xếp là "từ chung".
 
 - Đã thêm dòng `Định nghĩa:` cho 99 từ. Ghi vào **cả bản sao `gtt-…` lẫn thẻ gốc** trong CTFL/CTAI (198 thẻ), nên chạy lại `create-giao-tiep-testing.mjs` cũng không mất định nghĩa.
   Dòng Nghĩa giữ nguyên. Dữ liệu ở `scripts/gtt-definitions.json` (key = word), script `scripts/add-gtt-definitions.mjs` (idempotent, `--dry`).
 - Hiện có 179/228 thẻ có định nghĩa. 49 thẻ còn lại là động từ/cụm từ giao tiếp chung (ensure, carry out, rely on, from scratch, time-consuming…), giữ nguyên theo quy tắc của user.
-- Các thẻ khác trong deck ISTQB CTAI (ngoài 95 từ này) **vẫn chưa có định nghĩa**.
+- (Sau đó đã thêm định nghĩa cho cả deck CTAI, xem phiên trên.)
 
 ## Phiên trước (2026-11-10) — xóa 20 chủ đề "4000IELTS - …" (chỉ dữ liệu)
 
